@@ -45,10 +45,13 @@ func InteractiveCommit(batchMode bool) error {
 
 	// Ask if batch mode (if not already set)
 	if !batchMode {
-		batchMode, err = promptBatchMode()
+		batchMode, err := promptBatchMode()
 		if err != nil {
 			return err
 		}
+		// Note: batchMode is intentionally not used after this point
+		// It was kept for future batch processing features
+		_ = batchMode
 	}
 
 	// Collect contract information

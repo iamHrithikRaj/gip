@@ -1,10 +1,10 @@
-# GIP Makefile
+# Gip Makefile
 
 .PHONY: help test test-unit test-integration test-all coverage build clean install
 
 # Default target
 help:
-	@echo "GIP - Git++ Makefile"
+	@echo "Gip - Git++ Makefile"
 	@echo ""
 	@echo "Available targets:"
 	@echo "  make test             - Run all unit tests"

@@ -1,6 +1,6 @@
 ---
 name: Question
-about: Ask a question about GIP
+about: Ask a question about Gip
 title: '[QUESTION] '
 labels: question
 assignees: ''
@@ -20,7 +20,7 @@ What are you trying to accomplish? Provide context about:
 ## Environment (if relevant)
 
 - **OS**: [e.g., Windows 11, macOS 14, Ubuntu 22.04]
-- **GIP Version**: [e.g., 0.1.0]
+- **Gip Version**: [e.g., 0.1.0]
 
 ## Related Documentation
 

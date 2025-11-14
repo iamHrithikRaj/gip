@@ -1,5 +1,5 @@
 // Package manifest provides functionality for creating, storing, and loading
-// GIP manifests that capture structured context about code changes.
+// Gip manifests that capture structured context about code changes.
 //
 // Manifests are stored as JSON files in .gip/manifest/<sha>.json and can be
 // serialized to TOON format for display in conflict markers during merge operations.

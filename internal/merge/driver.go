@@ -1,5 +1,5 @@
-// Package merge implements GIP's custom merge driver that enriches Git conflict
-// markers with structured context from GIP manifests.
+// Package merge implements Gip's custom merge driver that enriches Git conflict
+// markers with structured context from Gip manifests.
 //
 // The merge driver detects conflict markers, loads manifests for each version,
 // and converts them to TOON format for inline display in the conflicted file.
@@ -93,7 +93,7 @@ func findConflictBlocks(lines []string) []ConflictBlock {
 	return conflicts
 }
 
-// enrichConflictBlocks injects custom GIP context into conflict regions
+// enrichConflictBlocks injects custom Gip context into conflict regions
 func enrichConflictBlocks(lines []string, conflicts []ConflictBlock, currentSHA, otherSHA string, filePath string) []string {
 	result := make([]string, 0)
 	lastEnd := 0
@@ -105,8 +105,8 @@ func enrichConflictBlocks(lines []string, conflicts []ConflictBlock, currentSHA,
 		// Add HEAD section
 		result = append(result, conflict.HeadLines...)
 
-		// Add GIP context for HEAD
-		result = append(result, "||| GIP CONTEXT (HEAD - Your changes)")
+		// Add Gip context for HEAD
+		result = append(result, "||| Gip CONTEXT (HEAD - Your changes)")
 		shortHead := currentSHA
 		if len(currentSHA) > 8 {
 			shortHead = currentSHA[:8]
@@ -127,8 +127,8 @@ func enrichConflictBlocks(lines []string, conflicts []ConflictBlock, currentSHA,
 		// Add THEIR section
 		result = append(result, conflict.TheirLines...)
 
-		// Add GIP context for THEIRS
-		result = append(result, "||| GIP CONTEXT (MERGE_HEAD - Their changes)")
+		// Add Gip context for THEIRS
+		result = append(result, "||| Gip CONTEXT (MERGE_HEAD - Their changes)")
 		shortOther := otherSHA
 		if len(otherSHA) > 8 {
 			shortOther = otherSHA[:8]

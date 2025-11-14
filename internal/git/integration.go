@@ -1,9 +1,9 @@
 // Package git provides utilities for interacting with Git repositories,
 // including executing Git commands, retrieving commit information, and
-// configuring GIP's custom merge driver.
+// configuring Gip's custom merge driver.
 //
-// This package handles all Git command execution and repository operations
-// needed by GIP to capture and store manifest metadata.
+// It provides functions for initializing a Git repository with the hooks
+// needed by Gip to capture and store manifest metadata.
 package git
 
 import (
@@ -94,7 +94,7 @@ func GetManifestPath(commitSHA string) (string, error) {
 	return filepath.Join(manifestDir, fmt.Sprintf("%s.toon", commitSHA)), nil
 }
 
-// InstallGitHooks installs GIP git hooks
+// InstallGitHooks installs Gip git hooks
 func InstallGitHooks() error {
 	root, err := GetRepoRoot()
 	if err != nil {
@@ -106,17 +106,16 @@ func InstallGitHooks() error {
 	// Pre-commit hook
 	preCommitPath := filepath.Join(hooksDir, "pre-commit")
 	preCommitScript := `#!/bin/sh
-# GIP pre-commit hook
-# Validates that manifest exists for staged changes
-
+# Gip pre-commit hook
+# Reminds user to create manifest if not found
+# Does not block the commit
 if [ -f .gip/pending-manifest.toon ]; then
-    echo "✓ GIP manifest found"
+    echo "✓ Gip manifest found"
     exit 0
 fi
 
-echo "⚠ Warning: No GIP manifest found"
+echo "⚠ Warning: No Gip manifest found"
 echo "Run: gip commit -c"
-exit 0
 `
 
 	if err := os.WriteFile(preCommitPath, []byte(preCommitScript), 0755); err != nil {
@@ -126,15 +125,14 @@ exit 0
 	// Post-commit hook
 	postCommitPath := filepath.Join(hooksDir, "post-commit")
 	postCommitScript := `#!/bin/sh
-# GIP post-commit hook
-# Moves pending manifest to commit-specific file
+# Gip post-commit hook
+# Moves pending manifest to permanent storage with commit SHA
+set -e
 
 COMMIT=$(git rev-parse HEAD)
-
 if [ -f .gip/pending-manifest.toon ]; then
     mv .gip/pending-manifest.toon .gip/manifest/${COMMIT}.toon
-    echo "✓ GIP manifest saved: .gip/manifest/${COMMIT}.toon"
-fi
+    echo "✓ Gip manifest saved: .gip/manifest/${COMMIT}.toon"
 `
 
 	if err := os.WriteFile(postCommitPath, []byte(postCommitScript), 0755); err != nil {
@@ -144,7 +142,7 @@ fi
 	return nil
 }
 
-// SetupMergeDriver is no longer needed - GIP wraps git merge directly
+// SetupMergeDriver is no longer needed - Gip wraps git merge directly
 // Kept for backward compatibility but does nothing
 func SetupMergeDriver() error {
 	return nil

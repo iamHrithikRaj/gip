@@ -32,7 +32,7 @@ coverage.html
 *~
 *.bak
 
-# GIP manifest storage
+# Gip manifest storage
 .gip/
 
 # OS files

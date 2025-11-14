@@ -1,4 +1,4 @@
-// Package toon handles serialization of GIP manifests to TOON (Tree Object Notation)
+// Package toon handles serialization of Gip manifests to TOON (Tree Object Notation)
 // format for human-readable display in Git conflict markers.
 //
 // TOON format uses tree-like ASCII art to represent structured data in a compact,
@@ -17,7 +17,7 @@ import (
 func SerializeManifest(m *manifest.Manifest) (string, error) {
 	var sb strings.Builder
 
-	sb.WriteString("; GIP Manifest\n")
+	sb.WriteString("; Gip Manifest\n")
 	sb.WriteString("(manifest\n")
 	sb.WriteString(fmt.Sprintf("  (commit #%s)\n", m.Commit))
 	sb.WriteString("  (entries\n")

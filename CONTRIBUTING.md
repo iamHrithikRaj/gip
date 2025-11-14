@@ -1,6 +1,6 @@
-# Contributing to GIP
+# Contributing to Gip
 
-First off, thank you for considering contributing to GIP! It's people like you that make GIP such a great tool.
+First off, thank you for considering contributing to Gip! It's people like you that make Gip such a great tool.
 
 ## Table of Contents
 
@@ -183,8 +183,8 @@ We follow standard Go conventions:
 Every package must have a package-level comment:
 
 ```go
-// Package merge implements GIP's custom merge driver that enriches Git conflict
-// markers with structured context from GIP manifests.
+// Package merge implements Gip's custom merge driver that enriches Git conflict
+// markers with structured context from Gip manifests.
 package merge
 ```
 
@@ -194,7 +194,7 @@ Exported functions must have godoc comments:
 
 ```go
 // EnrichConflicts reads a file with Git conflict markers and enriches them
-// with context from GIP manifests for each commit SHA.
+// with context from Gip manifests for each commit SHA.
 //
 // Returns an error if the file cannot be read or manifests cannot be loaded.
 func EnrichConflicts(filePath, ancestorSHA, currentSHA, otherSHA string) error {
@@ -439,7 +439,7 @@ gip/
 └── scripts/              # Development scripts
 ```
 
-### Running GIP Locally
+### Running Gip Locally
 
 ```bash
 # Build and install locally
@@ -500,4 +500,4 @@ By contributing, you agree that your contributions will be licensed under the MI
 
 ---
 
-**Thank you for contributing to GIP!** Your efforts help make conflict resolution better for everyone. 🚀
+**Thank you for contributing to Gip!** Your efforts help make conflict resolution better for everyone. 🚀

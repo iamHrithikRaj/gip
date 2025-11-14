@@ -35,16 +35,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - Initial Release
 
 ### Added
-- Core GIP functionality for manifest creation
+- Core Gip functionality for manifest creation
 - Interactive prompts for collecting change metadata
 - Custom Git merge driver with context enrichment
 - TOON format serialization for conflict markers
 - Multi-language diff analysis (Python, Go, JS, TS, Java, C/C++, Ruby, Rust, PHP)
 - CLI commands:
-  - `gip init` - Initialize GIP in repository ✅
+  - `gip init` - Initialize Gip in repository ✅
   - `gip commit -c` - Interactive commit with manifest ✅
   - `gip version` - Display version ✅
-  - `gip status` - Show GIP status (planned)
+  - `gip status` - Show Gip status (planned)
   - `gip commit -t` - Generate manifest template (planned)
   - `gip commit -m <file>` - Use pre-written manifest (planned)
 - Manifest storage in `.gip/manifest/<sha>.json`

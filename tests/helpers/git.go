@@ -171,8 +171,8 @@ func GetCurrentBranch(t *testing.T) string {
 	return strings.TrimSpace(output)
 }
 
-// InitializeGIP initializes GIP in the current directory
-func InitializeGIP(t *testing.T, gipBinary string) {
+// InitializeGip initializes Gip in the current directory
+func InitializeGip(t *testing.T, gipBinary string) {
 	t.Helper()
 
 	// Copy gip binary to current directory if path provided

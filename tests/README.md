@@ -1,6 +1,6 @@
-# GIP Test Suite
+# Gip Test Suite
 
-This directory contains the comprehensive test suite for GIP.
+This directory contains the comprehensive test suite for Gip.
 
 ## Structure
 

@@ -1,11 +1,11 @@
-# Install GIP locally for development (Windows)
+# Install Gip locally for development (Windows)
 
-Write-Host "Building GIP..." -ForegroundColor Cyan
+Write-Host "Building Gip..." -ForegroundColor Cyan
 go build -o gip.exe ./cmd/gip
 
-Write-Host "Installing GIP..." -ForegroundColor Cyan
+Write-Host "Installing Gip..." -ForegroundColor Cyan
 go install ./cmd/gip
 
 Write-Host ""
-Write-Host "✅ GIP installed successfully!" -ForegroundColor Green
+Write-Host "✅ Gip installed successfully!" -ForegroundColor Green
 Write-Host "Run 'gip --version' to verify"

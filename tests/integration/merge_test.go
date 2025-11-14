@@ -93,8 +93,8 @@ func TestMergeWorkflow(t *testing.T) {
 	// Verify enrichment
 	content := helpers.ReadFile(t, "cart.py")
 
-	// Check for GIP context markers
-	helpers.AssertFileContains(t, "cart.py", "||| GIP CONTEXT")
+	// Check for Gip context markers
+	helpers.AssertFileContains(t, "cart.py", "||| Gip CONTEXT")
 	helpers.AssertFileContains(t, "cart.py", "HEAD")
 	helpers.AssertFileContains(t, "cart.py", "MERGE_HEAD")
 
@@ -228,7 +228,7 @@ func TestMultipleFileConflicts(t *testing.T) {
 	// Enrich both files
 	for _, file := range conflicted {
 		merge.EnrichConflicts(file, sha1, sha3, sha2)
-		helpers.AssertFileContains(t, file, "||| GIP CONTEXT")
+		helpers.AssertFileContains(t, file, "||| Gip CONTEXT")
 	}
 }
 

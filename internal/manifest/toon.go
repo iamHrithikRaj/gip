@@ -10,7 +10,7 @@ import (
 func SerializeManifest(m *Manifest) string {
 	var sb strings.Builder
 
-	sb.WriteString("; GIP Manifest\n")
+	sb.WriteString("; Gip Manifest\n")
 	sb.WriteString("(manifest\n")
 	sb.WriteString(fmt.Sprintf("  (commit #%s)\n", m.Commit))
 	sb.WriteString("  (entries\n")

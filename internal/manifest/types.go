@@ -1,6 +1,6 @@
 package manifest
 
-// Manifest represents a GIP change manifest for a commit
+// Manifest represents a Gip change manifest for a commit
 type Manifest struct {
 	Commit  string  `json:"commit"`
 	Entries []Entry `json:"entries"`

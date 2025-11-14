@@ -1,14 +1,14 @@
 #!/bin/bash
-# Install GIP locally for development
+# Install Gip locally for development
 
 set -e
 
-echo "Building GIP..."
+echo "Building Gip..."
 go build -o gip ./cmd/gip
 
-echo "Installing GIP..."
+echo "Installing Gip..."
 go install ./cmd/gip
 
 echo ""
-echo "✅ GIP installed successfully!"
+echo "✅ Gip installed successfully!"
 echo "Run 'gip --version' to verify"

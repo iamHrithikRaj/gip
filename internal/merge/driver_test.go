@@ -172,8 +172,8 @@ func TestEnrichConflictsBasic(t *testing.T) {
 	enrichedStr := string(enriched)
 
 	// Verify TOON context was injected
-	if !strings.Contains(enrichedStr, "||| GIP CONTEXT") {
-		t.Error("Expected '||| GIP CONTEXT' marker in enriched file")
+	if !strings.Contains(enrichedStr, "||| Gip CONTEXT") {
+		t.Error("Expected '||| Gip CONTEXT' marker in enriched file")
 	}
 
 	// Verify HEAD context
@@ -329,8 +329,8 @@ def func2():
 	enriched, _ := os.ReadFile(conflictFile)
 	enrichedStr := string(enriched)
 
-	contextCount := strings.Count(enrichedStr, "||| GIP CONTEXT")
+	contextCount := strings.Count(enrichedStr, "||| Gip CONTEXT")
 	if contextCount < 2 {
-		t.Errorf("Expected at least 2 GIP CONTEXT blocks, found %d", contextCount)
+		t.Errorf("Expected at least 2 Gip CONTEXT blocks, found %d", contextCount)
 	}
 }

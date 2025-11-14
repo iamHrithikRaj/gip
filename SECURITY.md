@@ -10,7 +10,7 @@ We release patches for security vulnerabilities. Currently supported versions:
 
 ## Reporting a Vulnerability
 
-We take the security of GIP seriously. If you believe you have found a security vulnerability, please report it to us as described below.
+We take the security of Gip seriously. If you believe you have found a security vulnerability, please report it to us as described below.
 
 ### Please DO NOT
 
@@ -50,11 +50,11 @@ Please provide as much information as possible:
 
 ## Security Best Practices
 
-When using GIP:
+When using Gip:
 
 ### For Users
 
-1. **Keep GIP Updated**: Always use the latest version
+1. **Keep Gip Updated**: Always use the latest version
    ```bash
    go install github.com/iamHrithikRaj/gip/cmd/gip@latest
    ```
@@ -65,9 +65,9 @@ When using GIP:
    echo ".gip/" >> .gitignore
    ```
 
-3. **Validate Input**: Be cautious when running GIP on untrusted repositories
+3. **Validate Input**: Be cautious when running Gip on untrusted repositories
 
-4. **Permissions**: GIP runs with your user permissions - be aware of what it can access
+4. **Permissions**: Gip runs with your user permissions - be aware of what it can access
 
 ### For Contributors
 
@@ -88,9 +88,9 @@ When using GIP:
 
 ### Git Integration
 
-- GIP executes Git commands using `os/exec`
+- Gip executes Git commands using `os/exec`
 - It inherits Git's security model
-- Malicious repository hooks could potentially affect GIP
+- Malicious repository hooks could potentially affect Gip
 
 ### TOON Serialization
 
@@ -112,7 +112,7 @@ This project has not yet undergone a formal security audit. If you're interested
 
 ## Attribution
 
-We appreciate security researchers who help keep GIP secure. With your permission, we will:
+We appreciate security researchers who help keep Gip secure. With your permission, we will:
 - Credit you in the security advisory
 - List you in our security acknowledgments
 - Link to your website or GitHub profile
@@ -125,4 +125,4 @@ For security-related questions that are not vulnerabilities, please:
 
 ---
 
-**Thank you for helping keep GIP and its users safe!** 🔒
+**Thank you for helping keep Gip and its users safe!** 🔒

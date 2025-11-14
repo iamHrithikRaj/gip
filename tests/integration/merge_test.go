@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"testing"
 	
-	"github.com/hrithikraj/gip/internal/manifest"
-	"github.com/hrithikraj/gip/internal/merge"
-	"github.com/hrithikraj/gip/tests/helpers"
+	"github.com/iamHrithikRaj/gip/internal/manifest"
+	"github.com/iamHrithikRaj/gip/internal/merge"
+	"github.com/iamHrithikRaj/gip/tests/helpers"
 )
 
 func TestMergeWorkflow(t *testing.T) {

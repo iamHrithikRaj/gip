@@ -36,7 +36,7 @@ This project and everyone participating in it is governed by our [Code of Conduc
    ```
 3. Add the upstream repository:
    ```bash
-   git remote add upstream https://github.com/hrithikraj/gip.git
+   git remote add upstream https://github.com/iamHrithikRaj/gip.git
    ```
 
 ## Development Setup

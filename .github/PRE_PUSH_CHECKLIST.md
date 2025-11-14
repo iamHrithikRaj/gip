@@ -47,7 +47,7 @@ git add .
 git commit -m "feat: initial release with complete infrastructure"
 
 # Set up remote (replace username)
-git remote add origin https://github.com/hrithikraj/gip.git
+git remote add origin https://github.com/iamHrithikRaj/gip.git
 git branch -M main
 
 # Push to GitHub

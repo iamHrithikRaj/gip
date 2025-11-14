@@ -12,8 +12,8 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/fatih/color"
-	"github.com/hrithikraj/gip/internal/diff"
-	"github.com/hrithikraj/gip/internal/manifest"
+	"github.com/iamHrithikRaj/gip/internal/diff"
+	"github.com/iamHrithikRaj/gip/internal/manifest"
 )
 
 // InteractiveCommit runs the interactive commit flow

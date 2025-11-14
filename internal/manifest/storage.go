@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hrithikraj/gip/internal/git"
+	"github.com/iamHrithikRaj/gip/internal/git"
 )
 
 // Save writes a manifest to disk as JSON (easy to parse)

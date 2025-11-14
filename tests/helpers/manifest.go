@@ -1,7 +1,7 @@
 package helpers
 
 import (
-	"github.com/hrithikraj/gip/internal/manifest"
+	"github.com/iamHrithikRaj/gip/internal/manifest"
 )
 
 // NewTestManifest creates a basic manifest for testing

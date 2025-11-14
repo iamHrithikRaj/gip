@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 	
-	"github.com/hrithikraj/gip/internal/manifest"
+	"github.com/iamHrithikRaj/gip/internal/manifest"
 )
 
 func TestFindConflictBlocks(t *testing.T) {

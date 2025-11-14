@@ -1,4 +1,4 @@
-module github.com/hrithikraj/gip
+module github.com/iamHrithikRaj/gip
 
 go 1.21
 

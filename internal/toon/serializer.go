@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/alpkeskin/gotoon"
-	"github.com/hrithikraj/gip/internal/manifest"
+	"github.com/iamHrithikRaj/gip/internal/manifest"
 )
 
 // SerializeManifest converts a Manifest to TOON format

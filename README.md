@@ -1,9 +1,9 @@
 # GIP (Git++) 🚀
 
-[![CI](https://github.com/hrithikraj/gip/actions/workflows/test.yml/badge.svg)](https://github.com/hrithikraj/gip/actions/workflows/test.yml)
-[![Go Version](https://img.shields.io/github/go-mod/go-version/hrithikraj/gip)](https://go.dev/)
+[![CI](https://github.com/iamHrithikRaj/gip/actions/workflows/test.yml/badge.svg)](https://github.com/iamHrithikRaj/gip/actions/workflows/test.yml)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/iamHrithikRaj/gip)](https://go.dev/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Go Report Card](https://goreportcard.com/badge/github.com/hrithikraj/gip)](https://goreportcard.com/report/github.com/hrithikraj/gip)
+[![Go Report Card](https://goreportcard.com/badge/github.com/iamHrithikRaj/gip)](https://goreportcard.com/report/github.com/iamHrithikRaj/gip)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 **A lightweight Git wrapper that enriches merge conflicts with structured context for humans and AI.**
@@ -92,7 +92,7 @@ total += item.price + 5.99
 **Windows (PowerShell)**:
 ```powershell
 # Download from GitHub releases
-Invoke-WebRequest -Uri "https://github.com/hrithikraj/gip/releases/latest/download/gip-windows-amd64.exe" -OutFile "gip.exe"
+Invoke-WebRequest -Uri "https://github.com/iamHrithikRaj/gip/releases/latest/download/gip-windows-amd64.exe" -OutFile "gip.exe"
 
 # Move to a directory in your PATH (optional)
 Move-Item gip.exe $env:LOCALAPPDATA\Programs\gip.exe
@@ -104,7 +104,7 @@ gip --version
 **macOS/Linux**:
 ```bash
 # Download
-curl -LO https://github.com/hrithikraj/gip/releases/latest/download/gip-$(uname -s)-$(uname -m)
+curl -LO https://github.com/iamHrithikRaj/gip/releases/latest/download/gip-$(uname -s)-$(uname -m)
 
 # Make executable
 chmod +x gip-*
@@ -123,7 +123,7 @@ gip --version
 **Prerequisites**: Go 1.21+
 
 ```bash
-git clone https://github.com/hrithikraj/gip
+git clone https://github.com/iamHrithikRaj/gip
 cd gip
 go build -o gip ./cmd/gip
 ```
@@ -463,7 +463,7 @@ Contributions welcome! This is an experimental project exploring structured cont
 
 ```bash
 # Clone
-git clone https://github.com/hrithikraj/gip
+git clone https://github.com/iamHrithikRaj/gip
 cd gip
 
 # Install dependencies
@@ -538,7 +538,7 @@ Future planned features:
 - [ ] Semantic merge strategies based on contracts
 - [ ] Integration with popular merge tools (Meld, KDiff3, etc.)
 
-**Want to help?** Check out [open issues](https://github.com/hrithikraj/gip/issues) or [contribute](CONTRIBUTING.md)!
+**Want to help?** Check out [open issues](https://github.com/iamHrithikRaj/gip/issues) or [contribute](CONTRIBUTING.md)!
 
 ---
 
@@ -588,9 +588,9 @@ By contributing to GIP, you agree that your contributions will be licensed under
 ## Support
 
 - 📖 **Documentation**: See this README and [CONTRIBUTING.md](CONTRIBUTING.md)
-- 🐛 **Bug Reports**: [Open an issue](https://github.com/hrithikraj/gip/issues/new?template=bug_report.md)
-- 💡 **Feature Requests**: [Suggest a feature](https://github.com/hrithikraj/gip/issues/new?template=feature_request.md)
-- ❓ **Questions**: [Ask a question](https://github.com/hrithikraj/gip/issues/new?template=question.md)
+- 🐛 **Bug Reports**: [Open an issue](https://github.com/iamHrithikRaj/gip/issues/new?template=bug_report.md)
+- 💡 **Feature Requests**: [Suggest a feature](https://github.com/iamHrithikRaj/gip/issues/new?template=feature_request.md)
+- ❓ **Questions**: [Ask a question](https://github.com/iamHrithikRaj/gip/issues/new?template=question.md)
 
 ---
 

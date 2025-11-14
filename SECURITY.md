@@ -22,7 +22,7 @@ We take the security of GIP seriously. If you believe you have found a security 
 **Report security vulnerabilities privately** by:
 
 1. **GitHub Security Advisories** (Recommended): Use GitHub's private vulnerability reporting feature
-   - Go to the [Security tab](https://github.com/hrithikraj/gip/security)
+   - Go to the [Security tab](https://github.com/iamHrithikRaj/gip/security)
    - Click "Report a vulnerability"
    - This ensures private disclosure and proper tracking
 
@@ -56,7 +56,7 @@ When using GIP:
 
 1. **Keep GIP Updated**: Always use the latest version
    ```bash
-   go install github.com/hrithikraj/gip/cmd/gip@latest
+   go install github.com/iamHrithikRaj/gip/cmd/gip@latest
    ```
 
 2. **Review Manifests**: Manifests are stored in `.gip/` - ensure they don't contain sensitive data
@@ -102,7 +102,7 @@ When using GIP:
 
 Security updates will be:
 - Released as patch versions
-- Announced in [GitHub Security Advisories](https://github.com/hrithikraj/gip/security/advisories)
+- Announced in [GitHub Security Advisories](https://github.com/iamHrithikRaj/gip/security/advisories)
 - Documented in release notes
 - Communicated to users via GitHub
 
@@ -120,7 +120,7 @@ We appreciate security researchers who help keep GIP secure. With your permissio
 ## Questions?
 
 For security-related questions that are not vulnerabilities, please:
-- Open a [GitHub Discussion](https://github.com/hrithikraj/gip/discussions)
+- Open a [GitHub Discussion](https://github.com/iamHrithikRaj/gip/discussions)
 - Ask in an issue with the `security` label
 
 ---

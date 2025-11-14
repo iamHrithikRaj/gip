@@ -76,7 +76,7 @@ make coverage
 ### Git Helpers (`tests/helpers/git.go`)
 
 ```go
-import "github.com/hrithikraj/gip/tests/helpers"
+import "github.com/iamHrithikRaj/gip/tests/helpers"
 
 func TestExample(t *testing.T) {
     // Setup test repository
@@ -105,8 +105,8 @@ func TestExample(t *testing.T) {
 
 ```go
 import (
-    "github.com/hrithikraj/gip/internal/manifest"
-    "github.com/hrithikraj/gip/tests/helpers"
+    "github.com/iamHrithikRaj/gip/internal/manifest"
+    "github.com/iamHrithikRaj/gip/tests/helpers"
 )
 
 func TestManifest(t *testing.T) {
@@ -187,7 +187,7 @@ package integration
 
 import (
     "testing"
-    "github.com/hrithikraj/gip/tests/helpers"
+    "github.com/iamHrithikRaj/gip/tests/helpers"
 )
 
 func TestWorkflow(t *testing.T) {

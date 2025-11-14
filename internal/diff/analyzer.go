@@ -11,7 +11,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/hrithikraj/gip/internal/manifest"
+	"github.com/iamHrithikRaj/gip/internal/manifest"
 )
 
 // SymbolChange represents a detected change to a symbol

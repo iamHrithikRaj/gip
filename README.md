@@ -595,10 +595,6 @@ By contributing to Gip, you agree that your contributions will be licensed under
 
 ---
 
-**Made with ❤️ for the developer who deserves better conflict resolution**
-
----
-
 **Made with ❤️ by a developer tired of cryptic merge conflicts.**
 
 **Gip = Git++** 🎯 Better merges through structured context.

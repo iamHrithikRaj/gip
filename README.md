@@ -347,19 +347,61 @@ def calculate_total(items):
 
 ### Example 2: Bugfix vs Feature
 
-**Conflict context**:
+**Scenario**: One developer fixes a crash, another adds a new feature to the same function.
+
+**Branch A** (bugfix - empty input validation):
+```python
+def apply_discount(items, discount):
+    if not items:
+        raise ValueError("items cannot be empty")
+    return sum(item.price for item in items) * (1 - discount)
 ```
+
+**Branch B** (feature - discount parameter with default):
+```python
+def apply_discount(items, discount=0.1):
+    return sum(item.price for item in items) * (1 - discount)
+```
+
+**Gip-enriched conflict**:
+```python
+<<<<<<< HEAD
+def apply_discount(items, discount):
+    if not items:
+        raise ValueError("items cannot be empty")
+    return sum(item.price for item in items) * (1 - discount)
 ||| GIP CONTEXT (HEAD)
 ||| behaviorClass[1]: bugfix
 ||| rationale: Fixed crash on empty input
 ||| errorModel[1]: ValueError on empty list
-
+||| preconditions[1]: items must be non-empty list
+||| postconditions[1]: returns discounted total
+||| sideEffects[0]:
+=======
+def apply_discount(items, discount=0.1):
+    return sum(item.price for item in items) * (1 - discount)
 ||| GIP CONTEXT (MERGE_HEAD)
 ||| behaviorClass[1]: feature
-||| rationale: Added discount parameter
+||| rationale: Added discount parameter with 10% default
+||| errorModel[0]:
+||| preconditions[1]: items is list, discount is float
+||| postconditions[1]: returns discounted total
+||| sideEffects[0]:
+>>>>>>> feature-discount
 ```
 
-**Decision**: Keep feature, ensure bugfix validation is retained.
+**Resolution**: Combine both - keep feature's default parameter AND bugfix's validation:
+```python
+def apply_discount(items, discount=0.1):
+    if not items:
+        raise ValueError("items cannot be empty")
+    return sum(item.price for item in items) * (1 - discount)
+```
+
+**Why this resolution?**
+- ✅ Feature adds convenience (default 10% discount)
+- ✅ Bugfix prevents production crash (empty list validation)
+- ✅ Both improvements are complementary, not conflicting
 
 ---
 

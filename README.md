@@ -530,6 +530,7 @@ Gip is in active development. Here's what works today:
 
 Future planned features:
 
+- [ ] **Gip MCP** - Model Context Protocol server for seamless LLM integration
 - [ ] VS Code extension for inline manifest editing
 - [ ] GitHub Actions for automated manifest generation
 - [ ] LLM-assisted conflict resolution suggestions

@@ -2,24 +2,24 @@ package manifest
 
 // Manifest represents a GIP change manifest for a commit
 type Manifest struct {
-	Commit  string   `json:"commit"`
-	Entries []Entry  `json:"entries"`
+	Commit  string  `json:"commit"`
+	Entries []Entry `json:"entries"`
 }
 
 // Entry represents a single symbol/hunk modification
 type Entry struct {
-	Anchor          Anchor          `json:"anchor"`
-	ChangeType      string          `json:"changeType"`      // add, modify, delete, rename
-	SignatureDelta  SignatureDelta  `json:"signatureDelta"`
-	Contract        Contract        `json:"contract"`
-	BehaviorClass   []string        `json:"behaviorClass"`   // bugfix, feature, refactor, etc.
-	SideEffects     []string        `json:"sideEffects"`     // logs:channel, reads:file, etc.
-	Compatibility   Compatibility   `json:"compatibility"`
-	TestsTouched    []string        `json:"testsTouched"`
-	PerfBudget      *PerfBudget     `json:"perfBudget,omitempty"`
-	SecurityNotes   []string        `json:"securityNotes,omitempty"`
-	FeatureFlags    []string        `json:"featureFlags,omitempty"`
-	Rationale       string          `json:"rationale"`
+	Anchor         Anchor         `json:"anchor"`
+	ChangeType     string         `json:"changeType"` // add, modify, delete, rename
+	SignatureDelta SignatureDelta `json:"signatureDelta"`
+	Contract       Contract       `json:"contract"`
+	BehaviorClass  []string       `json:"behaviorClass"` // bugfix, feature, refactor, etc.
+	SideEffects    []string       `json:"sideEffects"`   // logs:channel, reads:file, etc.
+	Compatibility  Compatibility  `json:"compatibility"`
+	TestsTouched   []string       `json:"testsTouched"`
+	PerfBudget     *PerfBudget    `json:"perfBudget,omitempty"`
+	SecurityNotes  []string       `json:"securityNotes,omitempty"`
+	FeatureFlags   []string       `json:"featureFlags,omitempty"`
+	Rationale      string         `json:"rationale"`
 }
 
 // Anchor identifies the location of the change
@@ -46,9 +46,9 @@ type Contract struct {
 
 // Compatibility flags
 type Compatibility struct {
-	BinaryBreaking      bool `json:"binaryBreaking"`
-	SourceBreaking      bool `json:"sourceBreaking"`
-	DataModelMigration  bool `json:"dataModelMigration"`
+	BinaryBreaking     bool `json:"binaryBreaking"`
+	SourceBreaking     bool `json:"sourceBreaking"`
+	DataModelMigration bool `json:"dataModelMigration"`
 }
 
 // PerfBudget captures performance expectations

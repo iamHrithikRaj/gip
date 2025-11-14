@@ -118,7 +118,7 @@ func NewManifestWithMultipleEntries(commit string, entries []ManifestEntrySpec) 
 		Commit:  commit,
 		Entries: []manifest.Entry{},
 	}
-	
+
 	for _, spec := range entries {
 		entry := manifest.Entry{
 			Anchor: manifest.Anchor{
@@ -138,7 +138,7 @@ func NewManifestWithMultipleEntries(commit string, entries []ManifestEntrySpec) 
 		}
 		m.Entries = append(m.Entries, entry)
 	}
-	
+
 	return m
 }
 

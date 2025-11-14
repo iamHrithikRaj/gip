@@ -100,9 +100,9 @@ func InstallGitHooks() error {
 	if err != nil {
 		return err
 	}
-	
+
 	hooksDir := filepath.Join(root, ".git", "hooks")
-	
+
 	// Pre-commit hook
 	preCommitPath := filepath.Join(hooksDir, "pre-commit")
 	preCommitScript := `#!/bin/sh
@@ -118,11 +118,11 @@ echo "⚠ Warning: No GIP manifest found"
 echo "Run: gip commit -c"
 exit 0
 `
-	
+
 	if err := os.WriteFile(preCommitPath, []byte(preCommitScript), 0755); err != nil {
 		return fmt.Errorf("failed to create pre-commit hook: %w", err)
 	}
-	
+
 	// Post-commit hook
 	postCommitPath := filepath.Join(hooksDir, "post-commit")
 	postCommitScript := `#!/bin/sh
@@ -136,11 +136,11 @@ if [ -f .gip/pending-manifest.toon ]; then
     echo "✓ GIP manifest saved: .gip/manifest/${COMMIT}.toon"
 fi
 `
-	
+
 	if err := os.WriteFile(postCommitPath, []byte(postCommitScript), 0755); err != nil {
 		return fmt.Errorf("failed to create post-commit hook: %w", err)
 	}
-	
+
 	return nil
 }
 

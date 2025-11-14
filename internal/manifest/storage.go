@@ -19,25 +19,25 @@ func Save(m *Manifest, commitSHA string) error {
 	if err := git.EnsureGipDir(); err != nil {
 		return fmt.Errorf("failed to create .gip directory: %w", err)
 	}
-	
+
 	// Get manifest path (use .json extension)
 	manifestDir, err := git.GetManifestDir()
 	if err != nil {
 		return err
 	}
 	path := fmt.Sprintf("%s/%s.json", manifestDir, commitSHA)
-	
+
 	// Serialize as JSON for easy parsing
 	jsonData, err := json.MarshalIndent(m, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to serialize manifest: %w", err)
 	}
-	
+
 	// Write to file
 	if err := os.WriteFile(path, jsonData, 0644); err != nil {
 		return fmt.Errorf("failed to write manifest: %w", err)
 	}
-	
+
 	return nil
 }
 
@@ -48,7 +48,7 @@ func Load(commitSHA string) (*Manifest, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	jsonPath := fmt.Sprintf("%s/%s.json", manifestDir, commitSHA)
 	data, err := os.ReadFile(jsonPath)
 	if err != nil {
@@ -60,13 +60,13 @@ func Load(commitSHA string) (*Manifest, error) {
 		}
 		// For .toon files, parse as JSON (they should be JSON now)
 	}
-	
+
 	// Parse JSON
 	var manifest Manifest
 	if err := json.Unmarshal(data, &manifest); err != nil {
 		return nil, fmt.Errorf("failed to parse manifest: %w", err)
 	}
-	
+
 	return &manifest, nil
 }
 
@@ -75,18 +75,18 @@ func SavePending(m *Manifest) error {
 	if err := git.EnsureGipDir(); err != nil {
 		return err
 	}
-	
+
 	gipDir, err := git.GetGipDir()
 	if err != nil {
 		return err
 	}
-	
+
 	// Serialize as JSON
 	jsonData, err := json.MarshalIndent(m, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to serialize manifest: %w", err)
 	}
-	
+
 	path := fmt.Sprintf("%s/pending-manifest.json", gipDir)
 	return os.WriteFile(path, jsonData, 0644)
 }
@@ -97,7 +97,7 @@ func Exists(commitSHA string) bool {
 	if err != nil {
 		return false
 	}
-	
+
 	_, err = os.Stat(path)
 	return err == nil
 }

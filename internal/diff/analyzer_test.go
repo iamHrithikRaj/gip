@@ -6,7 +6,7 @@ import (
 
 func TestExtractSymbolFromDiff(t *testing.T) {
 	t.Parallel()
-	
+
 	tests := []struct {
 		name     string
 		diffHunk string
@@ -40,7 +40,7 @@ func TestExtractSymbolFromDiff(t *testing.T) {
 			expected: "Calculator",
 		},
 		{
-			name: "JavaScript const",
+			name:     "JavaScript const",
 			diffHunk: `+const API_URL = 'https://api.example.com';`,
 			expected: "API_URL",
 		},
@@ -65,12 +65,12 @@ func TestExtractSymbolFromDiff(t *testing.T) {
 			expected: "unknown",
 		},
 		{
-			name: "Empty diff",
+			name:     "Empty diff",
 			diffHunk: "",
 			expected: "unknown",
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := ExtractSymbolFromDiff(tt.diffHunk)
@@ -83,7 +83,7 @@ func TestExtractSymbolFromDiff(t *testing.T) {
 
 func TestDetectChangeType(t *testing.T) {
 	t.Parallel()
-	
+
 	tests := []struct {
 		name      string
 		diffLines []string
@@ -146,12 +146,12 @@ func TestDetectChangeType(t *testing.T) {
 			expected: "delete",
 		},
 		{
-			name: "Empty diff",
+			name:      "Empty diff",
 			diffLines: []string{},
-			expected: "modify",
+			expected:  "modify",
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := DetectChangeType(tt.diffLines)
@@ -164,32 +164,32 @@ func TestDetectChangeType(t *testing.T) {
 
 func TestAnalyzeStagedChanges(t *testing.T) {
 	t.Parallel()
-	
+
 	// This is a basic smoke test since the actual implementation
 	// depends on git environment
 	changes, err := AnalyzeStagedChanges()
-	
+
 	if err != nil {
 		t.Logf("AnalyzeStagedChanges returned error (may be expected if not in git repo): %v", err)
 	}
-	
+
 	// Should return data (mock or real)
 	if changes == nil {
 		t.Error("Expected non-nil changes slice")
 	}
-	
+
 	// If we got changes, verify structure
 	if len(changes) > 0 {
 		change := changes[0]
-		
+
 		if change.File == "" {
 			t.Error("Expected File to be populated")
 		}
-		
+
 		if change.Symbol == "" {
 			t.Error("Expected Symbol to be populated")
 		}
-		
+
 		if change.ChangeType == "" {
 			t.Error("Expected ChangeType to be populated")
 		}
@@ -198,7 +198,7 @@ func TestAnalyzeStagedChanges(t *testing.T) {
 
 func TestExtractSymbolMultiplePatterns(t *testing.T) {
 	t.Parallel()
-	
+
 	// Test that we correctly extract from various language patterns
 	diffHunks := []struct {
 		code     string
@@ -236,7 +236,7 @@ func TestExtractSymbolMultiplePatterns(t *testing.T) {
 			expected: "counter",
 		},
 	}
-	
+
 	for _, tc := range diffHunks {
 		t.Run(tc.language, func(t *testing.T) {
 			result := ExtractSymbolFromDiff(tc.code)
@@ -249,7 +249,7 @@ func TestExtractSymbolMultiplePatterns(t *testing.T) {
 
 func TestExtractSymbolEdgeCases(t *testing.T) {
 	t.Parallel()
-	
+
 	tests := []struct {
 		name     string
 		diffHunk string
@@ -281,7 +281,7 @@ func TestExtractSymbolEdgeCases(t *testing.T) {
 			expected: "unknown",
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := ExtractSymbolFromDiff(tt.diffHunk)
@@ -294,7 +294,7 @@ func TestExtractSymbolEdgeCases(t *testing.T) {
 
 func TestDetectChangeTypeEdgeCases(t *testing.T) {
 	t.Parallel()
-	
+
 	tests := []struct {
 		name     string
 		lines    []string
@@ -338,7 +338,7 @@ func TestDetectChangeTypeEdgeCases(t *testing.T) {
 			expected: "modify",
 		},
 	}
-	
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := DetectChangeType(tt.lines)

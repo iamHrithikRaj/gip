@@ -12,7 +12,7 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
-	
+
 	"github.com/alpkeskin/gotoon"
 	"github.com/iamHrithikRaj/gip/internal/manifest"
 )
@@ -32,27 +32,27 @@ func EnrichConflicts(filePath, ancestorSHA, currentSHA, otherSHA string) error {
 	if err != nil {
 		return fmt.Errorf("failed to read file: %w", err)
 	}
-	
+
 	lines := strings.Split(string(content), "\n")
-	
+
 	// Find all conflict blocks
 	conflicts := findConflictBlocks(lines)
-	
+
 	if len(conflicts) == 0 {
 		return nil // No conflicts
 	}
-	
+
 	fmt.Printf("Found %d conflict(s) in %s\n", len(conflicts), filePath)
-	
+
 	// Enrich each conflict with custom context
 	enrichedLines := enrichConflictBlocks(lines, conflicts, currentSHA, otherSHA, filePath)
-	
+
 	// Write back the enriched file
 	enrichedContent := strings.Join(enrichedLines, "\n")
 	if err := os.WriteFile(filePath, []byte(enrichedContent), 0644); err != nil {
 		return fmt.Errorf("failed to write enriched file: %w", err)
 	}
-	
+
 	return nil
 }
 
@@ -61,11 +61,11 @@ func findConflictBlocks(lines []string) []ConflictBlock {
 	var conflicts []ConflictBlock
 	var current *ConflictBlock
 	inHead := false
-	
+
 	conflictStart := regexp.MustCompile(`^<<<<<<<\s+`)
 	conflictMiddle := regexp.MustCompile(`^=======\s*$`)
 	conflictEnd := regexp.MustCompile(`^>>>>>>>\s+`)
-	
+
 	for i, line := range lines {
 		if conflictStart.MatchString(line) {
 			current = &ConflictBlock{
@@ -89,7 +89,7 @@ func findConflictBlocks(lines []string) []ConflictBlock {
 			}
 		}
 	}
-	
+
 	return conflicts
 }
 
@@ -97,14 +97,14 @@ func findConflictBlocks(lines []string) []ConflictBlock {
 func enrichConflictBlocks(lines []string, conflicts []ConflictBlock, currentSHA, otherSHA string, filePath string) []string {
 	result := make([]string, 0)
 	lastEnd := 0
-	
+
 	for _, conflict := range conflicts {
 		// Add lines before conflict (including <<<<<<< marker)
 		result = append(result, lines[lastEnd:conflict.StartLine+1]...)
-		
+
 		// Add HEAD section
 		result = append(result, conflict.HeadLines...)
-		
+
 		// Add GIP context for HEAD
 		result = append(result, "||| GIP CONTEXT (HEAD - Your changes)")
 		shortHead := currentSHA
@@ -112,7 +112,7 @@ func enrichConflictBlocks(lines []string, conflicts []ConflictBlock, currentSHA,
 			shortHead = currentSHA[:8]
 		}
 		result = append(result, fmt.Sprintf("||| Commit: %s", shortHead))
-		
+
 		// Try to add TOON manifest for HEAD
 		headToon := getManifestToon(currentSHA, filePath)
 		if headToon != "" {
@@ -120,13 +120,13 @@ func enrichConflictBlocks(lines []string, conflicts []ConflictBlock, currentSHA,
 				result = append(result, "||| "+line)
 			}
 		}
-		
+
 		// Add separator
 		result = append(result, "=======")
-		
+
 		// Add THEIR section
 		result = append(result, conflict.TheirLines...)
-		
+
 		// Add GIP context for THEIRS
 		result = append(result, "||| GIP CONTEXT (MERGE_HEAD - Their changes)")
 		shortOther := otherSHA
@@ -134,7 +134,7 @@ func enrichConflictBlocks(lines []string, conflicts []ConflictBlock, currentSHA,
 			shortOther = otherSHA[:8]
 		}
 		result = append(result, fmt.Sprintf("||| Commit: %s", shortOther))
-		
+
 		// Try to add TOON manifest for THEIRS
 		theirToon := getManifestToon(otherSHA, filePath)
 		if theirToon != "" {
@@ -142,18 +142,18 @@ func enrichConflictBlocks(lines []string, conflicts []ConflictBlock, currentSHA,
 				result = append(result, "||| "+line)
 			}
 		}
-		
+
 		// Add end marker (>>>>>>> line)
 		result = append(result, lines[conflict.EndLine])
-		
+
 		lastEnd = conflict.EndLine + 1
 	}
-	
+
 	// Add remaining lines after last conflict
 	if lastEnd < len(lines) {
 		result = append(result, lines[lastEnd:]...)
 	}
-	
+
 	return result
 }
 
@@ -174,7 +174,7 @@ func getManifestToon(commitSHA, filePath string) string {
 	if err != nil {
 		return "" // No manifest found
 	}
-	
+
 	// Find entry for this file
 	var entry *manifest.Entry
 	for i := range m.Entries {
@@ -183,11 +183,11 @@ func getManifestToon(commitSHA, filePath string) string {
 			break
 		}
 	}
-	
+
 	if entry == nil {
 		return "" // No entry for this file
 	}
-	
+
 	// Convert entry to map for gotoon
 	data := map[string]interface{}{
 		"symbol":         entry.Anchor.Symbol,
@@ -200,13 +200,13 @@ func getManifestToon(commitSHA, filePath string) string {
 		"sideEffects":    entry.SideEffects,
 		"rationale":      entry.Rationale,
 	}
-	
+
 	// Encode to TOON
 	toon, err := gotoon.Encode(data, gotoon.WithIndent(2))
 	if err != nil {
 		return "" // Encoding failed
 	}
-	
+
 	return toon
 }
 
@@ -218,34 +218,34 @@ func EnrichAllConflicts() error {
 	if err != nil {
 		return fmt.Errorf("failed to get conflicted files: %w", err)
 	}
-	
+
 	conflictedFiles := strings.Split(strings.TrimSpace(string(output)), "\n")
 	if len(conflictedFiles) == 0 || conflictedFiles[0] == "" {
 		return nil // No conflicts
 	}
-	
+
 	// Get commit SHAs
 	currentSHA, err := getCommitSHA("HEAD")
 	if err != nil {
 		return fmt.Errorf("failed to get HEAD SHA: %w", err)
 	}
-	
+
 	otherSHA, err := getCommitSHA("MERGE_HEAD")
 	if err != nil {
 		return fmt.Errorf("failed to get MERGE_HEAD SHA: %w", err)
 	}
-	
+
 	// Enrich each conflicted file
 	for _, filePath := range conflictedFiles {
 		if filePath == "" {
 			continue
 		}
-		
+
 		if err := EnrichConflicts(filePath, "", currentSHA, otherSHA); err != nil {
 			fmt.Printf("Warning: Failed to enrich %s: %v\n", filePath, err)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -256,15 +256,15 @@ func DetectConflicts(filePath string) (bool, error) {
 		return false, err
 	}
 	defer file.Close()
-	
+
 	scanner := bufio.NewScanner(file)
 	conflictMarker := regexp.MustCompile(`^<<<<<<<\s+`)
-	
+
 	for scanner.Scan() {
 		if conflictMarker.MatchString(scanner.Text()) {
 			return true, nil
 		}
 	}
-	
+
 	return false, scanner.Err()
 }

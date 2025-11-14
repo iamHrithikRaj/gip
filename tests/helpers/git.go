@@ -11,45 +11,45 @@ import (
 // SetupGitRepo creates a temporary Git repository for testing
 func SetupGitRepo(t *testing.T) string {
 	t.Helper()
-	
+
 	tmpDir := t.TempDir()
-	
+
 	// Change to temp directory
 	originalDir, err := os.Getwd()
 	if err != nil {
 		t.Fatalf("Failed to get working directory: %v", err)
 	}
-	
+
 	// Register cleanup to restore directory
 	t.Cleanup(func() {
 		os.Chdir(originalDir)
 	})
-	
+
 	if err := os.Chdir(tmpDir); err != nil {
 		t.Fatalf("Failed to change to temp directory: %v", err)
 	}
-	
+
 	// Initialize git repo
 	runCommand(t, "git", "init", "-b", "main")
 	runCommand(t, "git", "config", "user.name", "Test User")
 	runCommand(t, "git", "config", "user.email", "test@example.com")
-	
+
 	return tmpDir
 }
 
 // CreateCommit creates a file and commits it
 func CreateCommit(t *testing.T, filename, content, message string) string {
 	t.Helper()
-	
+
 	// Write file
 	if err := os.WriteFile(filename, []byte(content), 0644); err != nil {
 		t.Fatalf("Failed to write file %s: %v", filename, err)
 	}
-	
+
 	// Stage and commit
 	runCommand(t, "git", "add", filename)
 	runCommand(t, "git", "commit", "-m", message)
-	
+
 	// Get commit SHA
 	output := runCommand(t, "git", "rev-parse", "HEAD")
 	return strings.TrimSpace(output)
@@ -70,10 +70,10 @@ func CheckoutBranch(t *testing.T, name string) {
 // MergeBranch attempts to merge a branch (may conflict)
 func MergeBranch(t *testing.T, branch string) (bool, error) {
 	t.Helper()
-	
+
 	cmd := exec.Command("git", "merge", branch)
 	output, err := cmd.CombinedOutput()
-	
+
 	if err != nil {
 		// Check if it's a merge conflict (expected in some tests)
 		if strings.Contains(string(output), "CONFLICT") {
@@ -81,66 +81,66 @@ func MergeBranch(t *testing.T, branch string) (bool, error) {
 		}
 		return false, err
 	}
-	
+
 	return true, nil // Success, no conflicts
 }
 
 // GetConflictedFiles returns list of files with merge conflicts
 func GetConflictedFiles(t *testing.T) []string {
 	t.Helper()
-	
+
 	cmd := exec.Command("git", "diff", "--name-only", "--diff-filter=U")
 	output, err := cmd.Output()
 	if err != nil {
 		return []string{}
 	}
-	
+
 	files := strings.Split(strings.TrimSpace(string(output)), "\n")
 	if len(files) == 1 && files[0] == "" {
 		return []string{}
 	}
-	
+
 	return files
 }
 
 // HasConflictMarkers checks if a file contains conflict markers
 func HasConflictMarkers(t *testing.T, filename string) bool {
 	t.Helper()
-	
+
 	content, err := os.ReadFile(filename)
 	if err != nil {
 		t.Fatalf("Failed to read file %s: %v", filename, err)
 	}
-	
+
 	str := string(content)
-	return strings.Contains(str, "<<<<<<<") && 
-	       strings.Contains(str, "=======") && 
-	       strings.Contains(str, ">>>>>>>")
+	return strings.Contains(str, "<<<<<<<") &&
+		strings.Contains(str, "=======") &&
+		strings.Contains(str, ">>>>>>>")
 }
 
 // ReadFile reads a file and returns its content
 func ReadFile(t *testing.T, filename string) string {
 	t.Helper()
-	
+
 	content, err := os.ReadFile(filename)
 	if err != nil {
 		t.Fatalf("Failed to read file %s: %v", filename, err)
 	}
-	
+
 	return string(content)
 }
 
 // WriteFile writes content to a file
 func WriteFile(t *testing.T, filename, content string) {
 	t.Helper()
-	
+
 	dir := filepath.Dir(filename)
 	if dir != "." && dir != "" {
 		if err := os.MkdirAll(dir, 0755); err != nil {
 			t.Fatalf("Failed to create directory %s: %v", dir, err)
 		}
 	}
-	
+
 	if err := os.WriteFile(filename, []byte(content), 0644); err != nil {
 		t.Fatalf("Failed to write file %s: %v", filename, err)
 	}
@@ -174,7 +174,7 @@ func GetCurrentBranch(t *testing.T) string {
 // InitializeGIP initializes GIP in the current directory
 func InitializeGIP(t *testing.T, gipBinary string) {
 	t.Helper()
-	
+
 	// Copy gip binary to current directory if path provided
 	if gipBinary != "" && gipBinary != "gip" {
 		content, err := os.ReadFile(gipBinary)
@@ -185,7 +185,7 @@ func InitializeGIP(t *testing.T, gipBinary string) {
 			t.Fatalf("Failed to copy gip binary: %v", err)
 		}
 	}
-	
+
 	// Run gip init
 	runCommand(t, "gip", "init")
 }
@@ -193,24 +193,24 @@ func InitializeGIP(t *testing.T, gipBinary string) {
 // runCommand executes a command and returns output
 func runCommand(t *testing.T, command string, args ...string) string {
 	t.Helper()
-	
+
 	cmd := exec.Command(command, args...)
 	output, err := cmd.CombinedOutput()
-	
+
 	if err != nil {
 		t.Logf("Command failed: %s %v", command, args)
 		t.Logf("Output: %s", string(output))
 		t.Logf("Error: %v", err)
 		// Don't fail immediately - let caller handle errors
 	}
-	
+
 	return string(output)
 }
 
 // AssertFileContains checks if a file contains expected text
 func AssertFileContains(t *testing.T, filename, expected string) {
 	t.Helper()
-	
+
 	content := ReadFile(t, filename)
 	if !strings.Contains(content, expected) {
 		t.Errorf("File %s does not contain expected text: %s", filename, expected)
@@ -221,7 +221,7 @@ func AssertFileContains(t *testing.T, filename, expected string) {
 // AssertFileNotContains checks if a file does NOT contain text
 func AssertFileNotContains(t *testing.T, filename, unexpected string) {
 	t.Helper()
-	
+
 	content := ReadFile(t, filename)
 	if strings.Contains(content, unexpected) {
 		t.Errorf("File %s should not contain text: %s", filename, unexpected)
@@ -231,7 +231,7 @@ func AssertFileNotContains(t *testing.T, filename, unexpected string) {
 // AssertNoError checks that error is nil
 func AssertNoError(t *testing.T, err error, message string) {
 	t.Helper()
-	
+
 	if err != nil {
 		t.Fatalf("%s: %v", message, err)
 	}
@@ -240,7 +240,7 @@ func AssertNoError(t *testing.T, err error, message string) {
 // AssertError checks that error is not nil
 func AssertError(t *testing.T, err error, message string) {
 	t.Helper()
-	
+
 	if err == nil {
 		t.Fatalf("%s: expected error but got nil", message)
 	}

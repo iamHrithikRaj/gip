@@ -1,4 +1,4 @@
-# GIP (Git++) 🚀
+# Gip (Git++) 🚀
 
 [![CI](https://github.com/iamHrithikRaj/gip/actions/workflows/test.yml/badge.svg)](https://github.com/iamHrithikRaj/gip/actions/workflows/test.yml)
 [![Go Version](https://img.shields.io/github/go-mod/go-version/iamHrithikRaj/gip)](https://go.dev/)
@@ -6,9 +6,9 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/iamHrithikRaj/gip)](https://goreportcard.com/report/github.com/iamHrithikRaj/gip)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-**A lightweight Git wrapper that enriches merge conflicts with structured context for humans and AI.**
+**A lightweight Git wrapper that enriches merge conflicts with structured context for humans and LLMs.**
 
-GIP transforms cryptic merge conflicts into self-documenting resolution tasks by injecting structured manifests directly into conflict markers—no repo scanning required.
+Gip transforms cryptic merge conflicts into self-documenting resolution tasks by injecting structured manifests directly into conflict markers—no repo scanning required.
 
 ---
 
@@ -30,13 +30,13 @@ total += item.price + 5.99
 - Are there side effects or error handling differences?
 - Which change is a feature vs a bugfix?
 
-Both humans and AI waste time scanning the entire codebase to understand conflicts.
+Both humans and LLMs waste time scanning the entire codebase to understand conflicts.
 
 ---
 
 ## The Solution
 
-GIP adds **TOON manifests** to commits, capturing structured context:
+Gip adds **TOON manifests** to commits, capturing structured context:
 
 ```python
 <<<<<<< HEAD
@@ -77,7 +77,7 @@ total += item.price + 5.99
 - 🎯 **Zero Scanning**: Context injected directly into conflicts—no repo traversal needed
 - 📦 **Single Binary**: No runtime dependencies, just copy and run (6.6MB self-contained)
 - 🔄 **Git-Compatible**: Drop-in replacement—use `gip` instead of `git`
-- 🤖 **AI-Friendly**: TOON format optimized for LLM token efficiency (30-60% smaller than JSON)
+- 🤖 **LLM-Friendly**: TOON format optimized for LLM token efficiency (30-60% smaller than JSON)
 - 🔗 **Non-Invasive**: Works alongside standard Git workflow
 - 📝 **Structured Context**: Contracts, behavior classes, side effects, compatibility flags
 
@@ -186,7 +186,7 @@ gip commit
 ### 1. Commit Phase
 
 When you run `gip commit -c`:
-1. GIP analyzes staged changes (git diff)
+1. Gip analyzes staged changes (git diff)
 2. Extracts symbols (functions, classes) that changed
 3. Prompts for structured context (contracts, behavior, rationale)
 4. Stores manifest as `.gip/manifest/<commit-sha>.json`
@@ -194,8 +194,8 @@ When you run `gip commit -c`:
 ### 2. Merge Phase
 
 When you run `gip merge <branch>`:
-1. GIP calls `git merge` internally
-2. If conflicts occur, GIP post-processes conflicted files
+1. Gip calls `git merge` internally
+2. If conflicts occur, Gip post-processes conflicted files
 3. For each conflict block:
    - Loads manifests for both commits (HEAD and MERGE_HEAD)
    - Converts JSON manifests to TOON format
@@ -400,13 +400,13 @@ gip/
 
 ## Comparison with Alternatives
 
-| Feature | GIP | Plain Git | Git Notes | GitHub PRs |
+| Feature | Gip | Plain Git | Git Notes | GitHub PRs |
 |---------|-----|-----------|-----------|------------|
 | Context in conflicts | ✅ Inline | ❌ None | 🟡 Separate | 🟡 Separate |
 | Token efficiency | ✅ TOON | N/A | ❌ JSON | ❌ Markdown |
 | Offline support | ✅ Yes | ✅ Yes | ✅ Yes | ❌ No |
 | Structured contracts | ✅ Yes | ❌ No | 🟡 Freeform | 🟡 Freeform |
-| AI-friendly | ✅ Yes | ❌ No | 🟡 Partial | 🟡 Partial |
+| LLM-friendly | ✅ Yes | ❌ No | 🟡 Partial | 🟡 Partial |
 | Setup complexity | 🟡 One command | ✅ None | 🟡 Manual | ❌ Platform lock-in |
 | Binary size | ✅ 6.6MB | ✅ ~2MB | ✅ ~2MB | ❌ Cloud |
 | Dependencies | ✅ Zero | ✅ Zero | ✅ Zero | ❌ Network |
@@ -426,32 +426,32 @@ gip/
 
 ## FAQ
 
-**Q: Does GIP modify Git's internal storage?**  
-A: No. GIP stores manifests in `.gip/manifest/` as separate JSON files. Your `.git/` directory remains untouched.
+**Q: Does Gip modify Git's internal storage?**  
+A: No. Gip stores manifests in `.gip/manifest/` as separate JSON files. Your `.git/` directory remains untouched.
 
-**Q: Can I use GIP with existing Git repos?**  
-A: Yes! Run `gip init` in any Git repo to start using GIP. Existing commits without manifests will still merge normally.
+**Q: Can I use Gip with existing Git repos?**  
+A: Yes! Run `gip init` in any Git repo to start using Gip. Existing commits without manifests will still merge normally.
 
 **Q: What if I forget to use `gip commit -c`?**  
 A: You can still use regular `git commit`. The pre-commit hook will suggest using `gip commit -c`, but won't block the commit.
 
-**Q: Do collaborators need GIP installed?**  
+**Q: Do collaborators need Gip installed?**  
 A: No for basic functionality—manifests are just JSON files in `.gip/`. Yes to get enriched conflicts when merging.
 
-**Q: Does GIP work with GUI Git clients?**  
+**Q: Does Gip work with GUI Git clients?**  
 A: Partially. You can use GUI clients for staging/committing, but enriched conflicts only appear when using `gip merge`.
 
-**Q: How much overhead does GIP add?**  
+**Q: How much overhead does Gip add?**  
 A: Minimal. Manifest files are ~1KB each (JSON format). The binary is 6.6MB. No runtime dependencies.
 
 **Q: Can I customize the manifest schema?**  
 A: Yes, edit `internal/manifest/types.go` and rebuild with `go build ./cmd/gip`.
 
-**Q: Does GIP support rebasing?**  
+**Q: Does Gip support rebasing?**  
 A: Currently only `gip merge` enriches conflicts. Rebase support is planned.
 
 **Q: What about binary files?**  
-A: GIP only processes text files. Binary conflicts are left unchanged.
+A: Gip only processes text files. Binary conflicts are left unchanged.
 
 ---
 
@@ -478,7 +478,7 @@ go test ./...
 
 ### Testing
 
-GIP has comprehensive unit tests for all core packages:
+Gip has comprehensive unit tests for all core packages:
 
 ```bash
 # Run all unit tests
@@ -510,10 +510,10 @@ See [TEST_STRUCTURE_PROPOSAL.md](TEST_STRUCTURE_PROPOSAL.md) for full test archi
 
 ## Current Status: v0.1.0 (Alpha)
 
-GIP is in active development. Here's what works today:
+Gip is in active development. Here's what works today:
 
 ### ✅ Working Features
-- **`gip init`** - Initialize GIP in a repository
+- **`gip init`** - Initialize Gip in a repository
 - **`gip commit -c`** - Interactive commit with manifest creation
 - **`gip version`** - Display version information
 - **Custom merge driver** - Enriches conflicts with TOON context
@@ -544,7 +544,7 @@ Future planned features:
 
 ## Contributing
 
-We welcome contributions! GIP is an open-source project that benefits from community involvement.
+We welcome contributions! Gip is an open-source project that benefits from community involvement.
 
 ### Quick Start
 
@@ -573,7 +573,7 @@ This project adheres to the [Contributor Covenant Code of Conduct](CODE_OF_CONDU
 
 MIT License - see [LICENSE](LICENSE) for details.
 
-By contributing to GIP, you agree that your contributions will be licensed under the MIT License.
+By contributing to Gip, you agree that your contributions will be licensed under the MIT License.
 
 ---
 
@@ -594,10 +594,10 @@ By contributing to GIP, you agree that your contributions will be licensed under
 
 ---
 
-**Made with ❤️ for developers who deserve better conflict resolution**
+**Made with ❤️ for the developer who deserves better conflict resolution**
 
 ---
 
-**Made with ❤️ by developers tired of cryptic merge conflicts.**
+**Made with ❤️ by a developer tired of cryptic merge conflicts.**
 
-**GIP = Git++** 🎯 Better merges through structured context.
+**Gip = Git++** 🎯 Better merges through structured context.

@@ -1,0 +1,54 @@
+# Binaries
+gip
+gip.exe
+gip-merge-driver
+gip-merge-driver.exe
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Output of go build
+/bin/
+/dist/
+/build/
+
+# Go workspace
+go.work
+go.work.sum
+
+# Coverage files
+*.out
+coverage.html
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.bak
+
+# GIP manifest storage
+.gip/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Development/Testing
+test-repo/
+test-merge-repo/
+tmp/
+temp/
+
+# Test fixtures (not compiled)
+tests/fixtures/
+
+# Documentation drafts
+*_DRAFT.md
+*_TODO.md

@@ -123,11 +123,10 @@ Gip introduces **manifests**—structured metadata that defines clear parameters
 - Use `gip commit -c` to add structured context when it matters
 - The extra context is optional—only add it when you want
 
-**For LLMs (Automatic Context):**
-- Gip can generate manifests automatically using AI
-- Context comes "for free" without manual effort
+**For LLMs (Workflow Integration):**
+- LLMs can be integrated into your workflow to generate manifests automatically
 - When conflicts occur, manifests are injected right into the conflict markers
-- LLMs can now resolve conflicts autonomously with high accuracy
+- LLMs can analyze the structured parameters and resolve conflicts autonomously with high accuracy
 
 **The Result:**
 Instead of merging blindly, Gip **enriches conflicts with parameters** that enable intelligent, autonomous resolution—dramatically improving LLM accuracy and eliminating unnecessary human intervention.
@@ -137,10 +136,9 @@ Instead of merging blindly, Gip **enriches conflicts with parameters** that enab
 - 🤖 **Autonomous LLM Resolution** - Structured parameters enable LLMs to resolve conflicts accurately without human intervention
 - 🎯 **Zero Context Switching** - Humans get everything they need, directly in the conflict
 - 🔄 **Works Like Git** - By default, Gip is a drop-in replacement for Git
-- 📝 **Optional Human Context** - Add manifests with `-c` flag only when you need them
-- 🪄 **Automatic AI Context** - Generate manifests automatically for LLM workflows
+- 📝 **Structured Context** - Add manifests with `-c` flag to document your changes
+- � **Token Efficient** - TOON format is 49% smaller than JSON for LLM contexts
 - 📦 **Single Binary** - 0.4MB, zero dependencies, just copy and run
-- 🪶 **Token Efficient** - TOON format is 49% smaller than JSON for LLM contexts
 - ⚡ **Lightning Fast** - Built in Rust for maximum performance
 
 ---
@@ -214,29 +212,7 @@ This installs Git hooks and configures the repository. You only need to do this 
 
 ### 2. Commit with Context
 
-**Option A: AI-Powered (Recommended)**
-
-```bash
-# Set your OpenAI API key
-export OPENAI_API_KEY=sk-...
-
-# Stage your changes
-git add modified_file.py
-
-# Let AI generate the manifest
-gip commit --ai --intent "Add strict validation to user parser"
-```
-
-The AI automatically:
-- Analyzes your git diff
-- Extracts function signatures and changes
-- Generates structured contracts (preconditions, postconditions, error models)
-- Detects breaking changes
-- Identifies feature flags in your code
-
-**Option B: Interactive Mode**
-
-For manual control or when you prefer not to use AI:
+**Interactive Mode:**
 
 ```bash
 # Stage your changes

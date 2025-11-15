@@ -212,7 +212,7 @@ This installs Git hooks and configures the repository. You only need to do this 
 
 ### 2. Commit with Context
 
-**Interactive Mode:**
+**Option A: Interactive Mode**
 
 ```bash
 # Stage your changes
@@ -235,6 +235,21 @@ You'll be prompted to provide:
 - **Error Model**: How errors are handled
 - **Side Effects**: Logs, file I/O, network calls, etc.
 - **Rationale**: Why this change was made
+
+**Option B: Batch/Editor Mode**
+
+```bash
+# Stage your changes
+git add modified_file.py
+
+# Open editor to write manifest in batch
+gip commit --batch
+```
+
+Opens your default editor with a template where you can write the entire manifest at once. Useful for:
+- Writing multiple entries quickly
+- Copy-pasting from documentation
+- When you already know the structure
 
 ### 3. Merge with Enriched Conflicts
 

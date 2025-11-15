@@ -6,18 +6,9 @@
 [![Crates.io](https://img.shields.io/crates/v/gip.svg)](https://crates.io/crates/gip)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-**A lightweight Git wrapper that enriches merge conflicts with structured context for humans and LLMs.**
+**Stop wasting time deciphering cryptic merge conflicts. Get the full story, right where you need it.**
 
-Gip transforms cryptic merge conflicts into self-documenting resolution tasks by injecting structured manifests directly into conflict markers—no repo scanning required.
-
-## ✨ v2.0 Features
-
-- 🤖 **AI-Generated Manifests** - Use OpenAI to auto-generate contract documentation from diffs
-- 🎯 **Global Intent** - Document commit-level intent for multi-function changes
-- 📦 **Selective Injection** - Only relevant context appears in conflicts (20x size reduction)
-- 🔍 **Breaking Change Detection** - Automatic detection of signature changes
-- 🚩 **Feature Flag Tracking** - Scan and document feature flags in code
-- 🔄 **Backward Compatible** - Seamlessly reads v1.0 manifests
+Gip transforms merge conflicts from cryptic puzzles into self-documenting resolution tasks by injecting structured context directly into conflict markers—no repo scanning, no context switching.
 
 ---
 
@@ -81,15 +72,47 @@ total += item.price + 5.99
 
 ---
 
-## Features
+## Why Gip?
 
-- 🎯 **Zero Scanning**: Context injected directly into conflicts—no repo traversal needed
-- 📦 **Single Binary**: No runtime dependencies, just copy and run (3.6MB self-contained, built with Rust)
-- 🔄 **Git-Compatible**: Drop-in replacement—use `gip` instead of `git`
-- 🤖 **LLM-Friendly**: TOON format optimized for LLM token efficiency (30-60% smaller than JSON)
-- 🔗 **Non-Invasive**: Works alongside standard Git workflow
-- 📝 **Structured Context**: Contracts, behavior classes, side effects, compatibility flags
-- ⚡ **Blazing Fast**: Written in Rust for maximum performance and safety
+### The Motivation
+
+Every developer knows the frustration: you're deep in a merge conflict, staring at two conflicting code blocks, and you have **zero context** about:
+- Why each change was made
+- What problem it solves
+- Whether it's a feature, bugfix, or refactor
+- What assumptions the code makes
+- What side effects it has
+
+So you waste time:
+- 🔍 Hunting through commit messages (often vague: "fix bug")
+- 📖 Reading through entire PRs and code reviews
+- 💬 Messaging teammates asking "what was this change about?"
+- 🧠 Context-switching between your editor, GitHub, Slack, and JIRA
+- 🤖 Feeding your entire codebase to an LLM just to understand one conflict
+
+**What if the context was already there, right in the conflict marker?**
+
+### The Solution
+
+Gip enriches merge conflicts with **structured manifests** that capture the full story:
+
+- **Contracts**: What's expected before/after this code runs
+- **Intent**: Why this change was made (feature? bugfix? refactor?)
+- **Side Effects**: Logs? Database writes? API calls?
+- **Error Handling**: How failures are managed
+- **Breaking Changes**: Did function signatures change?
+
+All displayed in a **token-efficient format** that both humans and LLMs can instantly understand.
+
+### Key Features
+
+- 🎯 **Zero Context Switching** - Everything you need, directly in the conflict
+- 🤖 **AI-Powered** - Let OpenAI generate manifests from your diffs automatically
+- 📦 **Single Binary** - 0.4MB, zero dependencies, just copy and run
+- ⚡ **Lightning Fast** - Built in Rust for maximum performance
+- 🔄 **Drop-in Replacement** - Use `gip` exactly like `git`
+- 🪶 **Token Efficient** - TOON format is 49% smaller than JSON for LLM contexts
+- 🔗 **Non-Invasive** - Works alongside your existing Git workflow
 
 ---
 
@@ -160,7 +183,9 @@ gip init
 
 This installs Git hooks and configures the repository. You only need to do this once per repo.
 
-### 2. Commit with AI (v2.0 - Recommended)
+### 2. Commit with Context
+
+**Option A: AI-Powered (Recommended)**
 
 ```bash
 # Set your OpenAI API key
@@ -173,16 +198,16 @@ git add modified_file.py
 gip commit --ai --intent "Add strict validation to user parser"
 ```
 
-The AI will:
-- Analyze your git diff
-- Extract function signatures and changes
-- Generate structured contracts (preconditions, postconditions, error models)
-- Detect breaking changes automatically
-- Identify feature flags in your code
+The AI automatically:
+- Analyzes your git diff
+- Extracts function signatures and changes
+- Generates structured contracts (preconditions, postconditions, error models)
+- Detects breaking changes
+- Identifies feature flags in your code
 
-### 2. Alternative: Interactive Mode
+**Option B: Interactive Mode**
 
-For manual control or when API keys aren't available:
+For manual control or when you prefer not to use AI:
 
 ```bash
 # Stage your changes
@@ -192,12 +217,12 @@ git add modified_file.py
 gip commit -c
 ```
 
-**v2.0 Features in Interactive Mode:**
-- **Multi-function detection**: Prompts for global intent if multiple functions changed
-- **Inheritance**: Each function can inherit global intent or provide unique rationale
-- **Breaking change hints**: Warns if signature changes detected
+Gip intelligently:
+- Detects when multiple functions changed (prompts for global intent)
+- Allows each function to inherit global intent or provide unique rationale
+- Warns you if function signatures changed (potential breaking changes)
 
-You'll be prompted to fill in:
+You'll be prompted to provide:
 - **Global Intent** (if multi-function): Shared rationale across all changes
 - **Behavior Class**: Feature, bugfix, refactor, perf, security, etc.
 - **Preconditions**: What must be true before the change
@@ -593,38 +618,34 @@ See [TEST_STRUCTURE_PROPOSAL.md](TEST_STRUCTURE_PROPOSAL.md) for full test archi
 
 ---
 
-## Current Status: v0.1.0 (Alpha)
+## What's Next?
 
-Gip is in active development. Here's what works today:
+Gip is in active development with an ambitious roadmap:
 
-### ✅ Working Features
-- **`gip init`** - Initialize Gip in a repository
-- **`gip commit -c`** - Interactive commit with manifest creation
-- **`gip version`** - Display version information
-- **Custom merge driver** - Enriches conflicts with TOON context
-- **Multi-language support** - Python, Go, JS, TS, Java, C/C++, Ruby, Rust, PHP
-- **Test suite** - 40+ tests with CI/CD
+### Currently Available
+- ✅ Core manifest creation and storage
+- ✅ Structured contract documentation
+- ✅ TOON format serialization (49% token savings)
+- ✅ Multi-language symbol extraction
+- ✅ Comprehensive test suite (24+ passing tests)
 
-### 🚧 In Development
-- **`gip status`** - View manifest information
-- **`gip commit -t`** - Generate manifest templates
-- **`gip commit -m`** - Use pre-written manifests
-- **Rebase support** - Enriched conflicts during rebase
+### Coming Soon
+- 🚧 AI-powered manifest generation via OpenAI
+- 🚧 Full merge driver with enriched conflicts
+- 🚧 Interactive prompts for commit context
+- 🚧 Breaking change detection
+- 🚧 Feature flag tracking
 
-## Roadmap
+### Roadmap
+- **Gip MCP** - Model Context Protocol server for seamless LLM integration
+- **VS Code Extension** - Inline manifest editing and visualization
+- **GitHub Actions** - Automated manifest generation in CI/CD
+- **LLM-Assisted Resolution** - Get AI suggestions for resolving conflicts
+- **Team Templates** - Share manifest templates across your organization
+- **Semantic Merge** - Auto-resolve conflicts based on contract compatibility
+- **Tool Integration** - Work with Meld, KDiff3, and other merge tools
 
-Future planned features:
-
-- [ ] **Gip MCP** - Model Context Protocol server for seamless LLM integration
-- [ ] VS Code extension for inline manifest editing
-- [ ] GitHub Actions for automated manifest generation
-- [ ] LLM-assisted conflict resolution suggestions
-- [ ] Manifest diff visualization tool
-- [ ] Team manifest templates
-- [ ] Semantic merge strategies based on contracts
-- [ ] Integration with popular merge tools (Meld, KDiff3, etc.)
-
-**Want to help?** Check out [open issues](https://github.com/iamHrithikRaj/gip/issues) or [contribute](CONTRIBUTING.md)!
+**Want to help shape the future?** Check out [open issues](https://github.com/iamHrithikRaj/gip/issues) or [contribute](CONTRIBUTING.md)!
 
 ---
 

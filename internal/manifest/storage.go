@@ -20,6 +20,11 @@ func Save(m *Manifest, commitSHA string) error {
 		return fmt.Errorf("failed to create .gip directory: %w", err)
 	}
 
+	// Set schema version if not already set (v2.0)
+	if m.SchemaVersion == "" {
+		m.SchemaVersion = SchemaVersionCurrent
+	}
+
 	// Get manifest path (use .json extension)
 	manifestDir, err := git.GetManifestDir()
 	if err != nil {
@@ -41,7 +46,7 @@ func Save(m *Manifest, commitSHA string) error {
 	return nil
 }
 
-// Load reads a manifest from disk
+// Load reads a manifest from disk and automatically migrates v1.0 → v2.0
 func Load(commitSHA string) (*Manifest, error) {
 	// Try .json first (new format)
 	manifestDir, err := git.GetManifestDir()
@@ -67,6 +72,11 @@ func Load(commitSHA string) (*Manifest, error) {
 		return nil, fmt.Errorf("failed to parse manifest: %w", err)
 	}
 
+	// Migrate v1.0 → v2.0 if needed
+	if manifest.SchemaVersion == "" || manifest.SchemaVersion == SchemaVersion10 {
+		manifest = migrateV1ToV2(manifest)
+	}
+
 	return &manifest, nil
 }
 
@@ -74,6 +84,11 @@ func Load(commitSHA string) (*Manifest, error) {
 func SavePending(m *Manifest) error {
 	if err := git.EnsureGipDir(); err != nil {
 		return err
+	}
+
+	// Set schema version if not already set (v2.0)
+	if m.SchemaVersion == "" {
+		m.SchemaVersion = SchemaVersionCurrent
 	}
 
 	gipDir, err := git.GetGipDir()
@@ -100,4 +115,36 @@ func Exists(commitSHA string) bool {
 
 	_, err = os.Stat(path)
 	return err == nil
+}
+
+// migrateV1ToV2 upgrades a v1.0 manifest to v2.0 schema
+func migrateV1ToV2(v1 Manifest) Manifest {
+	// Set schema version
+	v1.SchemaVersion = SchemaVersion20
+
+	// Migrate each entry
+	for i := range v1.Entries {
+		entry := &v1.Entries[i]
+
+		// v1.0 used HunkID, v2.0 uses Anchor.HunkID (already compatible)
+		// If hunk is empty, set default
+		if entry.Anchor.HunkID == "" {
+			entry.Anchor.HunkID = "H#0" // Unknown hunk
+		}
+
+		// If changeType is empty, assume "modify"
+		if entry.ChangeType == "" {
+			entry.ChangeType = ChangeModify
+		}
+
+		// Migrate old Compatibility fields to new format
+		if entry.Compatibility.BinaryBreaking || entry.Compatibility.SourceBreaking {
+			entry.Compatibility.Breaking = true
+		}
+
+		// No globalIntent in v1.0, so inheritsGlobalIntent stays false
+		entry.InheritsGlobalIntent = false
+	}
+
+	return v1
 }

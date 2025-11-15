@@ -12,7 +12,22 @@ func SerializeManifest(m *Manifest) string {
 
 	sb.WriteString("; Gip Manifest\n")
 	sb.WriteString("(manifest\n")
+	sb.WriteString(fmt.Sprintf("  (schemaVersion %s)\n", m.SchemaVersion))
 	sb.WriteString(fmt.Sprintf("  (commit #%s)\n", m.Commit))
+
+	// Global intent (v2.0)
+	if m.GlobalIntent != nil {
+		sb.WriteString("  (globalIntent\n")
+		if len(m.GlobalIntent.BehaviorClass) > 0 {
+			sb.WriteString(fmt.Sprintf("    (behaviorClass [ %s ])\n",
+				strings.Join(m.GlobalIntent.BehaviorClass, " ")))
+		}
+		if m.GlobalIntent.Rationale != "" {
+			sb.WriteString(fmt.Sprintf("    (rationale \"\"\"%s\"\"\"))\n", m.GlobalIntent.Rationale))
+		}
+		sb.WriteString("  )\n")
+	}
+
 	sb.WriteString("  (entries\n")
 
 	for _, entry := range m.Entries {
@@ -71,11 +86,26 @@ func SerializeManifest(m *Manifest) string {
 				strings.Join(entry.SideEffects, " ")))
 		}
 
-		// Compatibility
-		sb.WriteString("      (compatibility\n")
-		sb.WriteString(fmt.Sprintf("        (binaryBreaking %s)\n", boolToTOON(entry.Compatibility.BinaryBreaking)))
-		sb.WriteString(fmt.Sprintf("        (sourceBreaking %s)\n", boolToTOON(entry.Compatibility.SourceBreaking)))
-		sb.WriteString(fmt.Sprintf("        (dataModelMigration %s))\n", boolToTOON(entry.Compatibility.DataModelMigration)))
+		// Compatibility (v2.0 format)
+		if entry.Compatibility.Breaking || len(entry.Compatibility.Deprecations) > 0 || len(entry.Compatibility.Migrations) > 0 {
+			sb.WriteString("      (compatibility\n")
+			sb.WriteString(fmt.Sprintf("        (breaking %s)\n", boolToTOON(entry.Compatibility.Breaking)))
+			if len(entry.Compatibility.Deprecations) > 0 {
+				sb.WriteString("        (deprecations\n")
+				for _, dep := range entry.Compatibility.Deprecations {
+					sb.WriteString(fmt.Sprintf("          [ \"\"\"%s\"\"\" ]\n", dep))
+				}
+				sb.WriteString("        )\n")
+			}
+			if len(entry.Compatibility.Migrations) > 0 {
+				sb.WriteString("        (migrations\n")
+				for _, mig := range entry.Compatibility.Migrations {
+					sb.WriteString(fmt.Sprintf("          [ \"\"\"%s\"\"\" ]\n", mig))
+				}
+				sb.WriteString("        )\n")
+			}
+			sb.WriteString("      )\n")
+		}
 
 		// Tests touched
 		if len(entry.TestsTouched) > 0 {
@@ -92,6 +122,11 @@ func SerializeManifest(m *Manifest) string {
 		// Rationale
 		if entry.Rationale != "" {
 			sb.WriteString(fmt.Sprintf("      (rationale \"\"\"%s\"\"\")\n", entry.Rationale))
+		}
+
+		// InheritsGlobalIntent (v2.0)
+		if entry.InheritsGlobalIntent {
+			sb.WriteString("      (inheritsGlobalIntent +)\n")
 		}
 
 		sb.WriteString("    )\n")

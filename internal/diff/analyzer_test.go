@@ -348,3 +348,143 @@ func TestDetectChangeTypeEdgeCases(t *testing.T) {
 		})
 	}
 }
+
+func TestParseGitDiff(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name          string
+		diffOutput    string
+		expectedCount int
+		expectedFile  string
+		expectedSymbol string
+		expectedHunk  string
+	}{
+		{
+			name: "Single Python function modification",
+			diffOutput: `diff --git a/src/cart.py b/src/cart.py
+index 1234567..abcdefg 100644
+--- a/src/cart.py
++++ b/src/cart.py
+@@ -42,7 +42,10 @@ def calculateTotal(items):
+-def calculateTotal(items):
+-    return sum(items)
++def calculateTotal(items, discount=0):
++    total = sum(items)
++    return total * (1 - discount)
+`,
+			expectedCount:  1,
+			expectedFile:   "src/cart.py",
+			expectedSymbol: "calculateTotal",
+			expectedHunk:   "H#42",
+		},
+		{
+			name: "Multiple hunks in same file",
+			diffOutput: `diff --git a/src/user.py b/src/user.py
+index aaa..bbb 100644
+--- a/src/user.py
++++ b/src/user.py
+@@ -10,3 +10,5 @@ def parseUser(data):
++def parseUser(data, strict=False):
++    if strict:
++        validate(data)
+     return User(data)
+@@ -50,2 +52,4 @@ def validateUser(user):
++def validateUser(user, full=True):
++    if full:
++        checkAll(user)
+     return True
+`,
+			expectedCount: 2,
+			expectedFile:  "src/user.py",
+		},
+		{
+			name: "Go function with context",
+			diffOutput: `diff --git a/internal/api/handler.go b/internal/api/handler.go
+index xxx..yyy 100644
+--- a/internal/api/handler.go
++++ b/internal/api/handler.go
+@@ -100,5 +100,8 @@ func HandleRequest(w http.ResponseWriter, r *http.Request) {
++	if err := validateRequest(r); err != nil {
++		http.Error(w, err.Error(), http.StatusBadRequest)
++		return
++	}
+ 	processRequest(r)
+`,
+			expectedCount:  1,
+			expectedFile:   "internal/api/handler.go",
+			expectedSymbol: "HandleRequest",
+			expectedHunk:   "H#100",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			changes, err := ParseGitDiff(tt.diffOutput)
+			if err != nil {
+				t.Fatalf("ParseGitDiff failed: %v", err)
+			}
+
+			if len(changes) != tt.expectedCount {
+				t.Errorf("Expected %d changes, got %d", tt.expectedCount, len(changes))
+			}
+
+			if len(changes) > 0 {
+				if tt.expectedFile != "" && changes[0].File != tt.expectedFile {
+					t.Errorf("Expected file '%s', got '%s'", tt.expectedFile, changes[0].File)
+				}
+				if tt.expectedSymbol != "" && changes[0].Symbol != tt.expectedSymbol {
+					t.Errorf("Expected symbol '%s', got '%s'", tt.expectedSymbol, changes[0].Symbol)
+				}
+				if tt.expectedHunk != "" && changes[0].HunkID != tt.expectedHunk {
+					t.Errorf("Expected hunk '%s', got '%s'", tt.expectedHunk, changes[0].HunkID)
+				}
+			}
+		})
+	}
+}
+
+func TestExtractSymbolFromContext(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		context  string
+		expected string
+	}{
+		{
+			name:     "Python function",
+			context:  "def calculateTotal(items)",
+			expected: "calculateTotal",
+		},
+		{
+			name:     "Go function",
+			context:  "func HandleRequest",
+			expected: "HandleRequest",
+		},
+		{
+			name:     "JavaScript function",
+			context:  "function processData()",
+			expected: "processData",
+		},
+		{
+			name:     "Class method",
+			context:  "Calculator::add",
+			expected: "add",
+		},
+		{
+			name:     "Simple name",
+			context:  "myFunction",
+			expected: "myFunction",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := extractSymbolFromContext(tt.context)
+			if result != tt.expected {
+				t.Errorf("Expected '%s', got '%s'", tt.expected, result)
+			}
+		})
+	}
+}

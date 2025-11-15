@@ -27,16 +27,23 @@ type SymbolChange struct {
 	FeatureFlags    []string
 }
 
+// GetStagedDiff returns the raw git diff output for staged changes
+func GetStagedDiff() (string, error) {
+	// TODO: Execute `git diff --cached` and return output
+	// For now, return empty string (will be implemented with git integration)
+	return "", nil
+}
+
 // AnalyzeStagedChanges analyzes git staged changes and extracts symbols
 func AnalyzeStagedChanges() ([]SymbolChange, error) {
 	// TODO: Execute `git diff --cached` and parse output
-	// For now, return mock data
+	// For now, return mock data with proper hunk tracking
 
 	changes := []SymbolChange{
 		{
 			File:            "src/cart.py",
 			Symbol:          "calculateTotal",
-			HunkID:          "H#88",
+			HunkID:          "H#88",  // Line 88 in file
 			ChangeType:      manifest.ChangeModify,
 			LinesChanged:    12,
 			SignatureBefore: "calculateTotal(items)",
@@ -47,6 +54,157 @@ func AnalyzeStagedChanges() ([]SymbolChange, error) {
 	}
 
 	return changes, nil
+}
+
+// ParseGitDiff parses git diff output and extracts hunks with line numbers
+// Diff format: @@ -oldStart,oldLines +newStart,newLines @@ context
+func ParseGitDiff(diffOutput string) ([]SymbolChange, error) {
+	changes := []SymbolChange{}
+	lines := strings.Split(diffOutput, "\n")
+	
+	var currentFile string
+	var currentHunkStart int
+	var hunkLines []string
+	
+	// Regex for diff header: @@ -10,5 +10,7 @@ function_context
+	hunkHeaderRe := regexp.MustCompile(`^@@\s+-\d+,\d+\s+\+(\d+),\d+\s+@@(.*)`)
+	fileHeaderRe := regexp.MustCompile(`^\+\+\+\s+b/(.+)`)
+	
+	for i := 0; i < len(lines); i++ {
+		line := lines[i]
+		
+		// Detect file being modified
+		if matches := fileHeaderRe.FindStringSubmatch(line); len(matches) > 1 {
+			currentFile = matches[1]
+			continue
+		}
+		
+		// Detect hunk header
+		if matches := hunkHeaderRe.FindStringSubmatch(line); len(matches) > 1 {
+			// Save previous hunk if exists
+			if currentFile != "" && len(hunkLines) > 0 {
+				change := extractSymbolFromHunk(currentFile, currentHunkStart, hunkLines)
+				if change != nil {
+					changes = append(changes, *change)
+				}
+			}
+			
+			// Parse new hunk start line
+			fmt.Sscanf(matches[1], "%d", &currentHunkStart)
+			hunkLines = []string{}
+			
+			// Extract context hint (function name after @@)
+			if len(matches) > 2 && strings.TrimSpace(matches[2]) != "" {
+				hunkLines = append(hunkLines, "CONTEXT:"+strings.TrimSpace(matches[2]))
+			}
+			continue
+		}
+		
+		// Collect hunk lines (skip file headers)
+		if currentFile != "" && !strings.HasPrefix(line, "diff --git") && 
+		   !strings.HasPrefix(line, "index ") && !strings.HasPrefix(line, "---") {
+			hunkLines = append(hunkLines, line)
+		}
+	}
+	
+	// Process last hunk
+	if currentFile != "" && len(hunkLines) > 0 {
+		change := extractSymbolFromHunk(currentFile, currentHunkStart, hunkLines)
+		if change != nil {
+			changes = append(changes, *change)
+		}
+	}
+	
+	return changes, nil
+}
+
+// extractSymbolFromHunk extracts symbol information from a diff hunk
+func extractSymbolFromHunk(file string, startLine int, hunkLines []string) *SymbolChange {
+	if len(hunkLines) == 0 {
+		return nil
+	}
+	
+	// Check for context hint (function name from @@ line)
+	var contextHint string
+	if strings.HasPrefix(hunkLines[0], "CONTEXT:") {
+		contextHint = strings.TrimPrefix(hunkLines[0], "CONTEXT:")
+		hunkLines = hunkLines[1:]
+	}
+	
+	// Extract symbol from hunk content or context
+	symbol := ExtractSymbolFromDiff(strings.Join(hunkLines, "\n"))
+	if symbol == "unknown" && contextHint != "" {
+		symbol = extractSymbolFromContext(contextHint)
+	}
+	
+	// Detect change type
+	changeType := DetectChangeType(hunkLines)
+	
+	// Extract signatures for modified functions
+	var sigBefore, sigAfter string
+	if changeType == manifest.ChangeModify {
+		for _, line := range hunkLines {
+			if strings.HasPrefix(line, "-") && strings.Contains(line, "(") {
+				sigBefore = ExtractSignature(strings.TrimPrefix(line, "-"))
+			}
+			if strings.HasPrefix(line, "+") && strings.Contains(line, "(") {
+				sigAfter = ExtractSignature(strings.TrimPrefix(line, "+"))
+			}
+		}
+	}
+	
+	// Detect feature flags
+	fullHunk := strings.Join(hunkLines, "\n")
+	flags := DetectFeatureFlags(fullHunk)
+	
+	// Count changed lines
+	linesChanged := 0
+	for _, line := range hunkLines {
+		if strings.HasPrefix(line, "+") || strings.HasPrefix(line, "-") {
+			linesChanged++
+		}
+	}
+	
+	return &SymbolChange{
+		File:            file,
+		Symbol:          symbol,
+		HunkID:          fmt.Sprintf("H#%d", startLine),
+		ChangeType:      changeType,
+		LinesChanged:    linesChanged,
+		SignatureBefore: sigBefore,
+		SignatureAfter:  sigAfter,
+		TestFiles:       DetectTestFiles(file),
+		FeatureFlags:    flags,
+	}
+}
+
+// extractSymbolFromContext extracts symbol name from git diff context hint
+// Context format: "function_name" or "ClassName::methodName"
+func extractSymbolFromContext(context string) string {
+	context = strings.TrimSpace(context)
+	
+	// Remove common prefixes
+	context = strings.TrimPrefix(context, "def ")
+	context = strings.TrimPrefix(context, "func ")
+	context = strings.TrimPrefix(context, "function ")
+	context = strings.TrimPrefix(context, "class ")
+	
+	// Extract symbol before parenthesis or colon
+	if idx := strings.Index(context, "("); idx != -1 {
+		return strings.TrimSpace(context[:idx])
+	}
+	if idx := strings.Index(context, ":"); idx != -1 {
+		parts := strings.Split(context, ":")
+		return strings.TrimSpace(parts[len(parts)-1])
+	}
+	
+	// Return first word
+	parts := strings.Fields(context)
+	if len(parts) > 0 {
+		return parts[0]
+	}
+	
+	return context
 }
 
 // ExtractSymbolFromDiff extracts symbol name from diff hunk
@@ -195,7 +353,10 @@ func GroupChangesBySymbol(changes []SymbolChange) map[string][]SymbolChange {
 
 // ToManifestEntry converts a SymbolChange to a manifest Entry
 func ToManifestEntry(change SymbolChange) manifest.Entry {
-	return manifest.Entry{
+	// Detect if change is breaking
+	isBreaking := DetectBreakingChange(change.SignatureBefore, change.SignatureAfter)
+	
+	entry := manifest.Entry{
 		Anchor: manifest.Anchor{
 			File:   change.File,
 			Symbol: change.Symbol,
@@ -208,7 +369,125 @@ func ToManifestEntry(change SymbolChange) manifest.Entry {
 		},
 		TestsTouched: change.TestFiles,
 		FeatureFlags: change.FeatureFlags,
+		Compatibility: manifest.Compatibility{
+			Breaking: isBreaking,
+		},
 	}
+	
+	return entry
+}
+
+// DetectBreakingChange determines if signature change is breaking
+func DetectBreakingChange(before, after string) bool {
+	if before == "" || after == "" {
+		return false
+	}
+	
+	// If signatures are identical, not breaking
+	if before == after {
+		return false
+	}
+	
+	// Check for parameter removals (breaking)
+	beforeParams := extractParameters(before)
+	afterParams := extractParameters(after)
+	
+	// If parameters were removed, it's breaking
+	if len(beforeParams) > len(afterParams) {
+		return true
+	}
+	
+	// Check if required parameters were added (breaking)
+	// New params without defaults are breaking
+	for i, param := range afterParams {
+		if i >= len(beforeParams) {
+			// New parameter
+			if !hasDefaultValue(param) {
+				return true
+			}
+		}
+	}
+	
+	// Check for return type changes (potentially breaking)
+	beforeReturn := extractReturnType(before)
+	afterReturn := extractReturnType(after)
+	
+	if beforeReturn != "" && afterReturn != "" && beforeReturn != afterReturn {
+		// Return type changed - consider breaking
+		return true
+	}
+	
+	return false
+}
+
+// extractParameters extracts parameter list from signature
+func extractParameters(signature string) []string {
+	// Find content between first ( and last )
+	start := strings.Index(signature, "(")
+	end := strings.LastIndex(signature, ")")
+	
+	if start == -1 || end == -1 || start >= end {
+		return []string{}
+	}
+	
+	paramStr := signature[start+1 : end]
+	if strings.TrimSpace(paramStr) == "" {
+		return []string{}
+	}
+	
+	// Split by comma
+	params := strings.Split(paramStr, ",")
+	result := []string{}
+	for _, p := range params {
+		p = strings.TrimSpace(p)
+		if p != "" && p != "self" && p != "this" {
+			result = append(result, p)
+		}
+	}
+	
+	return result
+}
+
+// hasDefaultValue checks if parameter has a default value
+func hasDefaultValue(param string) bool {
+	// Check for assignment (e.g., x = 5, y: int = 10)
+	if strings.Contains(param, "=") {
+		return true
+	}
+	
+	// Check for optional marker (e.g., y?: number)
+	if strings.Contains(param, "?:") {
+		return true
+	}
+	
+	// Type annotation alone doesn't mean default value
+	// "x: int" has no default, but "x: int = 5" does
+	return false
+}
+
+// extractReturnType extracts return type from signature
+func extractReturnType(signature string) string {
+	// Python: -> Type
+	if idx := strings.Index(signature, "->"); idx != -1 {
+		returnType := strings.TrimSpace(signature[idx+2:])
+		// Remove trailing colon if present
+		returnType = strings.TrimSuffix(returnType, ":")
+		return returnType
+	}
+	
+	// Go: func name(params) ReturnType
+	// TypeScript: function(params): ReturnType
+	if strings.Contains(signature, ")") {
+		parts := strings.Split(signature, ")")
+		if len(parts) > 1 {
+			returnPart := strings.TrimSpace(parts[1])
+			returnPart = strings.TrimPrefix(returnPart, ":")
+			returnPart = strings.TrimSpace(returnPart)
+			return returnPart
+		}
+	}
+	
+	return ""
 }
 
 func uniqueStrings(slice []string) []string {

@@ -1,12 +1,131 @@
 package helpers
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
 )
+
+// TestRepo represents a temporary git repository for testing
+type TestRepo struct {
+	Dir         string
+	t           *testing.T
+	originalDir string
+}
+
+// CreateTestRepo creates a new temporary git repository
+func CreateTestRepo(t *testing.T) *TestRepo {
+	t.Helper()
+
+	tmpDir := t.TempDir()
+	originalDir, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("Failed to get working directory: %v", err)
+	}
+
+	repo := &TestRepo{
+		Dir:         tmpDir,
+		t:           t,
+		originalDir: originalDir,
+	}
+
+	// Change to temp directory
+	if err := os.Chdir(tmpDir); err != nil {
+		t.Fatalf("Failed to change to temp directory: %v", err)
+	}
+
+	// Initialize git repo
+	repo.runGit("init", "-b", "main")
+	repo.runGit("config", "user.name", "Test User")
+	repo.runGit("config", "user.email", "test@example.com")
+
+	// Create .gip directory structure
+	if err := os.MkdirAll(filepath.Join(tmpDir, ".gip", "manifest"), 0755); err != nil {
+		t.Fatalf("Failed to create .gip directory: %v", err)
+	}
+
+	return repo
+}
+
+// Cleanup restores the original directory
+func (r *TestRepo) Cleanup() {
+	os.Chdir(r.originalDir)
+}
+
+// WriteFile writes a file to the repository
+func (r *TestRepo) WriteFile(name, content string) {
+	r.t.Helper()
+	path := filepath.Join(r.Dir, name)
+	if err := os.WriteFile(path, []byte(content), 0644); err != nil {
+		r.t.Fatalf("Failed to write file %s: %v", name, err)
+	}
+}
+
+// GitAdd stages files
+func (r *TestRepo) GitAdd(files ...string) {
+	r.t.Helper()
+	r.runGit(append([]string{"add"}, files...)...)
+}
+
+// GitCommit creates a commit
+func (r *TestRepo) GitCommit(message string) {
+	r.t.Helper()
+	r.runGit("commit", "-m", message)
+}
+
+// GitCheckout checks out a branch (creates if doesn't exist with -b flag)
+func (r *TestRepo) GitCheckout(branch string) {
+	r.t.Helper()
+	// Try checkout first, if fails, create new branch
+	cmd := exec.Command("git", "checkout", branch)
+	cmd.Dir = r.Dir
+	if err := cmd.Run(); err != nil {
+		// Branch doesn't exist, create it
+		r.runGit("checkout", "-b", branch)
+	}
+}
+
+// GitMerge attempts to merge a branch
+func (r *TestRepo) GitMerge(branch string) error {
+	cmd := exec.Command("git", "merge", branch)
+	cmd.Dir = r.Dir
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		// Merge failed (possibly conflict), but that's expected in tests
+		if strings.Contains(string(output), "CONFLICT") {
+			return fmt.Errorf("merge conflict: %s", string(output))
+		}
+		return err
+	}
+	return nil
+}
+
+// GetCurrentCommit returns the current commit SHA
+func (r *TestRepo) GetCurrentCommit() string {
+	r.t.Helper()
+	cmd := exec.Command("git", "rev-parse", "HEAD")
+	cmd.Dir = r.Dir
+	output, err := cmd.Output()
+	if err != nil {
+		r.t.Fatalf("Failed to get current commit: %v", err)
+	}
+	return strings.TrimSpace(string(output))
+}
+
+// runGit runs a git command in the repository
+func (r *TestRepo) runGit(args ...string) {
+	r.t.Helper()
+	cmd := exec.Command("git", args...)
+	cmd.Dir = r.Dir
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		r.t.Fatalf("Git command failed: git %s\nOutput: %s\nError: %v",
+			strings.Join(args, " "), string(output), err)
+	}
+}
 
 // SetupGitRepo creates a temporary Git repository for testing
 func SetupGitRepo(t *testing.T) string {

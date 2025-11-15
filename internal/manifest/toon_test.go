@@ -160,13 +160,15 @@ func TestSerializeWithCompatibilityFlags(t *testing.T) {
 	t.Parallel()
 
 	m := &Manifest{
-		Commit: "compat123",
+		SchemaVersion: SchemaVersion20,
+		Commit:        "compat123",
 		Entries: []Entry{
 			{
 				Anchor: Anchor{File: "api.go", Symbol: "PublicFunc"},
 				Compatibility: Compatibility{
-					BinaryBreaking: true,
-					SourceBreaking: false,
+					Breaking:     true,
+					Deprecations: []string{"Old parameter removed"},
+					Migrations:   []string{"Use NewPublicFunc instead"},
 				},
 				Rationale: "Changed API signature",
 			},
@@ -178,8 +180,11 @@ func TestSerializeWithCompatibilityFlags(t *testing.T) {
 	if !strings.Contains(toon, "(compatibility") {
 		t.Error("Expected compatibility section in TOON")
 	}
-	if !strings.Contains(toon, "binaryBreaking") {
-		t.Error("Expected binaryBreaking field in TOON")
+	if !strings.Contains(toon, "breaking") {
+		t.Error("Expected breaking field in TOON")
+	}
+	if !strings.Contains(toon, "deprecations") {
+		t.Error("Expected deprecations field in TOON")
 	}
 }
 

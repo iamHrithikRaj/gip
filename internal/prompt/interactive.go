@@ -37,10 +37,22 @@ func InteractiveCommit(batchMode bool) error {
 	}
 	fmt.Println()
 
-	// Select behavior classes
-	behaviorClasses, err := promptBehaviorClass()
-	if err != nil {
-		return err
+	// Check if this is a multi-function commit
+	var globalIntent *manifest.GlobalIntent
+	isMultiFunction := len(changes) > 1
+	
+	if isMultiFunction {
+		useGlobalIntent, err := promptUseGlobalIntent(len(changes))
+		if err != nil {
+			return err
+		}
+		
+		if useGlobalIntent {
+			globalIntent, err = promptGlobalIntent()
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	// Ask if batch mode (if not already set)
@@ -54,32 +66,42 @@ func InteractiveCommit(batchMode bool) error {
 		_ = batchMode
 	}
 
-	// Collect contract information
+	// If no global intent, prompt for single-function behavior class and rationale
+	var behaviorClasses []string
+	var rationale string
+	
+	if globalIntent == nil {
+		behaviorClasses, err = promptBehaviorClass()
+		if err != nil {
+			return err
+		}
+		
+		rationale, err = promptRationale()
+		if err != nil {
+			return err
+		}
+	}
+
+	// Collect contract information (shared across all functions)
 	contract, err := promptContract()
 	if err != nil {
 		return err
 	}
 
-	// Collect side effects
+	// Collect side effects (shared)
 	sideEffects, err := promptSideEffects()
 	if err != nil {
 		return err
 	}
 
-	// Collect compatibility info
+	// Collect compatibility info (shared)
 	compat, err := promptCompatibility()
 	if err != nil {
 		return err
 	}
 
-	// Feature flags
+	// Feature flags (shared)
 	featureFlags, err := promptFeatureFlags()
-	if err != nil {
-		return err
-	}
-
-	// Rationale
-	rationale, err := promptRationale()
 	if err != nil {
 		return err
 	}
@@ -88,17 +110,49 @@ func InteractiveCommit(batchMode bool) error {
 	entries := make([]manifest.Entry, len(changes))
 	for i, change := range changes {
 		entries[i] = diff.ToManifestEntry(change)
-		entries[i].BehaviorClass = behaviorClasses
+		
+		// Ask if this entry should inherit global intent
+		if globalIntent != nil {
+			inheritGlobal, err := promptInheritGlobalIntent(change.Symbol)
+			if err != nil {
+				return err
+			}
+			
+			entries[i].InheritsGlobalIntent = inheritGlobal
+			
+			if inheritGlobal {
+				// Inherit behavior class from global intent
+				entries[i].BehaviorClass = globalIntent.BehaviorClass
+				entries[i].Rationale = "" // Empty rationale means use global
+			} else {
+				// Prompt for unique behavior class and rationale
+				uniqueClasses, err := promptBehaviorClass()
+				if err != nil {
+					return err
+				}
+				uniqueRationale, err := promptRationale()
+				if err != nil {
+					return err
+				}
+				entries[i].BehaviorClass = uniqueClasses
+				entries[i].Rationale = uniqueRationale
+			}
+		} else {
+			// No global intent, use prompts from earlier
+			entries[i].BehaviorClass = behaviorClasses
+			entries[i].Rationale = rationale
+		}
+		
 		entries[i].Contract = *contract
 		entries[i].SideEffects = sideEffects
 		entries[i].Compatibility = *compat
 		entries[i].FeatureFlags = append(entries[i].FeatureFlags, featureFlags...)
-		entries[i].Rationale = rationale
 	}
 
 	m := &manifest.Manifest{
-		Commit:  "pending",
-		Entries: entries,
+		Commit:       "pending",
+		GlobalIntent: globalIntent,
+		Entries:      entries,
 	}
 
 	// Save pending manifest
@@ -288,4 +342,62 @@ func promptRationale() (string, error) {
 	}
 
 	return rationale, nil
+}
+
+func promptUseGlobalIntent(numSymbols int) (bool, error) {
+	color.Cyan(fmt.Sprintf("\n[Multi-Function Commit Detected: %d symbols]", numSymbols))
+	fmt.Println("Do all these functions share the same intent?")
+	fmt.Println("(If yes, you'll describe the intent once and each function can inherit it)")
+
+	var useGlobal bool
+	prompt := &survey.Confirm{
+		Message: "Use global intent?",
+		Default: true,
+	}
+	if err := survey.AskOne(prompt, &useGlobal); err != nil {
+		return false, err
+	}
+	return useGlobal, nil
+}
+
+func promptGlobalIntent() (*manifest.GlobalIntent, error) {
+	color.Yellow("\n[Global Intent - Commit Level]")
+	fmt.Println("Describe the overall intent of this commit (shared across all functions)")
+
+	// Prompt for behavior classes
+	classes, err := promptBehaviorClass()
+	if err != nil {
+		return nil, err
+	}
+
+	// Prompt for rationale
+	color.Yellow("\n[Global Rationale]")
+	fmt.Println("One-line description of why this commit exists:")
+
+	var rationale string
+	rationalePrompt := &survey.Input{
+		Message: "Global rationale:",
+	}
+	if err := survey.AskOne(rationalePrompt, &rationale); err != nil {
+		return nil, err
+	}
+
+	return &manifest.GlobalIntent{
+		BehaviorClass: classes,
+		Rationale:     rationale,
+	}, nil
+}
+
+func promptInheritGlobalIntent(symbolName string) (bool, error) {
+	color.Yellow(fmt.Sprintf("\n[Function: %s]", symbolName))
+	
+	var inherit bool
+	prompt := &survey.Confirm{
+		Message: "Inherit global intent? (or provide unique intent for this function)",
+		Default: true,
+	}
+	if err := survey.AskOne(prompt, &inherit); err != nil {
+		return false, err
+	}
+	return inherit, nil
 }

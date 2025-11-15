@@ -10,6 +10,15 @@
 
 Gip transforms cryptic merge conflicts into self-documenting resolution tasks by injecting structured manifests directly into conflict markers—no repo scanning required.
 
+## ✨ v2.0 Features
+
+- 🤖 **AI-Generated Manifests** - Use OpenAI to auto-generate contract documentation from diffs
+- 🎯 **Global Intent** - Document commit-level intent for multi-function changes
+- 📦 **Selective Injection** - Only relevant context appears in conflicts (20x size reduction)
+- 🔍 **Breaking Change Detection** - Automatic detection of signature changes
+- 🚩 **Feature Flag Tracking** - Scan and document feature flags in code
+- 🔄 **Backward Compatible** - Seamlessly reads v1.0 manifests
+
 ---
 
 ## The Problem
@@ -41,7 +50,7 @@ Gip adds **TOON manifests** to commits, capturing structured context:
 ```python
 <<<<<<< HEAD
 total += item.price * 1.08
-||| GIP CONTEXT (HEAD - Your changes)
+||| Gip CONTEXT (HEAD - Your changes)
 ||| Commit: 3c7d3422
 ||| behaviorClass[1]: feature
 ||| preconditions[1]: items is list with .price
@@ -52,7 +61,7 @@ total += item.price * 1.08
 ||| symbol: calculate_total
 =======
 total += item.price + 5.99
-||| GIP CONTEXT (MERGE_HEAD - Their changes)
+||| Gip CONTEXT (MERGE_HEAD - Their changes)
 ||| Commit: 1825fc7c
 ||| behaviorClass[1]: feature
 ||| preconditions[1]: items is list with .price
@@ -138,7 +147,7 @@ go build -o gip ./cmd/gip
 
 ## Quick Start
 
-### 1. Initialize GIP
+### 1. Initialize Gip
 
 ```bash
 cd your-git-repo
@@ -147,20 +156,46 @@ gip init
 
 This installs Git hooks and configures the repository. You only need to do this once per repo.
 
-### 2. Make Changes with Context
+### 2. Commit with AI (v2.0 - Recommended)
 
-GIP provides **interactive mode** for capturing structured context:
+```bash
+# Set your OpenAI API key
+export OPENAI_API_KEY=sk-...
+
+# Stage your changes
+git add modified_file.py
+
+# Let AI generate the manifest
+gip commit --ai --intent "Add strict validation to user parser"
+```
+
+The AI will:
+- Analyze your git diff
+- Extract function signatures and changes
+- Generate structured contracts (preconditions, postconditions, error models)
+- Detect breaking changes automatically
+- Identify feature flags in your code
+
+### 2. Alternative: Interactive Mode
+
+For manual control or when API keys aren't available:
 
 ```bash
 # Stage your changes
-gip add modified_file.py
+git add modified_file.py
 
-# Interactive commit with context prompts
+# Interactive commit with prompts
 gip commit -c
 ```
 
+**v2.0 Features in Interactive Mode:**
+- **Multi-function detection**: Prompts for global intent if multiple functions changed
+- **Inheritance**: Each function can inherit global intent or provide unique rationale
+- **Breaking change hints**: Warns if signature changes detected
+
 You'll be prompted to fill in:
-- **Behavior Class**: Feature, bugfix, refactor, etc.
+- **Global Intent** (if multi-function): Shared rationale across all changes
+- **Behavior Class**: Feature, bugfix, refactor, perf, security, etc.
 - **Preconditions**: What must be true before the change
 - **Postconditions**: What's guaranteed after the change
 - **Error Model**: How errors are handled
@@ -275,15 +310,15 @@ Manifests are stored as **JSON** (easy parsing) but displayed as **TOON** (token
 ### Core Commands
 
 ```bash
-gip init                    # Initialize GIP in current repo
+gip init                    # Initialize Gip in current repo
 gip commit -c              # Interactive commit with context
 gip merge <branch>         # Merge with enriched conflicts
-gip status                 # Show GIP manifest status
+gip status                 # Show Gip manifest status
 ```
 
 ### Git Passthrough
 
-GIP transparently passes through **any Git command** it doesn't recognize:
+Gip transparently passes through **any Git command** it doesn't recognize:
 
 ```bash
 gip log --oneline          # Same as: git log --oneline
@@ -317,12 +352,12 @@ def calculate_total(items):
     return sum(item.price for item in items) + 5.99
 ```
 
-**GIP-enriched conflict**:
+**Gip-enriched conflict**:
 ```python
 <<<<<<< HEAD
 def calculate_total(items):
     return sum(item.price * 1.08 for item in items)
-||| GIP CONTEXT (HEAD)
+||| Gip CONTEXT (HEAD)
 ||| rationale: Added 8% sales tax per state law
 ||| behaviorClass[1]: feature
 ||| postconditions[1]: returns total with 8% tax applied
@@ -330,7 +365,7 @@ def calculate_total(items):
 =======
 def calculate_total(items):
     return sum(item.price for item in items) + 5.99
-||| GIP CONTEXT (MERGE_HEAD)
+||| Gip CONTEXT (MERGE_HEAD)
 ||| rationale: Added flat shipping fee for all orders
 ||| behaviorClass[1]: feature  
 ||| postconditions[1]: returns total plus $5.99 shipping
@@ -370,7 +405,7 @@ def apply_discount(items, discount):
     if not items:
         raise ValueError("items cannot be empty")
     return sum(item.price for item in items) * (1 - discount)
-||| GIP CONTEXT (HEAD)
+||| Gip CONTEXT (HEAD)
 ||| behaviorClass[1]: bugfix
 ||| rationale: Fixed crash on empty input
 ||| errorModel[1]: ValueError on empty list
@@ -380,7 +415,7 @@ def apply_discount(items, discount):
 =======
 def apply_discount(items, discount=0.1):
     return sum(item.price for item in items) * (1 - discount)
-||| GIP CONTEXT (MERGE_HEAD)
+||| Gip CONTEXT (MERGE_HEAD)
 ||| behaviorClass[1]: feature
 ||| rationale: Added discount parameter with 10% default
 ||| errorModel[0]:

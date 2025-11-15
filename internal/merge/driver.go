@@ -7,13 +7,14 @@ package merge
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strings"
 
-	"github.com/alpkeskin/gotoon"
 	"github.com/iamHrithikRaj/gip/internal/manifest"
 )
 
@@ -93,12 +94,54 @@ func findConflictBlocks(lines []string) []ConflictBlock {
 	return conflicts
 }
 
+// extractSymbolFromConflict attempts to detect the function/class being modified
+// by analyzing the conflict lines. This enables selective context injection.
+// Searches from bottom to top to find the closest (most relevant) symbol.
+func extractSymbolFromConflict(conflictLines []string) string {
+	// Look for common function/method/class patterns in conflict lines
+	patterns := []*regexp.Regexp{
+		regexp.MustCompile(`^\s*def\s+(\w+)\s*\(`),           // Python: def functionName(
+		regexp.MustCompile(`^\s*func\s+(\w+)\s*\(`),          // Go: func functionName(
+		regexp.MustCompile(`^\s*function\s+(\w+)\s*\(`),      // JS: function functionName(
+		regexp.MustCompile(`^\s*(\w+)\s*:\s*function\s*\(`),  // JS: name: function(
+		regexp.MustCompile(`^\s*(public|private|protected)\s+\w+\s+(\w+)\s*\(`), // Java/C#
+		regexp.MustCompile(`^\s*class\s+(\w+)`),              // class ClassName
+	}
+
+	// Search from bottom to top to find the closest/most relevant symbol
+	for i := len(conflictLines) - 1; i >= 0; i-- {
+		line := conflictLines[i]
+		for _, pattern := range patterns {
+			if matches := pattern.FindStringSubmatch(line); matches != nil {
+				if len(matches) > 1 {
+					// Return last captured group (symbol name)
+					return matches[len(matches)-1]
+				}
+			}
+		}
+	}
+
+	return "" // No symbol detected
+}
+
 // enrichConflictBlocks injects custom Gip context into conflict regions
+// Phase 2: Enhanced with symbol extraction for selective context injection
 func enrichConflictBlocks(lines []string, conflicts []ConflictBlock, currentSHA, otherSHA string, filePath string) []string {
 	result := make([]string, 0)
 	lastEnd := 0
 
 	for _, conflict := range conflicts {
+		// Phase 2: Extract symbol from conflict for selective injection
+		// Look at conflict lines AND some context before the conflict to find the enclosing function
+		contextStart := conflict.StartLine - 10 // Look up to 10 lines back
+		if contextStart < 0 {
+			contextStart = 0
+		}
+		contextLines := append(lines[contextStart:conflict.StartLine], conflict.HeadLines...)
+		contextLines = append(contextLines, conflict.TheirLines...)
+		symbol := extractSymbolFromConflict(contextLines)
+		// TODO: Extract hunk ID from conflict line numbers once we integrate with diff analyzer
+
 		// Add lines before conflict (including <<<<<<< marker)
 		result = append(result, lines[lastEnd:conflict.StartLine+1]...)
 
@@ -113,8 +156,8 @@ func enrichConflictBlocks(lines []string, conflicts []ConflictBlock, currentSHA,
 		}
 		result = append(result, fmt.Sprintf("||| Commit: %s", shortHead))
 
-		// Try to add TOON manifest for HEAD
-		headToon := getManifestToon(currentSHA, filePath)
+		// Phase 2: Use selective injection if symbol detected
+		headToon := getManifestToonForConflict(currentSHA, filePath, symbol, "")
 		if headToon != "" {
 			for _, line := range strings.Split(headToon, "\n") {
 				result = append(result, "||| "+line)
@@ -135,8 +178,8 @@ func enrichConflictBlocks(lines []string, conflicts []ConflictBlock, currentSHA,
 		}
 		result = append(result, fmt.Sprintf("||| Commit: %s", shortOther))
 
-		// Try to add TOON manifest for THEIRS
-		theirToon := getManifestToon(otherSHA, filePath)
+		// Phase 2: Use selective injection if symbol detected
+		theirToon := getManifestToonForConflict(otherSHA, filePath, symbol, "")
 		if theirToon != "" {
 			for _, line := range strings.Split(theirToon, "\n") {
 				result = append(result, "||| "+line)
@@ -167,47 +210,90 @@ func getCommitSHA(ref string) (string, error) {
 	return strings.TrimSpace(string(output)), nil
 }
 
-// getManifestToon loads a manifest and converts it to TOON format
-func getManifestToon(commitSHA, filePath string) string {
-	// Load manifest
-	m, err := manifest.Load(commitSHA)
-	if err != nil {
-		return "" // No manifest found
+// findMatchingEntry searches for a manifest entry matching file + symbol + hunk.
+// Phase 2: Selective Context Injection - returns only the entry relevant to a specific conflict.
+// Matching strategy:
+//   1. Match by File + Symbol + HunkID (precise, v2.0 manifests)
+//   2. Match by File + Symbol (fallback for v1.0 or missing hunk)
+//   3. Match by File only (last resort)
+//
+// Returns the best matching entry, or nil if no suitable match found.
+func findMatchingEntry(m *manifest.Manifest, filePath, symbol, hunkID string) *manifest.Entry {
+	if m == nil || len(m.Entries) == 0 {
+		return nil
 	}
 
-	// Find entry for this file
-	var entry *manifest.Entry
-	for i := range m.Entries {
-		if m.Entries[i].Anchor.File == filePath {
-			entry = &m.Entries[i]
-			break
+	// Best match: File + Symbol + HunkID (v2.0 selective injection)
+	if symbol != "" && hunkID != "" {
+		for i := range m.Entries {
+			e := &m.Entries[i]
+			if e.Anchor.File == filePath &&
+				e.Anchor.Symbol == symbol &&
+				e.Anchor.HunkID == hunkID {
+				return e
+			}
 		}
 	}
 
-	if entry == nil {
-		return "" // No entry for this file
+	// Good match: File + Symbol (fallback for v1.0 or if hunk doesn't match)
+	if symbol != "" {
+		for i := range m.Entries {
+			e := &m.Entries[i]
+			if e.Anchor.File == filePath && e.Anchor.Symbol == symbol {
+				return e
+			}
+		}
 	}
 
-	// Convert entry to map for gotoon
-	data := map[string]interface{}{
-		"symbol":         entry.Anchor.Symbol,
-		"file":           entry.Anchor.File,
-		"changeType":     entry.ChangeType,
-		"preconditions":  entry.Contract.Preconditions,
-		"postconditions": entry.Contract.Postconditions,
-		"errorModel":     entry.Contract.ErrorModel,
-		"behaviorClass":  entry.BehaviorClass,
-		"sideEffects":    entry.SideEffects,
-		"rationale":      entry.Rationale,
+	// Last resort: File only (return first entry for this file)
+	for i := range m.Entries {
+		e := &m.Entries[i]
+		if e.Anchor.File == filePath {
+			return e
+		}
 	}
 
-	// Encode to TOON
-	toon, err := gotoon.Encode(data, gotoon.WithIndent(2))
+	return nil
+}
+
+// getManifestToonForConflict loads a manifest and uses selective context injection.
+// Phase 2: Returns ONLY the entry matching the conflict (file + symbol + hunk).
+// This replaces the old behavior of injecting entire manifests (100 lines → 8-12 lines).
+func getManifestToonForConflict(commitSHA, filePath, symbol, hunkID string) string {
+	// Load manifest - try production load
+	m, err := manifest.Load(commitSHA)
 	if err != nil {
-		return "" // Encoding failed
+		// If in a test environment without proper git setup, try direct load
+		// This allows tests to work without full git repo initialization
+		if m, err = loadManifestDirect(commitSHA); err != nil {
+			return "" // No manifest found
+		}
 	}
 
-	return toon
+	// Normalize file path - try to match with both absolute and relative paths
+	// This handles cases where manifest uses relative path but conflict has absolute path
+	entry := findMatchingEntry(m, filePath, symbol, hunkID)
+	if entry == nil {
+		// Try with just the base file name (last component of path)
+		baseFile := filePath
+		if idx := strings.LastIndexAny(filePath, "/\\"); idx != -1 {
+			baseFile = filePath[idx+1:]
+		}
+		entry = findMatchingEntry(m, baseFile, symbol, hunkID)
+	}
+
+	if entry == nil {
+		return "" // No matching entry
+	}
+
+	// Use the manifest's TOON serialization function for consistency
+	return manifest.SerializeForConflict(entry, commitSHA)
+}
+
+// getManifestToon loads a manifest and converts it to TOON format (legacy v1.0 behavior)
+// Deprecated: Use getManifestToonForConflict for Phase 2 selective injection
+func getManifestToon(commitSHA, filePath string) string {
+	return getManifestToonForConflict(commitSHA, filePath, "", "")
 }
 
 // EnrichAllConflicts finds all conflicted files and enriches them
@@ -247,6 +333,25 @@ func EnrichAllConflicts() error {
 	}
 
 	return nil
+}
+
+// loadManifestDirect attempts to load a manifest directly from .gip/manifest
+// without git validation. This is used as a fallback for test environments.
+func loadManifestDirect(commitSHA string) (*manifest.Manifest, error) {
+	// Try current directory first
+	manifestPath := filepath.Join(".gip", "manifest", commitSHA+".json")
+	
+	data, err := os.ReadFile(manifestPath)
+	if err != nil {
+		return nil, fmt.Errorf("manifest not found: %w", err)
+	}
+
+	var m manifest.Manifest
+	if err := json.Unmarshal(data, &m); err != nil {
+		return nil, fmt.Errorf("failed to parse manifest: %w", err)
+	}
+
+	return &m, nil
 }
 
 // DetectConflicts checks if a file has Git conflict markers

@@ -13,7 +13,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_placeholder() {
-        assert!(true);
+    fn test_prompt_for_manifest() {
+        // TODO: Implement interactive prompt tests
+        let result = prompt_for_manifest();
+        assert!(result.is_ok());
     }
 }

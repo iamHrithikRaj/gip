@@ -4,13 +4,13 @@
 //! and configuring Gip's custom merge driver.
 
 use anyhow::{Context, Result};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::process::Command;
 
 /// Check if current directory is a Git repository
 pub fn is_git_repo() -> bool {
     Command::new("git")
-        .args(&["rev-parse", "--git-dir"])
+        .args(["rev-parse", "--git-dir"])
         .output()
         .map(|output| output.status.success())
         .unwrap_or(false)
@@ -19,7 +19,7 @@ pub fn is_git_repo() -> bool {
 /// Get the root directory of the Git repository
 pub fn get_repo_root() -> Result<PathBuf> {
     let output = Command::new("git")
-        .args(&["rev-parse", "--show-toplevel"])
+        .args(["rev-parse", "--show-toplevel"])
         .output()
         .context("Failed to execute git command")?;
 
@@ -38,7 +38,7 @@ pub fn get_repo_root() -> Result<PathBuf> {
 /// Get the current commit SHA
 pub fn get_current_commit() -> Result<String> {
     let output = Command::new("git")
-        .args(&["rev-parse", "HEAD"])
+        .args(["rev-parse", "HEAD"])
         .output()
         .context("Failed to execute git command")?;
 
@@ -55,18 +55,18 @@ pub fn get_current_commit() -> Result<String> {
 /// Get the diff of staged changes
 pub fn get_staged_diff() -> Result<String> {
     let output = Command::new("git")
-        .args(&["diff", "--cached"])
+        .args(["diff", "--cached"])
         .output()
         .context("Failed to execute git command")?;
 
-    Ok(String::from_utf8(output.stdout)
-        .context("Invalid UTF-8 in git output")?)
+    String::from_utf8(output.stdout)
+        .context("Invalid UTF-8 in git output")
 }
 
 /// Check if there are staged changes
 pub fn has_staged_changes() -> bool {
     Command::new("git")
-        .args(&["diff", "--cached", "--quiet"])
+        .args(["diff", "--cached", "--quiet"])
         .status()
         .map(|status| !status.success())
         .unwrap_or(false)

@@ -6,7 +6,7 @@
 use crate::manifest::types::*;
 use anyhow::{Context, Result};
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 /// Save writes a manifest to disk as JSON
 pub fn save(manifest: &Manifest, commit_sha: &str, manifest_dir: &Path) -> Result<()> {
@@ -220,7 +220,7 @@ mod tests {
 
     #[test]
     fn test_migrate_v1_to_v2() {
-        let mut manifest = Manifest {
+        let manifest = Manifest {
             schema_version: SCHEMA_VERSION_1_0.to_string(),
             commit: "old123".to_string(),
             global_intent: None,

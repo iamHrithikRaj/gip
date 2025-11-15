@@ -6,9 +6,9 @@
 [![Crates.io](https://img.shields.io/crates/v/gip.svg)](https://crates.io/crates/gip)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-**Stop wasting time deciphering cryptic merge conflicts. Get the full story, right where you need it.**
+**An intelligent Git extension that enriches merge conflicts with structured context for autonomous LLM resolution and human clarity.**
 
-Gip transforms merge conflicts from cryptic puzzles into self-documenting resolution tasks by injecting structured context directly into conflict markers—no repo scanning, no context switching.
+Gip transforms merge conflicts from cryptic puzzles into self-documenting resolution tasks by injecting structured parameters directly into conflict markers—enabling accurate autonomous resolution without human intervention.
 
 ---
 

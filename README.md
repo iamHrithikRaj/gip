@@ -14,7 +14,7 @@ Gip transforms merge conflicts from cryptic puzzles into self-documenting resolu
 
 ## The Problem
 
-Traditional Git conflict markers provide **zero semantic context**:
+Traditional Git conflict markers show **raw text differences without semantic context**:
 
 ```python
 <<<<<<< HEAD
@@ -24,19 +24,25 @@ total += item.price + 5.99
 >>>>>>> feature-branch
 ```
 
-**Questions left unanswered:**
-- What was the intent behind each change?
+**What's missing?**
+- Is this a bugfix, feature, or side effect?
+- What was the rationale behind each change?
 - What are the preconditions and postconditions?
 - Are there side effects or error handling differences?
-- Which change is a feature vs a bugfix?
 
-Both humans and LLMs waste time scanning the entire codebase to understand conflicts.
+**Why this matters:**
+
+Without structured context, **LLMs can't reliably resolve conflicts on their own**. They have to guess intent from commit messages (which are inconsistent and vague) or scan the entire codebase for clues. This makes autonomous conflict resolution unreliable and still requires human intervention.
+
+Humans face the same problem—wasting time context-switching between editors, GitHub, and chat tools to understand what each side of the conflict actually does.
 
 ---
 
 ## The Solution
 
-Gip adds **TOON manifests** to commits, capturing structured context:
+Gip introduces **structured manifests** that define clear parameters for conflict resolution—making it possible for LLMs to resolve conflicts autonomously and accurately.
+
+Instead of relying on inconsistent commit messages, Gip stores **structured metadata** alongside each change:
 
 ```python
 <<<<<<< HEAD
@@ -64,11 +70,16 @@ total += item.price + 5.99
 >>>>>>> feature-branch
 ```
 
-**Now you know:**
-- ✅ One adds tax (8%), the other adds shipping ($5.99)
-- ✅ Both are features, not bugfixes
-- ✅ Both have same preconditions and error handling
-- ✅ Resolution is clear: keep both or choose based on business logic
+**Now you have structured parameters for resolution:**
+- ✅ **Behavior Class**: Both are features (not bugfixes)
+- ✅ **Rationale**: Tax compliance vs. shipping fee
+- ✅ **Postconditions**: One applies 8% tax, the other adds $5.99
+- ✅ **Side Effects**: None (both are pure calculations)
+- ✅ **Resolution Strategy**: These are additive changes—combine both
+
+**For LLMs:** These structured parameters enable autonomous, reliable conflict resolution without human intervention.
+
+**For Humans:** No need to hunt through commit history or ask teammates—the context is right there.
 
 ---
 
@@ -76,43 +87,61 @@ total += item.price + 5.99
 
 ### The Motivation
 
-Every developer knows the frustration: you're deep in a merge conflict, staring at two conflicting code blocks, and you have **zero context** about:
-- Why each change was made
-- What problem it solves
-- Whether it's a feature, bugfix, or refactor
-- What assumptions the code makes
-- What side effects it has
+**The real problem isn't that merge conflicts are cryptic—it's that they're not informative.**
 
-So you waste time:
+Traditional Git only shows raw text differences (`<<<` and `>>>`). Neither humans nor LLMs get the semantic context needed to resolve conflicts intelligently:
+- Is this a bugfix, feature, or side effect?
+- What was the rationale?
+- What are the preconditions and postconditions?
+- Are there side effects or breaking changes?
+
+**For LLMs:**
+Without structured parameters, AI can't reliably resolve conflicts autonomously. It has to guess from vague commit messages or scan entire codebases, making resolution unreliable and still requiring human intervention.
+
+**For Humans:**
+You waste time:
 - 🔍 Hunting through commit messages (often vague: "fix bug")
 - 📖 Reading through entire PRs and code reviews
 - 💬 Messaging teammates asking "what was this change about?"
 - 🧠 Context-switching between your editor, GitHub, Slack, and JIRA
-- 🤖 Feeding your entire codebase to an LLM just to understand one conflict
 
-**What if the context was already there, right in the conflict marker?**
+### The Solution: Structured Parameters for Intelligent Resolution
 
-### The Solution
+Gip introduces **manifests**—structured metadata that defines clear parameters for conflict resolution. Instead of relying on inconsistent commit messages, Gip provides a machine-readable format that LLMs can reliably parse and act on.
 
-Gip enriches merge conflicts with **structured manifests** that capture the full story:
-
-- **Contracts**: What's expected before/after this code runs
-- **Intent**: Why this change was made (feature? bugfix? refactor?)
-- **Side Effects**: Logs? Database writes? API calls?
-- **Error Handling**: How failures are managed
+**What Gip Captures:**
+- **Behavior Class**: Is this a feature, bugfix, refactor, or performance optimization?
+- **Rationale**: Why was this change made?
+- **Contracts**: Preconditions, postconditions, and error models
+- **Side Effects**: Logs, database writes, network calls, etc.
 - **Breaking Changes**: Did function signatures change?
 
-All displayed in a **token-efficient format** that both humans and LLMs can instantly understand.
+**How It Works:**
+
+**For Humans (Optional Context):**
+- By default, Gip works exactly like Git
+- Use `gip commit -c` to add structured context when it matters
+- The extra context is optional—only add it when you want
+
+**For LLMs (Automatic Context):**
+- Gip can generate manifests automatically using AI
+- Context comes "for free" without manual effort
+- When conflicts occur, manifests are injected right into the conflict markers
+- LLMs can now resolve conflicts autonomously with high accuracy
+
+**The Result:**
+Instead of merging blindly, Gip **enriches conflicts with parameters** that enable intelligent, autonomous resolution—dramatically improving LLM accuracy and eliminating unnecessary human intervention.
 
 ### Key Features
 
-- 🎯 **Zero Context Switching** - Everything you need, directly in the conflict
-- 🤖 **AI-Powered** - Let OpenAI generate manifests from your diffs automatically
+- 🤖 **Autonomous LLM Resolution** - Structured parameters enable LLMs to resolve conflicts accurately without human intervention
+- 🎯 **Zero Context Switching** - Humans get everything they need, directly in the conflict
+- 🔄 **Works Like Git** - By default, Gip is a drop-in replacement for Git
+- 📝 **Optional Human Context** - Add manifests with `-c` flag only when you need them
+- 🪄 **Automatic AI Context** - Generate manifests automatically for LLM workflows
 - 📦 **Single Binary** - 0.4MB, zero dependencies, just copy and run
-- ⚡ **Lightning Fast** - Built in Rust for maximum performance
-- 🔄 **Drop-in Replacement** - Use `gip` exactly like `git`
 - 🪶 **Token Efficient** - TOON format is 49% smaller than JSON for LLM contexts
-- 🔗 **Non-Invasive** - Works alongside your existing Git workflow
+- ⚡ **Lightning Fast** - Built in Rust for maximum performance
 
 ---
 
@@ -402,12 +431,14 @@ def calculate_total(items):
 >>>>>>> feature-shipping
 ```
 
-**Resolution**: Combine both changes:
+**Resolution** (LLM or Human):
 ```python
 def calculate_total(items):
     subtotal = sum(item.price * 1.08 for item in items)  # Tax
     return subtotal + 5.99  # Shipping
 ```
+
+**Why this works:** The structured parameters (behavior class: feature, no side effects, additive postconditions) clearly indicate both changes should be combined.
 
 ### Example 2: Bugfix vs Feature
 
@@ -454,7 +485,7 @@ def apply_discount(items, discount=0.1):
 >>>>>>> feature-discount
 ```
 
-**Resolution**: Combine both - keep feature's default parameter AND bugfix's validation:
+**Resolution** (LLM or Human):
 ```python
 def apply_discount(items, discount=0.1):
     if not items:
@@ -462,10 +493,13 @@ def apply_discount(items, discount=0.1):
     return sum(item.price for item in items) * (1 - discount)
 ```
 
-**Why this resolution?**
-- ✅ Feature adds convenience (default 10% discount)
-- ✅ Bugfix prevents production crash (empty list validation)
-- ✅ Both improvements are complementary, not conflicting
+**Why this works:**
+- ✅ **Behavior classes** indicate: bugfix (critical) + feature (enhancement)
+- ✅ **Error models** show: HEAD adds validation, MERGE_HEAD has none
+- ✅ **Resolution strategy**: Keep both—bugfix prevents crashes, feature adds convenience
+- ✅ **LLM confidence**: High—parameters clearly indicate complementary changes
+
+The structured manifest enables autonomous, intelligent resolution instead of blind merging.
 
 ---
 

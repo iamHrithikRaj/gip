@@ -59,8 +59,7 @@ pub fn get_staged_diff() -> Result<String> {
         .output()
         .context("Failed to execute git command")?;
 
-    String::from_utf8(output.stdout)
-        .context("Invalid UTF-8 in git output")
+    String::from_utf8(output.stdout).context("Invalid UTF-8 in git output")
 }
 
 /// Check if there are staged changes
@@ -87,8 +86,7 @@ pub fn get_manifest_dir() -> Result<PathBuf> {
 /// Ensure .gip directory structure exists
 pub fn ensure_gip_dir() -> Result<()> {
     let manifest_dir = get_manifest_dir()?;
-    std::fs::create_dir_all(manifest_dir)
-        .context("Failed to create .gip directory structure")?;
+    std::fs::create_dir_all(manifest_dir).context("Failed to create .gip directory structure")?;
     Ok(())
 }
 

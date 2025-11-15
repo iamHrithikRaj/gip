@@ -17,18 +17,18 @@ struct Cli {
 enum Commands {
     /// Initialize Gip in the current repository
     Init,
-    
+
     /// Commit with manifest creation
     Commit {
         /// Commit message
         #[arg(short, long)]
         message: Option<String>,
-        
+
         /// Create manifest interactively
         #[arg(short = 'c', long)]
         create_manifest: bool,
     },
-    
+
     /// Show version information
     Version,
 }
@@ -42,7 +42,10 @@ fn main() -> Result<()> {
             gip::git::ensure_gip_dir()?;
             println!("Gip initialized successfully!");
         }
-        Some(Commands::Commit { message: _, create_manifest: _ }) => {
+        Some(Commands::Commit {
+            message: _,
+            create_manifest: _,
+        }) => {
             println!("Commit functionality not yet implemented");
         }
         Some(Commands::Version) => {

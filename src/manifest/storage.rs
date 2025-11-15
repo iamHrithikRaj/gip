@@ -11,19 +11,16 @@ use std::path::Path;
 /// Save writes a manifest to disk as JSON
 pub fn save(manifest: &Manifest, commit_sha: &str, manifest_dir: &Path) -> Result<()> {
     // Ensure manifest directory exists
-    fs::create_dir_all(manifest_dir)
-        .context("Failed to create manifest directory")?;
+    fs::create_dir_all(manifest_dir).context("Failed to create manifest directory")?;
 
     // Build file path
     let path = manifest_dir.join(format!("{}.json", commit_sha));
 
     // Serialize as JSON
-    let json = serde_json::to_string_pretty(manifest)
-        .context("Failed to serialize manifest")?;
+    let json = serde_json::to_string_pretty(manifest).context("Failed to serialize manifest")?;
 
     // Write to file
-    fs::write(&path, json)
-        .with_context(|| format!("Failed to write manifest to {:?}", path))?;
+    fs::write(&path, json).with_context(|| format!("Failed to write manifest to {:?}", path))?;
 
     Ok(())
 }
@@ -32,20 +29,24 @@ pub fn save(manifest: &Manifest, commit_sha: &str, manifest_dir: &Path) -> Resul
 pub fn load(commit_sha: &str, manifest_dir: &Path) -> Result<Manifest> {
     // Try .json first (new format)
     let json_path = manifest_dir.join(format!("{}.json", commit_sha));
-    
+
     let data = if json_path.exists() {
         fs::read_to_string(&json_path)
             .with_context(|| format!("Failed to read manifest from {:?}", json_path))?
     } else {
         // Fallback to .toon for backward compatibility
         let toon_path = manifest_dir.join(format!("{}.toon", commit_sha));
-        fs::read_to_string(&toon_path)
-            .with_context(|| format!("Manifest not found for commit {} (tried .json and .toon)", commit_sha))?
+        fs::read_to_string(&toon_path).with_context(|| {
+            format!(
+                "Manifest not found for commit {} (tried .json and .toon)",
+                commit_sha
+            )
+        })?
     };
 
     // Parse JSON
-    let mut manifest: Manifest = serde_json::from_str(&data)
-        .context("Failed to parse manifest JSON")?;
+    let mut manifest: Manifest =
+        serde_json::from_str(&data).context("Failed to parse manifest JSON")?;
 
     // Migrate v1.0 → v2.0 if needed
     if manifest.schema_version.is_empty() || manifest.schema_version == SCHEMA_VERSION_1_0 {
@@ -58,14 +59,13 @@ pub fn load(commit_sha: &str, manifest_dir: &Path) -> Result<Manifest> {
 /// SavePending saves a manifest as pending (before commit)
 pub fn save_pending(manifest: &Manifest, gip_dir: &Path) -> Result<()> {
     // Ensure .gip directory exists
-    fs::create_dir_all(gip_dir)
-        .context("Failed to create .gip directory")?;
+    fs::create_dir_all(gip_dir).context("Failed to create .gip directory")?;
 
     let path = gip_dir.join("pending.json");
 
     // Serialize as JSON
-    let json = serde_json::to_string_pretty(manifest)
-        .context("Failed to serialize pending manifest")?;
+    let json =
+        serde_json::to_string_pretty(manifest).context("Failed to serialize pending manifest")?;
 
     // Write to file
     fs::write(&path, json)
@@ -77,12 +77,12 @@ pub fn save_pending(manifest: &Manifest, gip_dir: &Path) -> Result<()> {
 /// LoadPending loads the pending manifest
 pub fn load_pending(gip_dir: &Path) -> Result<Manifest> {
     let path = gip_dir.join("pending.json");
-    
+
     let data = fs::read_to_string(&path)
         .with_context(|| format!("Failed to read pending manifest from {:?}", path))?;
 
-    let manifest: Manifest = serde_json::from_str(&data)
-        .context("Failed to parse pending manifest")?;
+    let manifest: Manifest =
+        serde_json::from_str(&data).context("Failed to parse pending manifest")?;
 
     Ok(manifest)
 }
@@ -102,7 +102,7 @@ pub fn migrate_v1_to_v2(mut manifest: Manifest) -> Manifest {
             if compat.migrations.is_none() {
                 compat.migrations = Some(Vec::new());
             }
-            
+
             // Map old breaking change flags to new format
             if compat.binary_breaking == Some(true) || compat.source_breaking == Some(true) {
                 compat.breaking = true;
@@ -160,7 +160,7 @@ mod tests {
     fn test_save_and_load_manifest() {
         let temp_dir = TempDir::new().unwrap();
         let manifest_dir = temp_dir.path();
-        
+
         let manifest = create_test_manifest();
         let commit_sha = "abc123def456";
 
@@ -180,7 +180,7 @@ mod tests {
     fn test_save_creates_directory() {
         let temp_dir = TempDir::new().unwrap();
         let manifest_dir = temp_dir.path().join("nested").join("manifest");
-        
+
         let manifest = create_test_manifest();
 
         // Directory doesn't exist yet

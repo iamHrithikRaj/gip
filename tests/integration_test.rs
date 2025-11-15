@@ -59,7 +59,10 @@ fn test_gip_init() {
     assert!(gip_dir.exists(), ".gip directory should exist");
 
     let manifest_dir = gip_dir.join("manifest");
-    assert!(manifest_dir.exists(), ".gip/manifest directory should exist");
+    assert!(
+        manifest_dir.exists(),
+        ".gip/manifest directory should exist"
+    );
 }
 
 #[test]
@@ -77,8 +80,8 @@ fn test_manifest_storage_and_retrieval() {
     run_gip(&["init"], &repo_path).unwrap();
 
     // Create a test manifest manually
-    use gip::manifest::types::*;
     use gip::manifest::storage;
+    use gip::manifest::types::*;
 
     let manifest = Manifest {
         schema_version: SCHEMA_VERSION_2_0.to_string(),
@@ -128,8 +131,8 @@ fn test_manifest_storage_and_retrieval() {
 #[test]
 #[ignore]
 fn test_toon_serialization() {
-    use gip::manifest::types::*;
     use gip::manifest::toon;
+    use gip::manifest::types::*;
 
     let manifest = Manifest {
         schema_version: SCHEMA_VERSION_2_0.to_string(),
@@ -245,12 +248,15 @@ fn test_conflict_scenario() {
 
     run_git(&["add", "calculator.py"], &repo_path).unwrap();
     run_git(&["commit", "-m", "Add 8% sales tax"], &repo_path).unwrap();
-    
-    let tax_commit = run_git(&["rev-parse", "HEAD"], &repo_path).unwrap().trim().to_string();
+
+    let tax_commit = run_git(&["rev-parse", "HEAD"], &repo_path)
+        .unwrap()
+        .trim()
+        .to_string();
 
     // Create manifest for tax commit
-    use gip::manifest::types::*;
     use gip::manifest::storage;
+    use gip::manifest::types::*;
 
     let tax_manifest = Manifest {
         schema_version: SCHEMA_VERSION_2_0.to_string(),
@@ -302,8 +308,11 @@ fn test_conflict_scenario() {
 
     run_git(&["add", "calculator.py"], &repo_path).unwrap();
     run_git(&["commit", "-m", "Add flat shipping fee"], &repo_path).unwrap();
-    
-    let shipping_commit = run_git(&["rev-parse", "HEAD"], &repo_path).unwrap().trim().to_string();
+
+    let shipping_commit = run_git(&["rev-parse", "HEAD"], &repo_path)
+        .unwrap()
+        .trim()
+        .to_string();
 
     // Create manifest for shipping commit
     let shipping_manifest = Manifest {
@@ -345,7 +354,10 @@ fn test_conflict_scenario() {
 
     // Read the conflicted file
     let conflicted_content = fs::read_to_string(&file_path).unwrap();
-    println!("\n=== CONFLICTED FILE (WITHOUT GIP ENRICHMENT) ===\n{}", conflicted_content);
+    println!(
+        "\n=== CONFLICTED FILE (WITHOUT GIP ENRICHMENT) ===\n{}",
+        conflicted_content
+    );
 
     // Verify both manifests can be loaded
     let tax_loaded = storage::load(&tax_commit, &manifest_dir).unwrap();
@@ -355,11 +367,14 @@ fn test_conflict_scenario() {
     println!("{}", serde_json::to_string_pretty(&tax_loaded).unwrap());
 
     println!("\n=== SHIPPING COMMIT MANIFEST ===");
-    println!("{}", serde_json::to_string_pretty(&shipping_loaded).unwrap());
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&shipping_loaded).unwrap()
+    );
 
     // Test TOON serialization for conflict markers
     use gip::manifest::toon;
-    
+
     println!("\n=== TAX TOON (for conflict marker) ===");
     println!("{}", toon::serialize_manifest(&tax_loaded));
 
@@ -367,6 +382,12 @@ fn test_conflict_scenario() {
     println!("{}", toon::serialize_manifest(&shipping_loaded));
 
     // Verify manifests have the expected data
-    assert_eq!(tax_loaded.entries[0].rationale, "Added 8% sales tax to comply with state law");
-    assert_eq!(shipping_loaded.entries[0].rationale, "Added $5.99 flat shipping fee for all orders");
+    assert_eq!(
+        tax_loaded.entries[0].rationale,
+        "Added 8% sales tax to comply with state law"
+    );
+    assert_eq!(
+        shipping_loaded.entries[0].rationale,
+        "Added $5.99 flat shipping fee for all orders"
+    );
 }

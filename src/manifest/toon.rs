@@ -9,7 +9,7 @@ use anyhow::Result;
 
 /// Serialize a Manifest to TOON format using the official toon-format library
 pub fn serialize_manifest_toon(manifest: &Manifest) -> Result<String> {
-    use toon_format::{encode_default};
+    use toon_format::encode_default;
 
     // Use default encoding with key folding for token efficiency
     let toon = encode_default(manifest)?;
@@ -17,7 +17,7 @@ pub fn serialize_manifest_toon(manifest: &Manifest) -> Result<String> {
 }
 
 /// Serialize a Manifest to legacy custom TOON format (for backward compatibility)
-/// 
+///
 /// This function maintains the original Gip TOON format for existing manifests.
 /// Consider using `serialize_manifest_toon()` for new implementations.
 pub fn serialize_manifest(manifest: &Manifest) -> String {
@@ -136,26 +136,23 @@ pub fn serialize_manifest(manifest: &Manifest) -> String {
         // Tests touched
         if let Some(ref tests) = entry.tests_touched {
             if !tests.is_empty() {
-                output.push_str(&format!(
-                    "      (testsTouched [ {} ])\n",
-                    tests.join(" ")
-                ));
+                output.push_str(&format!("      (testsTouched [ {} ])\n", tests.join(" ")));
             }
         }
 
         // Feature flags
         if let Some(ref flags) = entry.feature_flags {
             if !flags.is_empty() {
-                output.push_str(&format!(
-                    "      (featureFlags [ {} ])\n",
-                    flags.join(" ")
-                ));
+                output.push_str(&format!("      (featureFlags [ {} ])\n", flags.join(" ")));
             }
         }
 
         // Rationale
         if !entry.rationale.is_empty() {
-            output.push_str(&format!("      (rationale \"\"\"{}\"\"\")\n", entry.rationale));
+            output.push_str(&format!(
+                "      (rationale \"\"\"{}\"\"\")\n",
+                entry.rationale
+            ));
         }
 
         // Inherits global intent
@@ -374,29 +371,32 @@ mod tests {
 
         // Test official TOON format
         let toon = serialize_manifest_toon(&manifest).unwrap();
-        
+
         // Should contain key fields
         assert!(toon.contains("schemaVersion") || toon.contains("schema_version"));
         assert!(toon.contains("abc123"));
-        
+
         // TOON format should be valid and parseable
         assert!(!toon.is_empty());
-        
+
         // Compare with pretty-printed JSON for realistic comparison
         let json_pretty = serde_json::to_string_pretty(&manifest).unwrap();
         println!("TOON size: {} bytes", toon.len());
         println!("JSON (pretty) size: {} bytes", json_pretty.len());
-        
+
         // TOON should be more compact than pretty-printed JSON
-        assert!(toon.len() < json_pretty.len(), 
-                "TOON ({} bytes) should be more compact than pretty JSON ({} bytes)", 
-                toon.len(), json_pretty.len());
+        assert!(
+            toon.len() < json_pretty.len(),
+            "TOON ({} bytes) should be more compact than pretty JSON ({} bytes)",
+            toon.len(),
+            json_pretty.len()
+        );
     }
 
     #[test]
     fn test_toon_round_trip() {
-        use toon_format::{encode_default, decode_default};
-        
+        use toon_format::{decode_default, encode_default};
+
         let manifest = Manifest {
             schema_version: SCHEMA_VERSION_2_0.to_string(),
             commit: "test456".to_string(),
@@ -409,10 +409,10 @@ mod tests {
 
         // Encode to TOON
         let toon = encode_default(&manifest).unwrap();
-        
+
         // Decode back
         let decoded: Manifest = decode_default(&toon).unwrap();
-        
+
         // Should match original
         assert_eq!(decoded.commit, manifest.commit);
         assert_eq!(decoded.schema_version, manifest.schema_version);

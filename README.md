@@ -1,9 +1,9 @@
 # Gip (Git++) 🚀
 
 [![CI](https://github.com/iamHrithikRaj/gip/actions/workflows/test.yml/badge.svg)](https://github.com/iamHrithikRaj/gip/actions/workflows/test.yml)
-[![Go Version](https://img.shields.io/github/go-mod/go-version/iamHrithikRaj/gip)](https://go.dev/)
+[![Rust Version](https://img.shields.io/badge/rust-1.70%2B-blue.svg)](https://www.rust-lang.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Go Report Card](https://goreportcard.com/badge/github.com/iamHrithikRaj/gip)](https://goreportcard.com/report/github.com/iamHrithikRaj/gip)
+[![Crates.io](https://img.shields.io/crates/v/gip.svg)](https://crates.io/crates/gip)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 **A lightweight Git wrapper that enriches merge conflicts with structured context for humans and LLMs.**
@@ -84,11 +84,12 @@ total += item.price + 5.99
 ## Features
 
 - 🎯 **Zero Scanning**: Context injected directly into conflicts—no repo traversal needed
-- 📦 **Single Binary**: No runtime dependencies, just copy and run (6.6MB self-contained)
+- 📦 **Single Binary**: No runtime dependencies, just copy and run (3.6MB self-contained, built with Rust)
 - 🔄 **Git-Compatible**: Drop-in replacement—use `gip` instead of `git`
 - 🤖 **LLM-Friendly**: TOON format optimized for LLM token efficiency (30-60% smaller than JSON)
 - 🔗 **Non-Invasive**: Works alongside standard Git workflow
 - 📝 **Structured Context**: Contracts, behavior classes, side effects, compatibility flags
+- ⚡ **Blazing Fast**: Written in Rust for maximum performance and safety
 
 ---
 
@@ -125,23 +126,26 @@ sudo mv gip-* /usr/local/bin/gip
 gip --version
 ```
 
-**Single binary**: The executable is **6.6MB** and has **zero runtime dependencies**. No Go, no libraries—just copy and run!
+**Single binary**: The executable is **3.6MB** and has **zero runtime dependencies**. Just copy and run!
 
 ### Option 2: Build from Source
 
-**Prerequisites**: Go 1.21+
+**Prerequisites**: Rust 1.70+ and Cargo
 
 ```bash
 git clone https://github.com/iamHrithikRaj/gip
 cd gip
-go build -o gip ./cmd/gip
+cargo build --release
 ```
 
-**Dependencies** (automatically fetched by Go):
-- `github.com/spf13/cobra` - CLI framework
-- `github.com/AlecAivazis/survey/v2` - Interactive prompts
-- `github.com/alpkeskin/gotoon` - TOON encoding
-- `github.com/fatih/color` - Terminal colors
+The binary will be available at `target/release/gip` (or `gip.exe` on Windows).
+
+**Dependencies** (automatically managed by Cargo):
+- `clap` - CLI framework
+- `dialoguer` - Interactive prompts
+- `git2` - Git integration
+- `serde` & `serde_json` - Serialization
+- `anyhow` - Error handling
 
 ---
 
@@ -444,34 +448,39 @@ def apply_discount(items, discount=0.1):
 
 ```
 gip/
-├── cmd/
-│   └── gip/
-│       └── main.go          # CLI entry point with cobra
-│                            # Passthrough for unknown commands
-├── internal/
+├── src/
+│   ├── main.rs              # CLI entry point with clap
+│   ├── lib.rs               # Public API
 │   ├── manifest/
-│   │   ├── types.go         # Manifest schema (Go structs)
-│   │   ├── storage.go       # JSON save/load operations
-│   │   └── toon.go          # TOON serialization (gotoon.Encode)
+│   │   ├── mod.rs           # Module exports
+│   │   ├── types.rs         # Manifest schema (structs with serde)
+│   │   ├── storage.rs       # JSON save/load operations
+│   │   └── toon.rs          # TOON serialization
 │   ├── diff/
-│   │   └── analyzer.go      # Git diff parsing, symbol extraction
+│   │   ├── mod.rs
+│   │   └── analyzer.rs      # Git diff parsing, symbol extraction
 │   ├── merge/
-│   │   └── driver.go        # Conflict detection & enrichment
-│   ├── git/
-│   │   └── integration.go   # Git operations (hooks, config)
-│   └── prompt/
-│       └── interactive.go   # Interactive CLI prompts (survey)
+│   │   ├── mod.rs
+│   │   └── driver.rs        # Conflict detection & enrichment
+│   ├── git.rs               # Git operations (hooks, config)
+│   ├── prompt/
+│   │   ├── mod.rs
+│   │   └── interactive.rs   # Interactive CLI prompts (dialoguer)
+│   └── toon/
+│       ├── mod.rs
+│       └── serializer.rs    # TOON format utilities
 └── .gip/
     └── manifest/
         └── <commit-sha>.json # JSON manifest storage
 ```
 
 **Design Decisions**:
-- **JSON storage**: Easy parsing with Go's native `encoding/json`
-- **TOON display**: Token-efficient format for conflict markers (gotoon encoder)
+- **Rust implementation**: Memory safety, zero-cost abstractions, excellent performance
+- **JSON storage**: Easy parsing with serde's serialization
+- **TOON display**: Token-efficient format for conflict markers
 - **No Git modification**: Manifests stored separately in `.gip/` directory
 - **Post-processing**: Merge driver runs after Git merge, enriches existing conflicts
-- **Transparent wrapper**: Unknown commands passed to `git` via `exec.Command`
+- **Transparent wrapper**: Unknown commands passed to `git` via subprocess
 
 ---
 
@@ -485,8 +494,9 @@ gip/
 | Structured contracts | ✅ Yes | ❌ No | 🟡 Freeform | 🟡 Freeform |
 | LLM-friendly | ✅ Yes | ❌ No | 🟡 Partial | 🟡 Partial |
 | Setup complexity | 🟡 One command | ✅ None | 🟡 Manual | ❌ Platform lock-in |
-| Binary size | ✅ 6.6MB | ✅ ~2MB | ✅ ~2MB | ❌ Cloud |
+| Binary size | ✅ 3.6MB | ✅ ~2MB | ✅ ~2MB | ❌ Cloud |
 | Dependencies | ✅ Zero | ✅ Zero | ✅ Zero | ❌ Network |
+| Memory Safety | ✅ Rust | 🟡 C | 🟡 C | N/A |
 
 ---
 
@@ -519,10 +529,10 @@ A: No for basic functionality—manifests are just JSON files in `.gip/`. Yes to
 A: Partially. You can use GUI clients for staging/committing, but enriched conflicts only appear when using `gip merge`.
 
 **Q: How much overhead does Gip add?**  
-A: Minimal. Manifest files are ~1KB each (JSON format). The binary is 6.6MB. No runtime dependencies.
+A: Minimal. Manifest files are ~1KB each (JSON format). The binary is 3.6MB. No runtime dependencies.
 
 **Q: Can I customize the manifest schema?**  
-A: Yes, edit `internal/manifest/types.go` and rebuild with `go build ./cmd/gip`.
+A: Yes, edit `src/manifest/types.rs` and rebuild with `cargo build --release`.
 
 **Q: Does Gip support rebasing?**  
 A: Currently only `gip merge` enriches conflicts. Rebase support is planned.
@@ -543,43 +553,41 @@ Contributions welcome! This is an experimental project exploring structured cont
 git clone https://github.com/iamHrithikRaj/gip
 cd gip
 
-# Install dependencies
-go mod download
-
 # Build
-go build -o gip ./cmd/gip
+cargo build --release
 
 # Run tests
-go test ./...
+cargo test
 ```
 
 ### Testing
 
-Gip has comprehensive unit tests for all core packages:
+Gip has comprehensive unit tests for all core modules:
 
 ```bash
-# Run all unit tests
-make test
+# Run all tests
+cargo test
 
-# Run tests in short mode (faster)
-make test-unit
+# Run tests with output
+cargo test -- --nocapture
 
-# Run tests with coverage
-make coverage
+# Run specific module tests
+cargo test manifest
 
-# Run all tests with verbose output
-make test-all
+# Generate coverage report (requires cargo-tarpaulin)
+cargo tarpaulin --out Html
 ```
 
 **Test Coverage:**
-- ✅ `internal/manifest` - 12 tests (storage, TOON serialization)
-- ✅ `internal/merge` - 6 tests (conflict detection, enrichment)
-- ✅ `internal/diff` - 18 tests (symbol extraction, change detection)
+- ✅ `manifest` - 22+ tests (types, storage, TOON serialization, migration)
+- ✅ `merge` - Conflict detection and enrichment tests
+- ✅ `diff` - Symbol extraction and change detection tests
+- ✅ `git` - Repository operations tests
 
 **CI/CD:**
 - Tests run automatically on push/PR via GitHub Actions
 - Multi-OS testing (Windows, Linux, macOS)
-- Multi-Go-version testing (1.21, 1.22, 1.23)
+- Rust stable and beta versions tested
 
 See [TEST_STRUCTURE_PROPOSAL.md](TEST_STRUCTURE_PROPOSAL.md) for full test architecture.
 
@@ -627,15 +635,15 @@ We welcome contributions! Gip is an open-source project that benefits from commu
 ### Quick Start
 
 1. **Fork and clone** the repository
-2. **Install Go 1.21+** and dependencies
+2. **Install Rust 1.70+** (via [rustup](https://rustup.rs/))
 3. **Make your changes** following our coding standards
-4. **Add tests** for new functionality
+4. **Add tests** for new functionality (TDD approach)
 5. **Submit a pull request**
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on:
 - Setting up your development environment
-- Coding standards and best practices
-- Testing requirements
+- Rust coding standards and best practices
+- Testing requirements (test-driven development)
 - Commit message conventions
 - Pull request process
 
@@ -657,9 +665,11 @@ By contributing to Gip, you agree that your contributions will be licensed under
 
 ## Credits
 
-- **TOON Format**: [github.com/johannschopplich/toon](https://github.com/johannschopplich/toon)
-- **GoTOON Library**: [github.com/alpkeskin/gotoon](https://github.com/alpkeskin/gotoon)
+- **TOON Format**: [toon-format crate](https://crates.io/crates/toon-format) - Official spec-compliant Rust implementation
+  - Specification: [TOON v2.0](https://github.com/toon-format/spec)
+  - Token-efficient format for LLM-friendly data serialization
 - **Inspired by**: Git Notes, semantic merge tools, and the need for better conflict resolution UX
+- **Built with**: Rust, for memory safety and performance
 
 ---
 

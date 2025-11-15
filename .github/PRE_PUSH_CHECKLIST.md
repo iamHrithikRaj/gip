@@ -6,19 +6,19 @@ Run through this checklist before pushing to GitHub:
 
 ```bash
 # Run all tests
-make test
+cargo test
 # Expected: All tests pass
 
 # Run linter
-golangci-lint run ./...
+cargo clippy -- -D warnings
 # Expected: No errors
 
 # Check formatting
-gofmt -l .
-# Expected: No output (all files formatted)
+cargo fmt --check
+# Expected: No formatting changes needed
 
 # Build binary
-make build
+cargo build --release
 # Expected: Successful build
 ```
 
@@ -64,7 +64,7 @@ After pushing to GitHub:
 4. **Enable features**:
    - Issues (should be auto-enabled)
    - Discussions (optional)
-5. **Add topics**: git, merge, conflict-resolution, golang, developer-tools
+5. **Add topics**: git, merge, conflict-resolution, rust, developer-tools, tdd, memory-safety
 
 ## 6. Security
 

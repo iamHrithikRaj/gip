@@ -1,82 +1,89 @@
 # Gip Makefile
 
-.PHONY: help test test-unit test-integration test-all coverage build clean install
+.PHONY: help test test-unit test-integration test-all coverage build clean install format lint
 
 # Default target
 help:
 	@echo "Gip - Git++ Makefile"
 	@echo ""
 	@echo "Available targets:"
-	@echo "  make test             - Run all unit tests"
-	@echo "  make test-unit        - Run unit tests only (short mode)"
-	@echo "  make test-integration - Run integration tests (requires test setup)"
-	@echo "  make test-all         - Run all tests with verbose output"
+	@echo "  make test             - Run all tests"
+	@echo "  make test-unit        - Run library tests only"
+	@echo "  make test-integration - Run integration tests"
+	@echo "  make test-all         - Run all tests with output"
 	@echo "  make coverage         - Generate coverage report"
-	@echo "  make build            - Build gip binary"
-	@echo "  make install          - Install gip to GOPATH/bin"
-	@echo "  make clean            - Clean build artifacts and test directories"
+	@echo "  make build            - Build gip binary (debug)"
+	@echo "  make release          - Build optimized release binary"
+	@echo "  make install          - Install gip to ~/.cargo/bin"
+	@echo "  make clean            - Clean build artifacts"
+	@echo "  make format           - Format code with rustfmt"
+	@echo "  make lint             - Run clippy linter"
 
-# Run all unit tests
+# Run all tests
 test:
-	@echo "Running unit tests..."
-	go test ./internal/...
+	@echo "Running tests..."
+	cargo test
 
-# Run unit tests with short flag (skip slow tests)
+# Run library tests only
 test-unit:
-	@echo "Running unit tests (short mode)..."
-	go test -short ./internal/...
+	@echo "Running library tests..."
+	cargo test --lib
 
-# Run integration tests (if they exist in tests/integration/)
+# Run integration tests
 test-integration:
 	@echo "Running integration tests..."
-	@if [ -d "tests/integration" ]; then \
-		go test -v ./tests/integration/...; \
-	else \
-		echo "No integration tests found in tests/integration/"; \
-	fi
+	cargo test --test '*'
 
-# Run all tests with verbose output
+# Run all tests with output
 test-all:
 	@echo "Running all tests (verbose)..."
-	go test -v ./...
+	cargo test -- --nocapture
 
-# Generate coverage report
+# Generate coverage report (requires cargo-tarpaulin)
 coverage:
 	@echo "Generating coverage report..."
-	go test -coverprofile=coverage.out ./...
-	go tool cover -html=coverage.out -o coverage.html
-	@echo "Coverage report generated: coverage.html"
-	@echo ""
-	@echo "Coverage summary:"
+	cargo tarpaulin --out Html --output-dir target/coverage
+	@echo "Coverage report generated: target/coverage/index.html"
 	go tool cover -func=coverage.out
 
-# Build the binary
+# Build debug binary
 build:
-	@echo "Building gip..."
-	go build -o gip.exe ./cmd/gip
-	@echo "Build complete: gip.exe"
+	@echo "Building gip (debug)..."
+	cargo build
+	@echo "Build complete: target/debug/gip"
 
-# Install to GOPATH/bin
+# Build release binary
+release:
+	@echo "Building gip (release)..."
+	cargo build --release
+	@echo "Build complete: target/release/gip"
+
+# Install to ~/.cargo/bin
 install:
 	@echo "Installing gip..."
-	go install ./cmd/gip
+	cargo install --path .
+
+# Format code
+format:
+	@echo "Formatting code..."
+	cargo fmt
+
+# Run linter
+lint:
+	@echo "Running clippy..."
+	cargo clippy -- -D warnings
 
 # Clean build artifacts
 clean:
 	@echo "Cleaning..."
-	@if exist gip.exe del /F /Q gip.exe 2>nul || echo ""
-	@if exist gip-merge-driver.exe del /F /Q gip-merge-driver.exe 2>nul || echo ""
-	@if exist coverage.out del /F /Q coverage.out 2>nul || echo ""
-	@if exist coverage.html del /F /Q coverage.html 2>nul || echo ""
-	@if exist test-merge-repo rmdir /S /Q test-merge-repo 2>nul || echo ""
-	@if exist test-repo rmdir /S /Q test-repo 2>nul || echo ""
+	cargo clean
 	@echo "Clean complete"
 
 # Run tests and build
 all: test build
 
-# Quick check - run tests and build if they pass
-check: test
+# Quick check - format, lint, test, then build
+check: format lint test
 	@echo ""
-	@echo "Tests passed! Building..."
+	@echo "All checks passed! Building..."
 	@$(MAKE) build

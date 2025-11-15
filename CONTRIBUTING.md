@@ -22,9 +22,9 @@ This project and everyone participating in it is governed by our [Code of Conduc
 
 ### Prerequisites
 
-- **Go 1.21 or higher** - [Install Go](https://golang.org/doc/install)
+- **Rust 1.70 or higher** - [Install Rust](https://rustup.rs/)
 - **Git** - [Install Git](https://git-scm.com/downloads)
-- **Make** (optional but recommended) - For running build tasks
+- **Cargo** (comes with Rust) - Package manager and build tool
 
 ### Fork and Clone
 
@@ -44,37 +44,50 @@ This project and everyone participating in it is governed by our [Code of Conduc
 ### Install Dependencies
 
 ```bash
-# Download Go module dependencies
-go mod download
+# Dependencies are managed by Cargo automatically
+# Just make sure you have Rust installed
+rustc --version
+cargo --version
 
-# Install development tools
-go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+# Install development tools (optional)
+cargo install cargo-tarpaulin  # For code coverage
+cargo install cargo-watch      # For auto-rebuild
+rustup component add rustfmt   # For code formatting
+rustup component add clippy    # For linting
 ```
 
 ### Build the Project
 
 ```bash
-# Using Make
-make build
+# Debug build (faster compilation, slower runtime)
+cargo build
 
-# Or directly with Go
-go build -o gip ./cmd/gip
+# Release build (optimized)
+cargo build --release
+
+# The binary will be in target/debug/gip or target/release/gip
 ```
 
 ### Run Tests
 
 ```bash
 # Run all tests
-make test
+cargo test
 
-# Run only unit tests
-make test-unit
+# Run tests with output
+cargo test -- --nocapture
 
-# Run with coverage
-make coverage
+# Run specific module tests
+cargo test manifest
 
-# Run linter
-golangci-lint run ./...
+# Run tests with coverage
+cargo tarpaulin --out Html
+
+# Run linter (clippy)
+cargo clippy -- -D warnings
+
+# Format code
+cargo fmt
 ```
 
 ## How Can I Contribute?
@@ -86,7 +99,7 @@ Before creating bug reports, please check the existing issues to avoid duplicate
 - **Clear title and description**
 - **Steps to reproduce** the problem
 - **Expected behavior** vs **actual behavior**
-- **Environment details** (OS, Go version, Git version)
+- **Environment details** (OS, Rust version, Git version)
 - **Code samples** or **test cases** if applicable
 
 Use the bug report template when creating issues.
@@ -131,22 +144,25 @@ git checkout -b fix/bug-description
 
 ### 2. Make Your Changes
 
-- Write clear, idiomatic Go code
+- Write clear, idiomatic Rust code
 - Follow the [Coding Standards](#coding-standards)
-- Add tests for new functionality
+- Add tests for new functionality (TDD approach preferred)
 - Update documentation as needed
 
 ### 3. Test Your Changes
 
 ```bash
 # Run all tests
-make test
+cargo test
 
 # Run linter
-golangci-lint run ./...
+cargo clippy -- -D warnings
+
+# Check formatting
+cargo fmt --check
 
 # Check test coverage
-make coverage
+cargo tarpaulin --out Html
 ```
 
 ### 4. Commit Your Changes
@@ -168,71 +184,83 @@ Then create a pull request on GitHub.
 
 ## Coding Standards
 
-### Go Style Guide
+### Rust Style Guide
 
-We follow standard Go conventions:
+We follow standard Rust conventions:
 
-- Use `gofmt` for formatting (automatic with most editors)
-- Follow [Effective Go](https://golang.org/doc/effective_go.html)
-- Follow [Go Code Review Comments](https://github.com/golang/go/wiki/CodeReviewComments)
+- Use `cargo fmt` for formatting (automatic with most editors)
+- Follow [Rust API Guidelines](https://rust-lang.github.io/api-guidelines/)
+- Use `cargo clippy` for additional linting
+- Write documentation comments for public APIs
 
 ### Specific Guidelines
 
-#### Package Documentation
+#### Module Documentation
 
-Every package must have a package-level comment:
+Every module must have module-level documentation:
 
-```go
-// Package merge implements Gip's custom merge driver that enriches Git conflict
-// markers with structured context from Gip manifests.
-package merge
 ```
 
 #### Function Documentation
 
-Exported functions must have godoc comments:
+Public functions must have documentation comments:
 
-```go
-// EnrichConflicts reads a file with Git conflict markers and enriches them
-// with context from Gip manifests for each commit SHA.
-//
-// Returns an error if the file cannot be read or manifests cannot be loaded.
-func EnrichConflicts(filePath, ancestorSHA, currentSHA, otherSHA string) error {
+```rust
+/// Enrich conflicts reads a file with Git conflict markers and enriches them
+/// with context from Gip manifests for each commit SHA.
+///
+/// # Arguments
+/// * `file_path` - Path to the file with conflicts
+/// * `ancestor_sha` - SHA of the common ancestor
+/// * `current_sha` - SHA of the current branch
+/// * `other_sha` - SHA of the branch being merged
+///
+/// # Errors
+/// Returns an error if the file cannot be read or manifests cannot be loaded.
+pub fn enrich_conflicts(
+    file_path: &str,
+    ancestor_sha: &str,
+    current_sha: &str,
+    other_sha: &str,
+) -> Result<()> {
 ```
 
 #### Error Handling
 
-- Always check and handle errors
-- Wrap errors with context: `fmt.Errorf("failed to load manifest: %w", err)`
-- Use sentinel errors for common cases: `var ErrManifestNotFound = errors.New("manifest not found")`
-- Never panic in production code
+- Use `Result<T>` for functions that can fail
+- Use `anyhow::Result` for application errors
+- Use `thiserror` for custom error types
+- Add context with `.context()` or `.with_context()`
+- Avoid `unwrap()` and `expect()` in production code
 
 #### Naming Conventions
 
-- Use **camelCase** for variables: `manifestPath`
-- Use **PascalCase** for exported types: `ManifestStorage`
-- Use **descriptive names**: prefer `manifestPath` over `mp`
-- Acronyms should be uppercase: `HTTPServer`, `URLParser`
+- Use **snake_case** for variables and functions: `manifest_path`
+- Use **PascalCase** for types: `ManifestStorage`
+- Use **descriptive names**: prefer `manifest_path` over `mp`
+- Acronyms follow case convention: `HttpServer`, `url_parser`
 
 #### Code Organization
 
 - Keep functions small and focused (< 50 lines when possible)
-- Group related functionality in the same file
-- Put tests in `*_test.go` files alongside the code
-- Use `internal/` for private packages
+- Group related functionality in the same module
+- Put tests in `#[cfg(test)]` modules in the same file
+- Use private modules for internal implementation details
 
 ### Linter Compliance
 
-Your code must pass `golangci-lint`:
+Your code must pass `clippy`:
 
 ```bash
-golangci-lint run ./...
+cargo clippy -- -D warnings
 ```
 
-Our configuration enables these linters:
-- `gofmt`, `govet`, `errcheck`, `staticcheck`
-- `gosimple`, `unused`, `ineffassign`
-- `misspell`, `gocyclo`, `dupl`, `goconst`
+Common clippy lints to follow:
+- Avoid unnecessary allocations
+- Use idiomatic Rust patterns
+- Prefer iterators over manual loops
+- Use `?` operator for error propagation
+- Avoid redundant clones
 
 ## Testing Guidelines
 
@@ -244,50 +272,54 @@ Our configuration enables these linters:
 
 ### Test Structure
 
-Use table-driven tests for multiple scenarios:
+Use Rust's built-in testing framework:
 
-```go
-func TestExtractSymbol(t *testing.T) {
-    t.Parallel()
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pretty_assertions::assert_eq;
     
-    tests := []struct {
-        name     string
-        input    string
-        expected string
-    }{
-        {
-            name:     "Python function",
-            input:    "def calculate():",
-            expected: "calculate",
-        },
-        // ... more test cases
+    #[test]
+    fn test_extract_symbol() {
+        let test_cases = vec![
+            ("def calculate():", "calculate"),
+            ("fn process() {", "process"),
+            // ... more test cases
+        ];
+        
+        for (input, expected) in test_cases {
+            let result = extract_symbol(input);
+            assert_eq!(result, expected, "Failed for input: {}", input);
+        }
     }
     
-    for _, tt := range tests {
-        t.Run(tt.name, func(t *testing.T) {
-            result := ExtractSymbol(tt.input)
-            if result != tt.expected {
-                t.Errorf("expected %s, got %s", tt.expected, result)
-            }
-        })
+    #[test]
+    fn test_with_tempdir() {
+        use tempfile::TempDir;
+        let temp_dir = TempDir::new().unwrap();
+        // test code using temp_dir
+        // TempDir is automatically cleaned up when dropped
     }
 }
 ```
 
 ### Test Helpers
 
-- Use `t.Helper()` in test helper functions
-- Use `t.TempDir()` for temporary directories
-- Use `t.Cleanup()` for cleanup operations
-- Add `t.Parallel()` to independent tests
+- Use `tempfile` crate for temporary directories
+- Use `pretty_assertions` for better assertion output
+- Use `assert_cmd` for testing CLI commands
+- Use `#[should_panic]` for tests that expect panics
 
 ### Integration Tests
 
-- Place integration tests in `tests/integration/`
-- Use `testing.Short()` to skip in short mode:
-  ```go
-  if testing.Short() {
-      t.Skip("Skipping integration test in short mode")
+- Place integration tests in `tests/`
+- Mark them with `#[ignore]` to skip by default:
+  ```rust
+  #[test]
+  #[ignore]  // Run with: cargo test -- --ignored
+  fn test_integration_scenario() {
+      // Test code
   }
   ```
 
@@ -295,19 +327,19 @@ func TestExtractSymbol(t *testing.T) {
 
 ```bash
 # Run all tests
-go test ./...
+cargo test
+
+# Run with output
+cargo test -- --nocapture
+
+# Run specific module tests
+cargo test manifest
 
 # Run with coverage
-go test -cover ./...
+cargo tarpaulin --out Html
 
-# Run only short tests (skip integration)
-go test -short ./...
-
-# Run specific package
-go test ./internal/manifest/...
-
-# Verbose output
-go test -v ./...
+# Run doc tests
+cargo test --doc
 ```
 
 ## Commit Message Guidelines
@@ -383,10 +415,10 @@ language constructs.
 
 Ensure your PR meets these requirements:
 
-- [ ] All tests pass: `make test`
-- [ ] Linter passes: `golangci-lint run ./...`
-- [ ] Code is formatted: `gofmt -w .`
-- [ ] New code has tests
+- [ ] All tests pass: `cargo test`
+- [ ] Linter passes: `cargo clippy -- -D warnings`
+- [ ] Code is formatted: `cargo fmt`
+- [ ] New code has tests (TDD approach)
 - [ ] Documentation is updated
 - [ ] Commit messages follow guidelines
 - [ ] Branch is up to date with `main`
@@ -424,18 +456,22 @@ Use the pull request template and include:
 
 ```
 gip/
-├── cmd/gip/              # Main application entry point
-├── internal/             # Private packages
+├── src/
+│   ├── main.rs           # CLI entry point
+│   ├── lib.rs            # Library root
 │   ├── manifest/         # Manifest storage and serialization
+│   │   ├── mod.rs        # Module exports
+│   │   ├── types.rs      # Data structures
+│   │   ├── storage.rs    # File I/O
+│   │   └── toon.rs       # TOON serialization
 │   ├── merge/            # Merge driver implementation
 │   ├── diff/             # Diff analysis
-│   ├── git/              # Git integration
+│   ├── git.rs            # Git integration
 │   ├── prompt/           # Interactive prompts
-│   └── toon/             # TOON serialization
+│   └── toon/             # TOON utilities
 ├── tests/                # Integration tests
-│   ├── fixtures/         # Test data
-│   ├── helpers/          # Test utilities
-│   └── integration/      # Integration test suites
+│   └── integration_tests.rs
+├── Cargo.toml            # Dependencies and project config
 └── scripts/              # Development scripts
 ```
 
@@ -443,48 +479,50 @@ gip/
 
 ```bash
 # Build and install locally
-go install ./cmd/gip
+cargo install --path .
 
 # Or run directly
-go run ./cmd/gip --version
+cargo run -- --version
 
 # Test in a repository
 cd /path/to/test/repo
-gip init
-gip commit
+cargo run -- init
+cargo run -- commit
 ```
 
 ### Debugging
 
 ```bash
-# Enable verbose output (if available)
-export GIP_DEBUG=1
+# Enable debug logging (if available)
+export RUST_LOG=debug
+export RUST_BACKTRACE=1
 
-# Use Go's built-in tools
-go run -race ./cmd/gip  # Race detector
-go test -race ./...     # Race detection in tests
+# Run with debug symbols
+cargo build
+# Use your preferred debugger (gdb, lldb, VS Code, etc.)
 
-# Use delve debugger
-dlv debug ./cmd/gip
+# Watch mode for development
+cargo watch -x test -x run
 ```
 
 ### Performance Profiling
 
 ```bash
-# CPU profiling
-go test -cpuprofile=cpu.prof ./internal/merge/
-go tool pprof cpu.prof
+# Build with profiling
+cargo build --release
 
-# Memory profiling
-go test -memprofile=mem.prof ./internal/merge/
-go tool pprof mem.prof
+# Use flamegraph for visualization (requires cargo-flamegraph)
+cargo flamegraph
+
+# Benchmark tests
+cargo bench
 ```
 
 ## Resources
 
-- [Go Documentation](https://golang.org/doc/)
-- [Effective Go](https://golang.org/doc/effective_go.html)
-- [Go Code Review Comments](https://github.com/golang/go/wiki/CodeReviewComments)
+- [Rust Documentation](https://doc.rust-lang.org/)
+- [Rust Book](https://doc.rust-lang.org/book/)
+- [Rust API Guidelines](https://rust-lang.github.io/api-guidelines/)
 - [Conventional Commits](https://www.conventionalcommits.org/)
 - [GitHub Flow](https://guides.github.com/introduction/flow/)
 

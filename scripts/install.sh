@@ -4,11 +4,12 @@
 set -e
 
 echo "Building Gip..."
-go build -o gip ./cmd/gip
+cargo build --release
 
 echo "Installing Gip..."
-go install ./cmd/gip
+cargo install --path .
 
 echo ""
 echo "✅ Gip installed successfully!"
+echo "Binary location: ~/.cargo/bin/gip"
 echo "Run 'gip --version' to verify"

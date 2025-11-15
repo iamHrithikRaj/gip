@@ -1,11 +1,12 @@
 # Install Gip locally for development (Windows)
 
 Write-Host "Building Gip..." -ForegroundColor Cyan
-go build -o gip.exe ./cmd/gip
+cargo build --release
 
 Write-Host "Installing Gip..." -ForegroundColor Cyan
-go install ./cmd/gip
+cargo install --path .
 
 Write-Host ""
 Write-Host "✅ Gip installed successfully!" -ForegroundColor Green
+Write-Host "Binary location: $env:USERPROFILE\.cargo\bin\gip.exe"
 Write-Host "Run 'gip --version' to verify"

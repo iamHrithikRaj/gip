@@ -1,8 +1,8 @@
 # Auto detect text files and perform LF normalization
 * text=auto
 
-# Go source files
-*.go text eol=lf
+# Rust source files
+*.rs text eol=lf
 
 # Scripts
 *.sh text eol=lf
@@ -33,6 +33,6 @@
 *.tar binary
 *.gz binary
 
-# Go binary executables
+# Rust binary executables
 gip binary
 *.exe binary

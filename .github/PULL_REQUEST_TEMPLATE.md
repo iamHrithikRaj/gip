@@ -36,7 +36,7 @@ Related to #
 
 **Test Configuration**:
 - OS: 
-- Go version:
+- Rust version:
 - Git version:
 
 **Test Details**:
@@ -58,15 +58,16 @@ Related to #
 - [ ] I have added `t.Parallel()` to new test functions where appropriate
 
 ### Testing
-- [ ] I have added tests that prove my fix is effective or that my feature works
+- [ ] I have added tests that prove my fix is effective or that my feature works (TDD approach)
 - [ ] New and existing unit tests pass locally with my changes
-- [ ] I have run `make test` and all tests pass
-- [ ] I have run `golangci-lint run ./...` with no errors
+- [ ] I have run `cargo test` and all tests pass
+- [ ] I have run `cargo clippy -- -D warnings` with no errors
+- [ ] I have run `cargo fmt` to format the code
 - [ ] Test coverage has not decreased
 
 ### Documentation
 - [ ] I have updated the documentation accordingly
-- [ ] I have added godoc comments for new exported functions/types
+- [ ] I have added doc comments for new public functions/types
 - [ ] I have updated CONTRIBUTING.md if needed
 - [ ] I have added package-level documentation if creating a new package
 
@@ -77,7 +78,7 @@ Related to #
 
 ### Dependencies
 - [ ] I have not added unnecessary dependencies
-- [ ] I have run `go mod tidy` if dependencies changed
+- [ ] I have updated `Cargo.toml` if dependencies changed
 
 ## Breaking Changes
 

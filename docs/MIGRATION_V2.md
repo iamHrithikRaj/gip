@@ -20,8 +20,11 @@ This guide helps you migrate from Gip v1.0 to v2.0.
 ### Step 1: Install v2.0
 
 ```bash
-# If you installed via go install:
-go install github.com/iamHrithikRaj/gip@latest
+# Install from crates.io:
+cargo install gip
+
+# Or download from releases:
+# https://github.com/iamHrithikRaj/gip/releases/latest
 
 # Verify version:
 gip version  # Should show 2.0.0

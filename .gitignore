@@ -1,3 +1,9 @@
+# Rust
+/target/
+**/*.rs.bk
+*.pdb
+Cargo.lock
+
 # Binaries
 gip
 gip.exe
@@ -8,21 +14,10 @@ gip-merge-driver.exe
 *.so
 *.dylib
 
-# Test binary
-*.test
-
-# Output of go build
-/bin/
-/dist/
-/build/
-
-# Go workspace
-go.work
-go.work.sum
-
 # Coverage files
 *.out
 coverage.html
+/target/coverage/
 
 # IDE
 .vscode/

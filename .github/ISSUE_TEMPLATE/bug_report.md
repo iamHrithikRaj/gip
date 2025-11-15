@@ -27,7 +27,7 @@ A clear and concise description of what actually happened.
 ## Environment
 
 - **OS**: [e.g., Windows 11, macOS 14, Ubuntu 22.04]
-- **Go Version**: [e.g., 1.21.5] (output of `go version`)
+- **Rust Version**: [e.g., 1.70.0] (output of `rustc --version`)
 - **Gip Version**: [e.g., 0.1.0] (output of `gip --version`)
 - **Git Version**: [e.g., 2.42.0] (output of `git --version`)
 

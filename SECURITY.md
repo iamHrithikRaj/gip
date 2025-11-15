@@ -56,7 +56,8 @@ When using Gip:
 
 1. **Keep Gip Updated**: Always use the latest version
    ```bash
-   go install github.com/iamHrithikRaj/gip/cmd/gip@latest
+   cargo install gip
+   # Or download from: https://github.com/iamHrithikRaj/gip/releases/latest
    ```
 
 2. **Review Manifests**: Manifests are stored in `.gip/` - ensure they don't contain sensitive data

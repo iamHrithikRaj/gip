@@ -8,50 +8,66 @@ on:
 
 jobs:
   test:
-    name: Test on ${{ matrix.os }} with Go ${{ matrix.go-version }}
+    name: Test on ${{ matrix.os }} with Rust ${{ matrix.rust-version }}
     runs-on: ${{ matrix.os }}
     
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        go-version: ['1.21', '1.22', '1.23']
+        rust-version: ['stable', 'beta']
       fail-fast: false
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: Setup Go
-      uses: actions/setup-go@v5
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@master
       with:
-        go-version: ${{ matrix.go-version }}
+        toolchain: ${{ matrix.rust-version }}
+        components: clippy, rustfmt
     
-    - name: Install dependencies
-      run: go mod download
+    - name: Cache cargo registry
+      uses: actions/cache@v4
+      with:
+        path: ~/.cargo/registry
+        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+    
+    - name: Cache cargo index
+      uses: actions/cache@v4
+      with:
+        path: ~/.cargo/git
+        key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+    
+    - name: Cache cargo build
+      uses: actions/cache@v4
+      with:
+        path: target
+        key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
     
     - name: Run linter
-      uses: golangci/golangci-lint-action@v4
-      with:
-        version: latest
-        args: --timeout=5m
+      run: cargo clippy -- -D warnings
+    
+    - name: Check formatting
+      run: cargo fmt -- --check
     
     - name: Run unit tests
-      run: go test -v -short ./internal/...
+      run: cargo test --lib
     
     - name: Run all tests
-      run: go test -v ./...
+      run: cargo test
     
     - name: Generate coverage
-      if: matrix.os == 'ubuntu-latest' && matrix.go-version == '1.23'
+      if: matrix.os == 'ubuntu-latest' && matrix.rust-version == 'stable'
       run: |
-        go test -coverprofile=coverage.out ./...
-        go tool cover -func=coverage.out
+        cargo install cargo-tarpaulin
+        cargo tarpaulin --out Xml --output-dir ./coverage
     
     - name: Upload coverage to Codecov
-      if: matrix.os == 'ubuntu-latest' && matrix.go-version == '1.23'
+      if: matrix.os == 'ubuntu-latest' && matrix.rust-version == 'stable'
       uses: codecov/codecov-action@v4
       with:
-        files: ./coverage.out
+        files: ./coverage/cobertura.xml
         flags: unittests
         name: codecov-gip
   
@@ -68,19 +84,17 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: Setup Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: '1.23'
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@stable
     
-    - name: Build binary
-      run: go build -o gip ./cmd/gip
+    - name: Build release binary
+      run: cargo build --release
     
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: gip-${{ matrix.os }}
         path: |
-          gip
-          gip.exe
+          target/release/gip
+          target/release/gip.exe
         if-no-files-found: ignore

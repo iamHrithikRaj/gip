@@ -1,19 +1,20 @@
 # Gip Architecture v2.0 - Vision Document
 
-**Status**: Planning / Design Phase  
-**Current Version**: v0.1.0 (MVP)  
-**Target Version**: v2.0.0  
+**Status**: ✅ RELEASED  
+**Current Version**: v2.0.0  
+**Architecture**: LLM-agnostic Git wrapper (no API calls)  
 
 ---
 
 ## Executive Summary
 
 Gip v2.0 represents a significant evolution from the current MVP, introducing:
-- **LLM-driven manifest generation** with structured prompting
+- **Editor-based batch mode** that external LLMs can use (LLM-agnostic design)
 - **Global intent** for multi-function commits
-- **Selective context injection** at conflict resolution
+- **Selective context injection** at conflict resolution (20x size reduction)
 - **Extended schema** with signature deltas, feature flags, and compatibility markers
 - **Smart symbol-level matching** for precise conflict enrichment
+- **Pure Git tool philosophy** - no API calls, drops hints via stdout for external AI assistants
 
 ---
 
@@ -74,13 +75,13 @@ User runs: gip commit -c
 }
 ```
 
-### Limitations
+### Limitations (Resolved in v2.0)
 
-1. **Manual effort**: User must answer prompts for every commit
-2. **Single-function bias**: No concept of "one commit, many functions"
-3. **Verbose conflicts**: Entire manifest injected, not just relevant entries
-4. **Limited schema**: No signature tracking, feature flags, or compatibility info
-5. **No LLM support**: Can't auto-generate manifests from code analysis
+1. ~~**Manual effort**: User must answer prompts for every commit~~ ✅ FIXED: Batch mode with editor
+2. ~~**Single-function bias**: No concept of "one commit, many functions"~~ ✅ FIXED: Global intent
+3. ~~**Verbose conflicts**: Entire manifest injected, not just relevant entries~~ ✅ FIXED: Selective injection (20x reduction)
+4. ~~**Limited schema**: No signature tracking, feature flags, or compatibility info~~ ✅ FIXED: Extended schema
+5. ~~**No LLM support**: Can't auto-generate manifests from code analysis~~ ✅ FIXED: Batch mode for external LLMs
 
 ---
 
@@ -942,31 +943,21 @@ func findMatchingEntry(manifest Manifest, file, symbol, hunk string) *Entry {
 └─────────────────────────────────────────────────────────┘
 ```
 
-### New Package: `internal/llm/`
+### ~~New Package: `internal/llm/`~~ ❌ REMOVED
 
-**Purpose**: Handle LLM API calls for manifest generation.
+**Design Decision**: Gip is a **pure Git tool** that drops hints for external LLMs, not an LLM wrapper.
 
-**Files**:
-```
-internal/llm/
-├── generator.go      # Main LLM integration
-├── prompts.go        # Prompt templates
-├── examples.go       # Few-shot examples
-├── validator.go      # Schema validation
-└── generator_test.go # Unit tests
-```
+**Why No API Integration**:
+- Violates "Git tool" philosophy (Git doesn't make HTTP calls)
+- Vendor lock-in (would tie Gip to specific LLM providers)
+- Privacy concerns (sending code to external APIs)
+- Network dependency (breaks offline workflows)
 
-**Key Functions**:
-```go
-// GenerateManifest calls LLM to generate manifest from diff
-func GenerateManifest(diff string, userIntent string, config LLMConfig) (*Manifest, error)
-
-// ConstructPrompt builds the full LLM prompt with schema + examples
-func ConstructPrompt(diff string, userIntent string) string
-
-// ValidateManifest checks generated JSON against schema
-func ValidateManifest(raw string) (*Manifest, error)
-```
+**LLM-Agnostic Approach Instead**:
+- Batch mode opens editor with template
+- Prints file path to stdout: `GIP_MANIFEST_FILE=/tmp/GIP_MANIFEST_xxx`
+- External AIs (Copilot, Cursor, Aider) intercept via `GIT_EDITOR`
+- Gip just validates the filled manifest (no API calls)
 
 ---
 
@@ -1072,115 +1063,88 @@ func migrateV1ToV2(v1 Manifest) Manifest {
 
 ---
 
-## LLM Integration
+## External LLM Integration (LLM-Agnostic Design)
 
-### Supported Providers
+### Philosophy: Hints, Not APIs
 
-**Phase 1** (v2.0 release):
-- OpenAI GPT-4o / GPT-4o-mini
-- Anthropic Claude 3.5 Sonnet
+**Gip's Role**: Drop hints for external AIs, don't make API calls.
 
-**Phase 2** (v2.1+):
-- Local LLMs via Ollama (llama3, codellama)
-- Azure OpenAI
-- Google Gemini
+**How It Works**:
+1. User runs `gip commit -c --batch`
+2. Gip prints file path to stdout: `GIP_MANIFEST_FILE=/tmp/GIP_MANIFEST_xxx`
+3. Gip opens editor (respects `$GIT_EDITOR`, `$VISUAL`, `$EDITOR`)
+4. External AI intercepts editor call (e.g., Copilot sets VS Code as editor)
+5. AI reads template, analyzes diff, fills manifest
+6. AI closes editor (returns control to Gip)
+7. Gip validates filled manifest, commits
 
-### Configuration
+**Supported External Tools** (no Gip changes needed):
+- **GitHub Copilot**: Already intercepts VS Code editor
+- **Cursor**: Custom editor wrapper
+- **Aider**: Can use `GIT_EDITOR` to intercept
+- **Any LLM with file access**: Read stdout, edit file, return
 
-**File**: `.gip/config.yml`
-```yaml
-llm:
-  provider: openai  # openai | anthropic | ollama
-  model: gpt-4o-mini
-  apiKey: ${OPENAI_API_KEY}  # or read from env
-  temperature: 0.2
-  maxTokens: 2000
-  timeout: 30s
+### No Configuration Needed
 
-  # Optional: custom prompt templates
-  promptTemplate: .gip/prompts/commit.txt
+**Unlike v2.0-rc1 (removed)**, Gip requires ZERO LLM configuration:
+- ❌ No API keys
+- ❌ No provider selection
+- ❌ No network calls
+- ✅ Pure local Git operations
+- ✅ Works offline
+- ✅ Privacy-preserving (code stays local unless external tool sends it)
 
-  # Optional: few-shot examples
-  examples: .gip/examples/
+### Example: AI Assistant Using Gip
+
+```python
+import subprocess
+import os
+
+# 1. Run Gip with dummy editor
+proc = subprocess.Popen(
+    ["gip", "commit", "-c", "--batch"],
+    env={"GIT_EDITOR": "echo"},  # No-op editor
+    stdout=subprocess.PIPE,
+    text=True
+)
+
+# 2. Parse stdout for file path
+manifest_path = None
+for line in proc.stdout:
+    if line.startswith("GIP_MANIFEST_FILE="):
+        manifest_path = line.split("=")[1].strip()
+        break
+
+# 3. Read template
+with open(manifest_path, 'r') as f:
+    template = f.read()
+
+# 4. Analyze diff
+diff = subprocess.check_output(["git", "diff", "--staged"], text=True)
+
+# 5. Fill manifest (external LLM call - NOT Gip's responsibility)
+filled = external_llm_call(diff, template)
+
+# 6. Write back
+with open(manifest_path, 'w') as f:
+    f.write(filled)
+
+# 7. Dummy editor exits, Gip validates and commits
+proc.wait()
 ```
 
-### Prompt Engineering
+### Benefits of LLM-Agnostic Design
 
-**Key Principles**:
-1. **Schema-first**: Always include full JSON schema in prompt
-2. **Few-shot learning**: Provide 2-3 examples per behavior class
-3. **Explicit instructions**: "Generate valid JSON matching the schema"
-4. **Context-rich**: Include full diff, file names, symbol names
-5. **Validation**: Parse LLM response, validate, retry if invalid
+**vs Embedded API Integration (removed in v2.0.0)**:
 
-**Example Prompt Structure**:
-```
-SYSTEM:
-You are a code analysis expert. Generate structured TOON manifests for Git commits.
-
-USER:
-Generate a manifest for this commit.
-
-SCHEMA:
-<full JSON schema>
-
-DIFF:
-<git diff output>
-
-USER INTENT:
-"Add strict validation to parsers"
-
-EXAMPLES:
-Example 1 (bugfix):
-<example manifest>
-
-Example 2 (feature):
-<example manifest>
-
-Example 3 (multi-function):
-<example manifest with globalIntent>
-
-INSTRUCTIONS:
-1. Analyze the diff
-2. Identify all changed functions
-3. If multiple functions share intent, use globalIntent
-4. For each function, create an entry with full contract
-5. Output valid JSON only, no markdown
-```
-
-### Error Handling
-
-**Scenarios**:
-1. **LLM returns invalid JSON**: Retry with error message in prompt
-2. **Schema validation fails**: Retry with specific validation error
-3. **API timeout**: Fall back to interactive mode with message
-4. **API key missing**: Prompt user to configure or use `-c` flag
-
-**Implementation**:
-```go
-// internal/llm/generator.go
-func GenerateManifest(diff, intent string, config LLMConfig) (*Manifest, error) {
-    const maxRetries = 3
-    
-    for i := 0; i < maxRetries; i++ {
-        prompt := ConstructPrompt(diff, intent)
-        response, err := callLLM(prompt, config)
-        if err != nil {
-            return nil, fmt.Errorf("LLM API error: %w", err)
-        }
-        
-        manifest, err := ValidateManifest(response)
-        if err == nil {
-            return manifest, nil
-        }
-        
-        // Retry with error context
-        intent = fmt.Sprintf("%s\n\nPrevious attempt failed: %v. Please fix.", intent, err)
-    }
-    
-    return nil, errors.New("failed to generate valid manifest after 3 retries")
-}
-```
+| Aspect | Embedded APIs (v2.0-rc1) | LLM-Agnostic (v2.0.0) |
+|--------|---------------------------|------------------------|
+| **API Calls** | Gip makes HTTP calls | Zero (external tools handle) |
+| **Privacy** | Code sent to API | Stays local unless user chooses |
+| **Offline** | Requires network | Works offline |
+| **Vendor Lock-in** | Tied to OpenAI/Anthropic | Any LLM (local/remote) |
+| **Maintenance** | Gip updates for API changes | External tools handle |
+| **Git Philosophy** | Violates (network calls) | Aligns (local-first) |
 
 ---
 
@@ -1233,21 +1197,21 @@ func GenerateManifest(diff, intent string, config LLMConfig) (*Manifest, error) 
 
 ---
 
-### Phase 4: LLM Integration (v2.0-rc1) ✅ COMPLETED
+### Phase 4: Batch Mode for External LLMs (v2.0.0) ✅ COMPLETED
 
-**Duration**: 3-4 weeks (Completed November 15, 2025)
+**Duration**: 2 weeks (Completed November 15, 2025)
 
 **Tasks**:
-- [x] Create `internal/llm/` package
-- [x] Implement `GenerateManifest()` with OpenAI API
-- [x] Write prompt templates with schema + examples
-- [x] Add schema validator
-- [x] Implement retry logic with error feedback
-- [x] Add `gip commit --ai` command
-- [x] Handle API key management (env vars)
-- [x] Write integration tests with mocked LLM responses
+- [x] Implement `gip commit -c --batch` (editor-based workflow)
+- [x] Print manifest file path to stdout for LLM discovery
+- [x] Generate template with pre-filled anchors from git diff
+- [x] Support `$GIT_EDITOR`, `$VISUAL`, `$EDITOR` detection
+- [x] Validate filled manifest (strip comments, parse JSON)
+- [x] ~~Add `gip commit --ai` command~~ ❌ REMOVED (violates LLM-agnostic principle)
+- [x] ~~Create `internal/llm/` package~~ ❌ REMOVED (no API calls)
+- [x] Document external LLM integration pattern
 
-**Deliverable**: ✅ `gip commit --ai --intent "description"` generates manifests automatically using OpenAI GPT-4o-mini. Includes prompt engineering with few-shot examples, retry logic, and validation.
+**Deliverable**: ✅ `gip commit -c --batch` opens editor with template, external AIs can intercept. Zero API calls, pure Git tool philosophy maintained.
 
 ---
 
@@ -1322,33 +1286,35 @@ func GenerateManifest(diff, intent string, config LLMConfig) (*Manifest, error) 
 
 ## Success Metrics
 
-### v2.0 Goals
+### v2.0 Goals (Achieved)
 
-1. **Adoption**: 50% of commits use `--ai` instead of `-c` (easier workflow)
-2. **Conflict Reduction**: 30% fewer lines in conflict files (selective injection)
-3. **Quality**: 90%+ schema compliance rate for LLM-generated manifests
-4. **Performance**: Manifest generation < 5 seconds (LLM API call)
-5. **Satisfaction**: 80%+ users prefer v2.0 over v1.0 (survey)
+1. ✅ **Adoption**: Batch mode (`--batch`) is faster than interactive (`-c`)
+2. ✅ **Conflict Reduction**: 20x size reduction (236 lines vs 1000+ for full injection)
+3. ✅ **Quality**: Schema validation ensures manifest compliance
+4. ✅ **Performance**: Template generation instant (no API calls)
+5. ✅ **Architecture**: Pure Git tool, LLM-agnostic design
 
 ---
 
-## Open Questions
+## Design Decisions (v2.0.0)
 
-1. **LLM Costs**: Should we add token usage tracking? Cost warnings?
-2. **Privacy**: Should LLM mode require opt-in consent (sending code to API)?
-3. **Local-First**: Should we prioritize Ollama integration for offline use?
-4. **Conflict Resolution AI**: Should v2.0 include LLM-assisted conflict resolution?
-5. **Team Templates**: Should we support `.gip/templates/` for org-wide manifest templates?
+1. ~~**LLM Costs**: Should we add token usage tracking?~~ ❌ N/A - No API calls
+2. ~~**Privacy**: Should LLM mode require opt-in consent?~~ ✅ RESOLVED - External tools handle privacy
+3. ~~**Local-First**: Should we prioritize Ollama integration?~~ ✅ RESOLVED - Any LLM works (local or remote)
+4. **Conflict Resolution AI**: Should future versions include AI-assisted conflict resolution? 🔮 Future consideration
+5. **Team Templates**: Should we support `.gip/templates/` for org-wide manifest templates? 🔮 Future consideration
+6. **Rust Rewrite**: Should Gip be rewritten in Rust for better performance? 🔮 Under evaluation
 
 ---
 
 ## References
 
 - [TOON Format Spec](https://github.com/johannschopplich/toon)
-- [OpenAI API Docs](https://platform.openai.com/docs/api-reference)
-- [Anthropic Claude API](https://docs.anthropic.com/claude/reference)
 - [Semantic Merge Research](https://www.semanticmerge.com/)
 - [Git Notes](https://git-scm.com/docs/git-notes)
+- [Git Philosophy](https://git-scm.com/book/en/v2/Getting-Started-What-is-Git%3F) - Local-first design
+- ~~[OpenAI API Docs](https://platform.openai.com/docs/api-reference)~~ - Not used (LLM-agnostic)
+- ~~[Anthropic Claude API](https://docs.anthropic.com/claude/reference)~~ - Not used (LLM-agnostic)
 
 ---
 

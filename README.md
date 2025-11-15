@@ -663,13 +663,6 @@ Gip is in active development with an ambitious roadmap:
 - ✅ Multi-language symbol extraction
 - ✅ Comprehensive test suite (24+ passing tests)
 
-### Coming Soon
-- 🚧 AI-powered manifest generation via OpenAI
-- 🚧 Full merge driver with enriched conflicts
-- 🚧 Interactive prompts for commit context
-- 🚧 Breaking change detection
-- 🚧 Feature flag tracking
-
 ### Roadmap
 - **Gip MCP** - Model Context Protocol server for seamless LLM integration
 - **VS Code Extension** - Inline manifest editing and visualization

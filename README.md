@@ -679,9 +679,3 @@ By contributing to Gip, you agree that your contributions will be licensed under
 - 🐛 **Bug Reports**: [Open an issue](https://github.com/iamHrithikRaj/gip/issues/new?template=bug_report.md)
 - 💡 **Feature Requests**: [Suggest a feature](https://github.com/iamHrithikRaj/gip/issues/new?template=feature_request.md)
 - ❓ **Questions**: [Ask a question](https://github.com/iamHrithikRaj/gip/issues/new?template=question.md)
-
----
-
-**Made with ❤️ by a developer tired of cryptic merge conflicts.**
-
-**Gip = Git++** 🎯 Better merges through structured context.

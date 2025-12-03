@@ -4,37 +4,40 @@
 
 #include <algorithm>
 #include <iostream>
+#include <string>
+#include <vector>
 
-namespace gip {
-namespace commands {
+namespace gip::commands {
 
 namespace {
 
 // ANSI color codes for terminal output
+// NOLINTBEGIN(readability-identifier-naming)
 constexpr const char* kColorGreen = "\033[32m";
 constexpr const char* kColorYellow = "\033[33m";
 constexpr const char* kColorCyan = "\033[36m";
 constexpr const char* kColorReset = "\033[0m";
+// NOLINTEND(readability-identifier-naming)
 
 void printSuccess(const std::string& msg) {
-    std::cout << kColorGreen << "[✓] " << msg << kColorReset << std::endl;
+    std::cout << kColorGreen << "[✓] " << msg << kColorReset << '\n';
 }
 
 void printInfo(const std::string& msg) {
-    std::cout << kColorCyan << "[i] " << msg << kColorReset << std::endl;
+    std::cout << kColorCyan << "[i] " << msg << kColorReset << '\n';
 }
 
 void printWarning(const std::string& msg) {
-    std::cout << kColorYellow << "[!] " << msg << kColorReset << std::endl;
+    std::cout << kColorYellow << "[!] " << msg << kColorReset << '\n';
 }
 
 }  // anonymous namespace
 
 auto push(const std::vector<std::string>& args) -> int {
-    GitAdapter git;
+    const GitAdapter git;
 
     if (!git.isRepository()) {
-        std::cerr << "Not a git repository" << std::endl;
+        std::cerr << "Not a git repository" << '\n';
         return 1;
     }
 
@@ -85,7 +88,7 @@ auto push(const std::vector<std::string>& args) -> int {
     auto result = git.execute(pushArgs);
 
     if (!result.success()) {
-        std::cerr << "Push failed: " << result.stderrOutput << std::endl;
+        std::cerr << "Push failed: " << result.stderrOutput << '\n';
         return 1;
     }
 
@@ -116,5 +119,4 @@ auto push(const std::vector<std::string>& args) -> int {
     return 0;
 }
 
-}  // namespace commands
-}  // namespace gip
+}  // namespace gip::commands

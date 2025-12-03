@@ -3,12 +3,13 @@
 #include "../git_adapter.h"
 
 #include <iostream>
+#include <string>
+#include <vector>
 
-namespace gip {
-namespace commands {
+namespace gip::commands {
 
 auto passthrough(const std::vector<std::string>& args) -> int {
-    GitAdapter git;
+    const GitAdapter git;
 
     auto result = git.execute(args);
 
@@ -23,5 +24,4 @@ auto passthrough(const std::vector<std::string>& args) -> int {
     return result.exitCode;
 }
 
-}  // namespace commands
-}  // namespace gip
+}  // namespace gip::commands

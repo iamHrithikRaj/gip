@@ -7,31 +7,34 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <iterator>
 #include <sstream>
+#include <vector>
 
-namespace gip {
-namespace commands {
+namespace gip::commands {
 
 namespace {
 
 // ANSI color codes for terminal output
+// NOLINTBEGIN(readability-identifier-naming)
 constexpr const char* kColorRed = "\033[31m";
 constexpr const char* kColorGreen = "\033[32m";
 constexpr const char* kColorYellow = "\033[33m";
 constexpr const char* kColorCyan = "\033[36m";
 constexpr const char* kColorReset = "\033[0m";
 constexpr const char* kColorBold = "\033[1m";
+// NOLINTEND(readability-identifier-naming)
 
 void printError(const std::string& msg) {
-    std::cerr << kColorRed << "[!] " << msg << kColorReset << std::endl;
+    std::cerr << kColorRed << "[!] " << msg << kColorReset << '\n';
 }
 
 void printSuccess(const std::string& msg) {
-    std::cout << kColorGreen << "[✓] " << msg << kColorReset << std::endl;
+    std::cout << kColorGreen << "[✓] " << msg << kColorReset << '\n';
 }
 
 void printInfo(const std::string& msg) {
-    std::cout << kColorCyan << "[i] " << msg << kColorReset << std::endl;
+    std::cout << kColorCyan << "[i] " << msg << kColorReset << '\n';
 }
 
 auto hasFlag(const std::vector<std::string>& args, const std::string& shortFlag,
@@ -60,7 +63,7 @@ auto getFlagValue(const std::vector<std::string>& args, const std::string& short
 }  // anonymous namespace
 
 auto commit(const std::vector<std::string>& args) -> int {
-    GitAdapter git;
+    const GitAdapter git;
 
     // Check if we're in a git repo
     if (!git.isRepository()) {
@@ -113,7 +116,7 @@ auto commit(const std::vector<std::string>& args) -> int {
         }
 
         printSuccess("Committed (without manifest)");
-        std::cout << result.stdoutOutput << std::endl;
+        std::cout << result.stdoutOutput << '\n';
         return 0;
     }
 
@@ -129,21 +132,20 @@ auto commit(const std::vector<std::string>& args) -> int {
 
         printError("Commit Rejected: Missing Context Manifest\n");
 
-        std::cerr << kColorYellow << "Detected changes in:" << kColorReset << std::endl;
+        std::cerr << kColorYellow << "Detected changes in:" << kColorReset << '\n';
         for (const auto& f : stagedFiles) {
-            std::cerr << "  - " << f.path << " (" << f.status << ")" << std::endl;
+            std::cerr << "  - " << f.path << " (" << f.status << ")" << '\n';
         }
 
-        std::cerr << std::endl;
+        std::cerr << '\n';
         std::cerr << kColorCyan
                   << "Please retry with this block appended to your commit message:" << kColorReset
-                  << std::endl;
-        std::cerr << std::endl;
-        std::cerr << templ << std::endl;
-        std::cerr << std::endl;
+                  << '\n';
+        std::cerr << '\n';
+        std::cerr << templ << '\n';
+        std::cerr << '\n';
         std::cerr << kColorYellow << "Or use " << kColorBold << "gip commit -f" << kColorReset
-                  << kColorYellow << " to force commit without manifest." << kColorReset
-                  << std::endl;
+                  << kColorYellow << " to force commit without manifest." << kColorReset << '\n';
 
         return 1;
     }
@@ -188,10 +190,9 @@ auto commit(const std::vector<std::string>& args) -> int {
     }
 
     printSuccess("Committed with manifest: " + commitSha.substr(0, 7));
-    std::cout << result.stdoutOutput << std::endl;
+    std::cout << result.stdoutOutput << '\n';
 
     return 0;
 }
 
-}  // namespace commands
-}  // namespace gip
+}  // namespace gip::commands

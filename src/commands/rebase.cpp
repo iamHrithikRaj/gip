@@ -10,17 +10,18 @@
 
 #include <iostream>
 
-namespace gip {
-namespace commands {
+namespace gip::commands {
 
 namespace {
 
+// NOLINTBEGIN(readability-identifier-naming)
 constexpr const char* kColorRed = "\033[31m";
 constexpr const char* kColorGreen = "\033[32m";
 constexpr const char* kColorYellow = "\033[33m";
 constexpr const char* kColorCyan = "\033[36m";
 constexpr const char* kColorReset = "\033[0m";
 constexpr const char* kColorBold = "\033[1m";
+// NOLINTEND(readability-identifier-naming)
 
 /// @brief Get the SHA of REBASE_HEAD (the commit being applied)
 std::string getRebaseHead(const GitAdapter& git) {
@@ -99,7 +100,7 @@ auto rebase(const std::vector<std::string>& args) -> int {
 
     // Check if we're in a git repository
     if (!git.isRepository()) {
-        std::cerr << kColorRed << "Error: " << kColorReset << "Not a git repository" << std::endl;
+        std::cerr << kColorRed << "Error: " << kColorReset << "Not a git repository" << '\n';
         return 128;
     }
 
@@ -182,5 +183,4 @@ auto rebase(const std::vector<std::string>& args) -> int {
     return result.exitCode;
 }
 
-}  // namespace commands
-}  // namespace gip
+}  // namespace gip::commands

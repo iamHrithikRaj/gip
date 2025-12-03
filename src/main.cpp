@@ -24,49 +24,49 @@
 namespace {
 
 constexpr const char* kVersion = "1.0.0";
+// NOLINTBEGIN(readability-identifier-naming)
 constexpr const char* kColorCyan = "\033[36m";
 constexpr const char* kColorReset = "\033[0m";
 constexpr const char* kColorBold = "\033[1m";
+// NOLINTEND(readability-identifier-naming)
 
 void printVersion() {
-    std::cout << "gip version " << kVersion << std::endl;
-    std::cout << "Git with Intent Protocol - LLM-native version control" << std::endl;
+    std::cout << "gip version " << kVersion << '\n';
+    std::cout << "Git with Intent Protocol - LLM-native version control" << '\n';
 }
 
 void printHelp() {
-    std::cout << kColorBold << "Gip - Git with Intent Protocol" << kColorReset << std::endl;
-    std::cout << std::endl;
-    std::cout << "A drop-in replacement for git that enforces semantic context" << std::endl;
-    std::cout << "for LLM-native development workflows." << std::endl;
-    std::cout << std::endl;
-    std::cout << kColorCyan << "ENHANCED COMMANDS:" << kColorReset << std::endl;
-    std::cout << "  gip init                  Initialize repo with AI instructions" << std::endl;
-    std::cout << "  gip commit -m \"msg\"       Commit with manifest (required)" << std::endl;
-    std::cout << "  gip commit -f -m \"msg\"    Force commit without manifest" << std::endl;
-    std::cout << "  gip push                  Push code AND context notes to remote" << std::endl;
-    std::cout << "  gip merge <branch>        Merge with enriched conflict markers" << std::endl;
-    std::cout << "  gip rebase <branch>       Rebase with enriched conflict markers" << std::endl;
-    std::cout << std::endl;
-    std::cout << kColorCyan << "CONTEXT COMMANDS:" << kColorReset << std::endl;
-    std::cout << "  gip context <file>              Show semantic history of a file" << std::endl;
-    std::cout << "  gip context <file> --json       Output as JSON (machine-readable)" << std::endl;
-    std::cout << "  gip context --all               Show context for all tracked files"
-              << std::endl;
+    std::cout << kColorBold << "Gip - Git with Intent Protocol" << kColorReset << '\n';
+    std::cout << '\n';
+    std::cout << "A drop-in replacement for git that enforces semantic context" << '\n';
+    std::cout << "for LLM-native development workflows." << '\n';
+    std::cout << '\n';
+    std::cout << kColorCyan << "ENHANCED COMMANDS:" << kColorReset << '\n';
+    std::cout << "  gip init                  Initialize repo with AI instructions" << '\n';
+    std::cout << "  gip commit -m \"msg\"       Commit with manifest (required)" << '\n';
+    std::cout << "  gip commit -f -m \"msg\"    Force commit without manifest" << '\n';
+    std::cout << "  gip push                  Push code AND context notes to remote" << '\n';
+    std::cout << "  gip merge <branch>        Merge with enriched conflict markers" << '\n';
+    std::cout << "  gip rebase <branch>       Rebase with enriched conflict markers" << '\n';
+    std::cout << '\n';
+    std::cout << kColorCyan << "CONTEXT COMMANDS:" << kColorReset << '\n';
+    std::cout << "  gip context <file>              Show semantic history of a file" << '\n';
+    std::cout << "  gip context <file> --json       Output as JSON (machine-readable)" << '\n';
+    std::cout << "  gip context --all               Show context for all tracked files" << '\n';
     std::cout << "  gip context --behavior <type>   Filter by behavior (feature, bugfix, etc.)"
-              << std::endl;
-    std::cout << "  gip context --since <date>      Filter commits since date (YYYY-MM-DD)"
-              << std::endl;
-    std::cout << "  gip context --export <file>     Export context to JSON file" << std::endl;
-    std::cout << std::endl;
-    std::cout << kColorCyan << "PASSTHROUGH:" << kColorReset << std::endl;
-    std::cout << "  All other git commands are passed through directly." << std::endl;
-    std::cout << "  Example: gip status, gip log, gip branch, etc." << std::endl;
-    std::cout << std::endl;
-    std::cout << kColorCyan << "OPTIONS:" << kColorReset << std::endl;
-    std::cout << "  --version, -v         Show version" << std::endl;
-    std::cout << "  --help, -h            Show this help" << std::endl;
-    std::cout << std::endl;
-    std::cout << "For more information: https://github.com/iamHrithikRaj/gip" << std::endl;
+              << '\n';
+    std::cout << "  gip context --since <date>      Filter commits since date (YYYY-MM-DD)" << '\n';
+    std::cout << "  gip context --export <file>     Export context to JSON file" << '\n';
+    std::cout << '\n';
+    std::cout << kColorCyan << "PASSTHROUGH:" << kColorReset << '\n';
+    std::cout << "  All other git commands are passed through directly." << '\n';
+    std::cout << "  Example: gip status, gip log, gip branch, etc." << '\n';
+    std::cout << '\n';
+    std::cout << kColorCyan << "OPTIONS:" << kColorReset << '\n';
+    std::cout << "  --version, -v         Show version" << '\n';
+    std::cout << "  --help, -h            Show this help" << '\n';
+    std::cout << '\n';
+    std::cout << "For more information: https://github.com/iamHrithikRaj/gip" << '\n';
 }
 
 }  // anonymous namespace

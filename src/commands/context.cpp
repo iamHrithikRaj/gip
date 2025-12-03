@@ -9,12 +9,12 @@
 #include <iostream>
 #include <sstream>
 
-namespace gip {
-namespace commands {
+namespace gip::commands {
 
 namespace {
 
 // ANSI color codes for terminal output
+// NOLINTBEGIN(readability-identifier-naming)
 constexpr const char* kColorRed = "\033[31m";
 constexpr const char* kColorGreen = "\033[32m";
 constexpr const char* kColorYellow = "\033[33m";
@@ -23,39 +23,40 @@ constexpr const char* kColorMagenta = "\033[35m";
 constexpr const char* kColorReset = "\033[0m";
 constexpr const char* kColorBold = "\033[1m";
 constexpr const char* kColorDim = "\033[2m";
+// NOLINTEND(readability-identifier-naming)
 
 void printError(const std::string& msg) {
-    std::cerr << kColorRed << "[!] " << msg << kColorReset << std::endl;
+    std::cerr << kColorRed << "[!] " << msg << kColorReset << '\n';
 }
 
 void printSuccess(const std::string& msg) {
-    std::cout << kColorGreen << "[✓] " << msg << kColorReset << std::endl;
+    std::cout << kColorGreen << "[✓] " << msg << kColorReset << '\n';
 }
 
 void printHeader(const std::string& filePath) {
-    std::cout << std::endl;
+    std::cout << '\n';
     std::cout << kColorBold << kColorCyan
               << "═══════════════════════════════════════════════════════════════" << kColorReset
-              << std::endl;
-    std::cout << kColorBold << "  Gip Context Report: " << kColorReset << filePath << std::endl;
+              << '\n';
+    std::cout << kColorBold << "  Gip Context Report: " << kColorReset << filePath << '\n';
     std::cout << kColorCyan << "═══════════════════════════════════════════════════════════════"
-              << kColorReset << std::endl;
-    std::cout << std::endl;
+              << kColorReset << '\n';
+    std::cout << '\n';
 }
 
 void printCommitContext(const CommitContext& ctx) {
     std::cout << kColorYellow << "┌─ Commit " << kColorBold << ctx.sha.substr(0, 7) << kColorReset;
     std::cout << kColorDim << " (" << ctx.date.substr(0, 10) << " by " << ctx.author << ")"
-              << kColorReset << std::endl;
-    std::cout << kColorYellow << "│" << kColorReset << std::endl;
+              << kColorReset << '\n';
+    std::cout << kColorYellow << "│" << kColorReset << '\n';
     std::cout << kColorYellow << "│  " << kColorReset << kColorBold << ctx.message << kColorReset
-              << std::endl;
+              << '\n';
 
     if (ctx.manifest) {
         auto manifest = Manifest::fromToon(*ctx.manifest);
 
         if (manifest && !manifest->entries.empty()) {
-            std::cout << kColorYellow << "│" << kColorReset << std::endl;
+            std::cout << kColorYellow << "│" << kColorReset << '\n';
 
             std::for_each(
                 manifest->entries.begin(), manifest->entries.end(), [](const auto& entry) {
@@ -63,20 +64,20 @@ void printCommitContext(const CommitContext& ctx) {
                     if (!entry.behavior.empty()) {
                         std::cout << kColorYellow << "│  " << kColorReset;
                         std::cout << kColorMagenta << "Intent: " << kColorReset << entry.behavior
-                                  << std::endl;
+                                  << '\n';
                     }
 
                     // Rationale
                     if (!entry.rationale.empty()) {
                         std::cout << kColorYellow << "│  " << kColorReset;
                         std::cout << kColorGreen << "Rationale: " << kColorReset << entry.rationale
-                                  << std::endl;
+                                  << '\n';
                     }
 
                     // Breaking
                     if (entry.breaking) {
                         std::cout << kColorYellow << "│  " << kColorReset;
-                        std::cout << kColorRed << "BREAKING CHANGE" << kColorReset << std::endl;
+                        std::cout << kColorRed << "BREAKING CHANGE" << kColorReset << '\n';
                     }
 
                     // Migrations
@@ -89,7 +90,7 @@ void printCommitContext(const CommitContext& ctx) {
                             }
                             std::cout << entry.migrations[i];
                         }
-                        std::cout << std::endl;
+                        std::cout << '\n';
                     }
 
                     // Inputs
@@ -102,14 +103,14 @@ void printCommitContext(const CommitContext& ctx) {
                             }
                             std::cout << entry.inputs[i];
                         }
-                        std::cout << std::endl;
+                        std::cout << '\n';
                     }
 
                     // Outputs
                     if (!entry.outputs.empty()) {
                         std::cout << kColorYellow << "│  " << kColorReset;
                         std::cout << kColorCyan << "Outputs: " << kColorReset << entry.outputs
-                                  << std::endl;
+                                  << '\n';
                     }
 
                     // Error Model
@@ -122,7 +123,7 @@ void printCommitContext(const CommitContext& ctx) {
                             }
                             std::cout << entry.errorModel[i];
                         }
-                        std::cout << std::endl;
+                        std::cout << '\n';
                     }
 
                     // Preconditions
@@ -135,7 +136,7 @@ void printCommitContext(const CommitContext& ctx) {
                             }
                             std::cout << entry.preconditions[i];
                         }
-                        std::cout << std::endl;
+                        std::cout << '\n';
                     }
 
                     // Postconditions
@@ -148,7 +149,7 @@ void printCommitContext(const CommitContext& ctx) {
                             }
                             std::cout << entry.postconditions[i];
                         }
-                        std::cout << std::endl;
+                        std::cout << '\n';
                     }
 
                     // Side effects
@@ -161,18 +162,18 @@ void printCommitContext(const CommitContext& ctx) {
                             }
                             std::cout << entry.sideEffects[i];
                         }
-                        std::cout << std::endl;
+                        std::cout << '\n';
                     }
                 });
         }
     } else {
         std::cout << kColorYellow << "│  " << kColorReset;
-        std::cout << kColorDim << "(no manifest)" << kColorReset << std::endl;
+        std::cout << kColorDim << "(no manifest)" << kColorReset << '\n';
     }
 
     std::cout << kColorYellow << "└───────────────────────────────────────────────────────────────"
-              << kColorReset << std::endl;
-    std::cout << std::endl;
+              << kColorReset << '\n';
+    std::cout << '\n';
 }
 
 /// Escape a string for JSON output
@@ -516,8 +517,8 @@ auto context(const std::vector<std::string>& args) -> int {
 
             std::cout << kColorDim
                       << "───────────────────────────────────────────────────────────────"
-                      << kColorReset << std::endl;
-            std::cout << "Showing context for " << allHistory.size() << " files" << std::endl;
+                      << kColorReset << '\n';
+            std::cout << "Showing context for " << allHistory.size() << " files" << '\n';
         }
 
         return 0;
@@ -528,7 +529,7 @@ auto context(const std::vector<std::string>& args) -> int {
 
     if (history.empty()) {
         printError("No commits found for: " + opts.filePath);
-        std::cerr << "Make sure the file path is correct and has been committed." << std::endl;
+        std::cerr << "Make sure the file path is correct and has been committed." << '\n';
         return 1;
     }
 
@@ -579,25 +580,23 @@ auto context(const std::vector<std::string>& args) -> int {
 
         // Summary
         std::cout << kColorDim << "───────────────────────────────────────────────────────────────"
-                  << kColorReset << std::endl;
+                  << kColorReset << '\n';
         std::cout << "Showing " << filtered.size() << " commits";
         std::cout << " (" << kColorGreen << withManifest << " with manifest" << kColorReset;
         std::cout << ", " << kColorDim << withoutManifest << " without" << kColorReset << ")"
-                  << std::endl;
+                  << '\n';
 
         if (!opts.behaviorFilter.empty()) {
             std::cout << "Filtered by behavior: " << kColorMagenta << opts.behaviorFilter
-                      << kColorReset << std::endl;
+                      << kColorReset << '\n';
         }
         if (!opts.sinceDate.empty()) {
-            std::cout << "Filtered since: " << kColorCyan << opts.sinceDate << kColorReset
-                      << std::endl;
+            std::cout << "Filtered since: " << kColorCyan << opts.sinceDate << kColorReset << '\n';
         }
-        std::cout << std::endl;
+        std::cout << '\n';
     }
 
     return 0;
 }
 
-}  // namespace commands
-}  // namespace gip
+}  // namespace gip::commands

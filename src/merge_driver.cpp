@@ -20,10 +20,12 @@ namespace gip {
 namespace {
 
 /// @brief Conflict marker patterns
+// NOLINTBEGIN(readability-identifier-naming)
 constexpr const char* kConflictStart = "<<<<<<<";
 constexpr const char* kConflictMiddle = "=======";
 constexpr const char* kConflictEnd = ">>>>>>>";
 constexpr const char* kConflictBase = "|||||||";  // For diff3 style
+// NOLINTEND(readability-identifier-naming)
 
 /// @brief Check if a line starts with a conflict marker
 bool isConflictMarker(const std::string& line, const char* marker) {
@@ -110,23 +112,23 @@ bool MergeDriver::enrichConflictMarkers(const std::string& filePath, const std::
     while (std::getline(input, line)) {
         if (isConflictMarker(line, kConflictStart)) {
             // Output the original marker
-            output << line << "\n";
+            output << line << '\n';
 
             // Add enriched context for "ours" side
             if (oursContext.has_value()) {
                 output << formatEnrichedMarker("HEAD", "Your changes", *oursContext);
             }
         } else if (isConflictMarker(line, kConflictMiddle)) {
-            output << line << "\n";
+            output << line << '\n';
         } else if (isConflictMarker(line, kConflictEnd)) {
             // Add enriched context for "theirs" side before end marker
             if (theirsContext.has_value()) {
                 output << formatEnrichedMarker(extractMarkerInfo(line), "Their changes",
                                                *theirsContext);
             }
-            output << line << "\n";
+            output << line << '\n';
         } else {
-            output << line << "\n";
+            output << line << '\n';
         }
     }
 
@@ -182,52 +184,52 @@ std::string MergeDriver::formatEnrichedMarker(const std::string& side,
     std::ostringstream output;
 
     output << kContextPrefix << " (" << side << " - " << description << ")\n";
-    output << "||| Commit: " << context.commitSha << "\n";
+    output << "||| Commit: " << context.commitSha << '\n';
 
     if (!context.behaviorClass.empty()) {
-        output << "||| behaviorClass: " << context.behaviorClass << "\n";
+        output << "||| behaviorClass: " << context.behaviorClass << '\n';
     }
 
     if (!context.behaviorChanges.empty()) {
-        output << "||| behaviorChanges: " << context.behaviorChanges << "\n";
+        output << "||| behaviorChanges: " << context.behaviorChanges << '\n';
     }
 
-    output << "||| breaking: " << (context.breaking ? "true" : "false") << "\n";
+    output << "||| breaking: " << (context.breaking ? "true" : "false") << '\n';
 
     if (context.breaking && !context.migrations.empty()) {
         for (size_t i = 0; i < context.migrations.size(); ++i) {
-            output << "||| migrations[" << i << "]: " << context.migrations[i] << "\n";
+            output << "||| migrations[" << i << "]: " << context.migrations[i] << '\n';
         }
     }
 
     if (!context.inputs.empty()) {
         for (size_t i = 0; i < context.inputs.size(); ++i) {
-            output << "||| inputs[" << i << "]: " << context.inputs[i] << "\n";
+            output << "||| inputs[" << i << "]: " << context.inputs[i] << '\n';
         }
     }
 
     if (!context.outputs.empty()) {
-        output << "||| outputs: " << context.outputs << "\n";
+        output << "||| outputs: " << context.outputs << '\n';
     }
 
     // Output preconditions
     for (size_t i = 0; i < context.preconditions.size(); ++i) {
-        output << "||| preconditions[" << i << "]: " << context.preconditions[i] << "\n";
+        output << "||| preconditions[" << i << "]: " << context.preconditions[i] << '\n';
     }
 
     // Output postconditions
     for (size_t i = 0; i < context.postconditions.size(); ++i) {
-        output << "||| postconditions[" << i << "]: " << context.postconditions[i] << "\n";
+        output << "||| postconditions[" << i << "]: " << context.postconditions[i] << '\n';
     }
 
     if (!context.errorModel.empty()) {
         for (size_t i = 0; i < context.errorModel.size(); ++i) {
-            output << "||| errorModel[" << i << "]: " << context.errorModel[i] << "\n";
+            output << "||| errorModel[" << i << "]: " << context.errorModel[i] << '\n';
         }
     }
 
     if (!context.rationale.empty()) {
-        output << "||| rationale: " << context.rationale << "\n";
+        output << "||| rationale: " << context.rationale << '\n';
     }
 
     // Output side effects
@@ -235,23 +237,23 @@ std::string MergeDriver::formatEnrichedMarker(const std::string& side,
         output << "||| sideEffects: none\n";
     } else {
         for (size_t i = 0; i < context.sideEffects.size(); ++i) {
-            output << "||| sideEffects[" << i << "]: " << context.sideEffects[i] << "\n";
+            output << "||| sideEffects[" << i << "]: " << context.sideEffects[i] << '\n';
         }
     }
 
     // Output testing info
     if (!context.testingRequired.empty()) {
         for (size_t i = 0; i < context.testingRequired.size(); ++i) {
-            output << "||| testingRequired[" << i << "]: " << context.testingRequired[i] << "\n";
+            output << "||| testingRequired[" << i << "]: " << context.testingRequired[i] << '\n';
         }
     }
 
     if (!context.testingCoverage.empty()) {
-        output << "||| testingCoverage: " << context.testingCoverage << "\n";
+        output << "||| testingCoverage: " << context.testingCoverage << '\n';
     }
 
     if (!context.symbol.empty()) {
-        output << "||| symbol: " << context.symbol << "\n";
+        output << "||| symbol: " << context.symbol << '\n';
     }
 
     return output.str();

@@ -101,9 +101,9 @@ The TOON format used by Gip is **49% smaller than JSON** and **23% smaller than 
 
 ## Installation
 
-### One-Line Install (Build from Source)
+### One-Line Install
 
-You can install Gip with a single command. This will clone the repository to a temporary location, build it, and install it to your user folder.
+You can install Gip with a single command. This will download the latest pre-built binary for your platform and install it to your user folder.
 
 **Windows (PowerShell):**
 ```powershell
@@ -115,9 +115,9 @@ Set-ExecutionPolicy Bypass -Scope Process -Force; irm https://raw.githubusercont
 curl -sL https://raw.githubusercontent.com/iamHrithikRaj/gip/main/scripts/bootstrap.sh | bash
 ```
 
-### Manual Install
+### Manual Install (Build from Source)
 
-If you prefer to inspect the code first:
+If you prefer to inspect the code first or build from source:
 
 **Windows (PowerShell):**
 ```powershell
@@ -133,7 +133,7 @@ cd gip
 ./scripts/install.sh
 ```
 
-### Pre-built Binaries
+### Pre-built Binaries (Manual Download)
 
 Download the latest release for your platform:
 

@@ -8,10 +8,20 @@ $TempDir = Join-Path $env:TEMP ("gip-install-" + [Guid]::NewGuid().ToString())
 
 try {
     Write-Host "Downloading Gip source..." -ForegroundColor Cyan
-    git clone --depth 1 --recursive $RepoUrl $TempDir
-
+    # Clone main repo
+    git clone --depth 1 $RepoUrl $TempDir
+    
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to clone repository."
+    }
+
+    # Manually init submodules to be safe
+    Push-Location $TempDir
+    try {
+        git submodule update --init --recursive
+    }
+    finally {
+        Pop-Location
     }
 
     Write-Host "Running installer..." -ForegroundColor Cyan
@@ -21,15 +31,17 @@ try {
     $OriginalLocation = Get-Location
     
     & $InstallScript
-    
-    # Restore location to ensure we're not locking the temp dir
-    Set-Location $OriginalLocation
 }
 catch {
     Write-Error $_
     exit 1
 }
 finally {
+    # Restore location to ensure we're not locking the temp dir
+    if ($OriginalLocation) {
+        Set-Location $OriginalLocation
+    }
+
     if (Test-Path $TempDir) {
         Write-Host "Cleaning up..." -ForegroundColor Gray
         Remove-Item -Recurse -Force $TempDir

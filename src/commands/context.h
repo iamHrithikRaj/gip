@@ -23,8 +23,7 @@ struct ContextOptions {
  * @param args Command line arguments to parse
  * @return Parsed options structure
  */
-[[nodiscard]] auto parseContextArgs(const std::vector<std::string>& args)
-    -> ContextOptions;
+[[nodiscard]] auto parseContextArgs(const std::vector<std::string>& args) -> ContextOptions;
 
 /**
  * @brief Execute 'gip context' with various options.

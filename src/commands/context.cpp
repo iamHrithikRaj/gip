@@ -24,37 +24,32 @@ constexpr const char* kColorReset = "\033[0m";
 constexpr const char* kColorBold = "\033[1m";
 constexpr const char* kColorDim = "\033[2m";
 
-void printError(const std::string& msg)
-{
+void printError(const std::string& msg) {
     std::cerr << kColorRed << "[!] " << msg << kColorReset << std::endl;
 }
 
-void printSuccess(const std::string& msg)
-{
+void printSuccess(const std::string& msg) {
     std::cout << kColorGreen << "[✓] " << msg << kColorReset << std::endl;
 }
 
-void printHeader(const std::string& filePath)
-{
+void printHeader(const std::string& filePath) {
     std::cout << std::endl;
     std::cout << kColorBold << kColorCyan
-              << "═══════════════════════════════════════════════════════════════"
-              << kColorReset << std::endl;
+              << "═══════════════════════════════════════════════════════════════" << kColorReset
+              << std::endl;
     std::cout << kColorBold << "  Gip Context Report: " << kColorReset << filePath << std::endl;
-    std::cout << kColorCyan
-              << "═══════════════════════════════════════════════════════════════"
+    std::cout << kColorCyan << "═══════════════════════════════════════════════════════════════"
               << kColorReset << std::endl;
     std::cout << std::endl;
 }
 
-void printCommitContext(const CommitContext& ctx)
-{
+void printCommitContext(const CommitContext& ctx) {
     std::cout << kColorYellow << "┌─ Commit " << kColorBold << ctx.sha.substr(0, 7) << kColorReset;
     std::cout << kColorDim << " (" << ctx.date.substr(0, 10) << " by " << ctx.author << ")"
               << kColorReset << std::endl;
     std::cout << kColorYellow << "│" << kColorReset << std::endl;
-    std::cout << kColorYellow << "│  " << kColorReset << kColorBold << ctx.message
-              << kColorReset << std::endl;
+    std::cout << kColorYellow << "│  " << kColorReset << kColorBold << ctx.message << kColorReset
+              << std::endl;
 
     if (ctx.manifest) {
         auto manifest = Manifest::fromToon(*ctx.manifest);
@@ -174,32 +169,40 @@ void printCommitContext(const CommitContext& ctx)
         std::cout << kColorDim << "(no manifest)" << kColorReset << std::endl;
     }
 
-    std::cout << kColorYellow
-              << "└───────────────────────────────────────────────────────────────"
+    std::cout << kColorYellow << "└───────────────────────────────────────────────────────────────"
               << kColorReset << std::endl;
     std::cout << std::endl;
 }
 
 /// Escape a string for JSON output
-auto escapeJson(const std::string& str) -> std::string
-{
+auto escapeJson(const std::string& str) -> std::string {
     std::ostringstream oss;
     for (char c : str) {
         switch (c) {
-            case '"': oss << "\\\""; break;
-            case '\\': oss << "\\\\"; break;
-            case '\n': oss << "\\n"; break;
-            case '\r': oss << "\\r"; break;
-            case '\t': oss << "\\t"; break;
-            default: oss << c;
+            case '"':
+                oss << "\\\"";
+                break;
+            case '\\':
+                oss << "\\\\";
+                break;
+            case '\n':
+                oss << "\\n";
+                break;
+            case '\r':
+                oss << "\\r";
+                break;
+            case '\t':
+                oss << "\\t";
+                break;
+            default:
+                oss << c;
         }
     }
     return oss.str();
 }
 
 /// Convert a vector of strings to JSON array string
-auto vectorToJsonArray(const std::vector<std::string>& vec) -> std::string
-{
+auto vectorToJsonArray(const std::vector<std::string>& vec) -> std::string {
     std::ostringstream oss;
     oss << "[";
     for (size_t i = 0; i < vec.size(); ++i) {
@@ -213,8 +216,7 @@ auto vectorToJsonArray(const std::vector<std::string>& vec) -> std::string
 }
 
 /// Convert a single commit context to JSON object
-auto commitToJson(const CommitContext& ctx, const std::string& indent = "    ") -> std::string
-{
+auto commitToJson(const CommitContext& ctx, const std::string& indent = "    ") -> std::string {
     std::ostringstream oss;
     oss << indent << "{\n";
     oss << indent << "  \"sha\": \"" << ctx.sha << "\",\n";
@@ -237,16 +239,26 @@ auto commitToJson(const CommitContext& ctx, const std::string& indent = "    ") 
                 oss << indent << "        \"file\": \"" << escapeJson(entry.file) << "\",\n";
                 oss << indent << "        \"symbol\": \"" << escapeJson(entry.symbol) << "\",\n";
                 oss << indent << "        \"type\": \"" << escapeJson(entry.type) << "\",\n";
-                oss << indent << "        \"behavior\": \"" << escapeJson(entry.behavior) << "\",\n";
-                oss << indent << "        \"rationale\": \"" << escapeJson(entry.rationale) << "\",\n";
-                oss << indent << "        \"breaking\": " << (entry.breaking ? "true" : "false") << ",\n";
-                oss << indent << "        \"migrations\": " << vectorToJsonArray(entry.migrations) << ",\n";
+                oss << indent << "        \"behavior\": \"" << escapeJson(entry.behavior)
+                    << "\",\n";
+                oss << indent << "        \"rationale\": \"" << escapeJson(entry.rationale)
+                    << "\",\n";
+                oss << indent << "        \"breaking\": " << (entry.breaking ? "true" : "false")
+                    << ",\n";
+                oss << indent << "        \"migrations\": " << vectorToJsonArray(entry.migrations)
+                    << ",\n";
                 oss << indent << "        \"inputs\": " << vectorToJsonArray(entry.inputs) << ",\n";
                 oss << indent << "        \"outputs\": \"" << escapeJson(entry.outputs) << "\",\n";
-                oss << indent << "        \"errorModel\": " << vectorToJsonArray(entry.errorModel) << ",\n";
-                oss << indent << "        \"preconditions\": " << vectorToJsonArray(entry.preconditions) << ",\n";
-                oss << indent << "        \"postconditions\": " << vectorToJsonArray(entry.postconditions) << ",\n";
-                oss << indent << "        \"sideEffects\": " << vectorToJsonArray(entry.sideEffects) << "\n";
+                oss << indent << "        \"errorModel\": " << vectorToJsonArray(entry.errorModel)
+                    << ",\n";
+                oss << indent
+                    << "        \"preconditions\": " << vectorToJsonArray(entry.preconditions)
+                    << ",\n";
+                oss << indent
+                    << "        \"postconditions\": " << vectorToJsonArray(entry.postconditions)
+                    << ",\n";
+                oss << indent << "        \"sideEffects\": " << vectorToJsonArray(entry.sideEffects)
+                    << "\n";
                 oss << indent << "      }";
                 if (i < manifest->entries.size() - 1) {
                     oss << ",";
@@ -264,9 +276,8 @@ auto commitToJson(const CommitContext& ctx, const std::string& indent = "    ") 
 }
 
 /// Generate JSON output for file history
-auto historyToJson(const std::string& filePath,
-                   const std::vector<CommitContext>& history) -> std::string
-{
+auto historyToJson(const std::string& filePath, const std::vector<CommitContext>& history)
+    -> std::string {
     std::ostringstream oss;
     oss << "{\n";
     oss << "  \"file\": \"" << escapeJson(filePath) << "\",\n";
@@ -299,8 +310,8 @@ auto historyToJson(const std::string& filePath,
 
 /// Generate JSON for all files context
 auto allFilesToJson(
-    const std::vector<std::pair<std::string, std::vector<CommitContext>>>& allHistory) -> std::string
-{
+    const std::vector<std::pair<std::string, std::vector<CommitContext>>>& allHistory)
+    -> std::string {
     std::ostringstream oss;
     oss << "{\n";
     oss << "  \"generatedAt\": \"" << __DATE__ << " " << __TIME__ << "\",\n";
@@ -337,9 +348,7 @@ auto allFilesToJson(
 }
 
 /// Check if a commit matches the behavior filter
-auto matchesBehaviorFilter(const CommitContext& ctx,
-                           const std::string& behaviorFilter) -> bool
-{
+auto matchesBehaviorFilter(const CommitContext& ctx, const std::string& behaviorFilter) -> bool {
     if (behaviorFilter.empty()) {
         return true;
     }
@@ -361,8 +370,7 @@ auto matchesBehaviorFilter(const CommitContext& ctx,
 }
 
 /// Check if a commit is after the given date (YYYY-MM-DD format)
-auto isAfterDate(const std::string& commitDate, const std::string& sinceDate) -> bool
-{
+auto isAfterDate(const std::string& commitDate, const std::string& sinceDate) -> bool {
     if (sinceDate.empty()) {
         return true;
     }
@@ -371,8 +379,7 @@ auto isAfterDate(const std::string& commitDate, const std::string& sinceDate) ->
 }
 
 /// Get all tracked files in the repo
-auto getAllTrackedFiles(const GitAdapter& git) -> std::vector<std::string>
-{
+auto getAllTrackedFiles(const GitAdapter& git) -> std::vector<std::string> {
     std::vector<std::string> files;
 
     auto result = git.execute({"ls-files"});
@@ -391,15 +398,15 @@ auto getAllTrackedFiles(const GitAdapter& git) -> std::vector<std::string>
     return files;
 }
 
-void printUsage()
-{
+void printUsage() {
     std::cerr << "Usage: gip context [OPTIONS] [<filename>]\n\n";
     std::cerr << "Shows the semantic history of a file with manifest context.\n\n";
     std::cerr << "OPTIONS:\n";
     std::cerr << "  --json              Output as JSON (machine-readable)\n";
     std::cerr << "  --export <file>     Export JSON to specified file\n";
     std::cerr << "  --all               Show context for all tracked files\n";
-    std::cerr << "  --behavior <type>   Filter by behavior (feature, bugfix, refactor, perf, security)\n";
+    std::cerr
+        << "  --behavior <type>   Filter by behavior (feature, bugfix, refactor, perf, security)\n";
     std::cerr << "  --since <date>      Show commits since date (YYYY-MM-DD)\n";
     std::cerr << "  -h, --help          Show this help\n\n";
     std::cerr << "EXAMPLES:\n";
@@ -412,8 +419,7 @@ void printUsage()
 
 }  // anonymous namespace
 
-auto parseContextArgs(const std::vector<std::string>& args) -> ContextOptions
-{
+auto parseContextArgs(const std::vector<std::string>& args) -> ContextOptions {
     ContextOptions opts;
 
     for (size_t i = 0; i < args.size(); ++i) {
@@ -440,8 +446,7 @@ auto parseContextArgs(const std::vector<std::string>& args) -> ContextOptions
     return opts;
 }
 
-auto context(const std::vector<std::string>& args) -> int
-{
+auto context(const std::vector<std::string>& args) -> int {
     // Check for help flag
     for (const auto& arg : args) {
         if (arg == "-h" || arg == "--help") {
@@ -584,8 +589,7 @@ auto context(const std::vector<std::string>& args) -> int
         }
 
         // Summary
-        std::cout << kColorDim
-                  << "───────────────────────────────────────────────────────────────"
+        std::cout << kColorDim << "───────────────────────────────────────────────────────────────"
                   << kColorReset << std::endl;
         std::cout << "Showing " << filtered.size() << " commits";
         std::cout << " (" << kColorGreen << withManifest << " with manifest" << kColorReset;

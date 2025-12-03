@@ -3,16 +3,16 @@
 #include <array>
 #include <cstdio>
 #include <cstdlib>
+#include <filesystem>
 #include <fstream>
 #include <memory>
 #include <sstream>
 #include <stdexcept>
-#include <filesystem>
 
 #ifdef _WIN32
-#include <windows.h>
-#define popen _popen
-#define pclose _pclose
+    #include <windows.h>
+    #define popen _popen
+    #define pclose _pclose
 #endif
 
 namespace gip {
@@ -67,8 +67,7 @@ GitResult executeCommand(const std::string& cmd) {
 /// @param program The program to execute
 /// @param args The arguments to pass
 /// @return The constructed command string
-std::string buildCommandString(const std::string& program,
-                                const std::vector<std::string>& args) {
+std::string buildCommandString(const std::string& program, const std::vector<std::string>& args) {
     std::ostringstream cmd;
     cmd << program;
 
@@ -76,8 +75,8 @@ std::string buildCommandString(const std::string& program,
         cmd << " ";
         // Quote arguments with spaces, special characters, or percent signs (Windows)
         const bool needsQuoting = arg.find(' ') != std::string::npos ||
-                                   arg.find('"') != std::string::npos ||
-                                   arg.find('%') != std::string::npos;
+                                  arg.find('"') != std::string::npos ||
+                                  arg.find('%') != std::string::npos;
         if (needsQuoting) {
             cmd << "\"";
             for (char c : arg) {
@@ -111,8 +110,7 @@ inline GitResult execCommand(const std::string& cmd) {
     return executeCommand(cmd);
 }
 
-inline std::string buildCommand(const std::string& program,
-                                 const std::vector<std::string>& args) {
+inline std::string buildCommand(const std::string& program, const std::vector<std::string>& args) {
     return buildCommandString(program, args);
 }
 
@@ -222,10 +220,12 @@ GitResult GitAdapter::addNote(const std::string& commitSha, const std::string& c
         auto tempDir = std::filesystem::temp_directory_path();
         // Generate a unique filename using a simple random number or timestamp would be better,
         // but commitSha is unique enough for this context.
-        // Use a random suffix to avoid collisions if multiple processes work on same commit (unlikely here)
-        auto tempFile = tempDir / ("gip_note_" + commitSha + "_" + std::to_string(std::rand()) + ".txt");
+        // Use a random suffix to avoid collisions if multiple processes work on same commit
+        // (unlikely here)
+        auto tempFile =
+            tempDir / ("gip_note_" + commitSha + "_" + std::to_string(std::rand()) + ".txt");
         tempPath = tempFile.string();
-        
+
         std::ofstream ofs(tempPath);
         if (!ofs) {
             GitResult result;
@@ -242,9 +242,8 @@ GitResult GitAdapter::addNote(const std::string& commitSha, const std::string& c
         return result;
     }
 
-    auto result = executeCommand(buildCommandString("git", {
-        "notes", "--ref=gip", "add", "-f", "-F", tempPath, commitSha
-    }));
+    auto result = executeCommand(
+        buildCommandString("git", {"notes", "--ref=gip", "add", "-f", "-F", tempPath, commitSha}));
 
     // Cleanup
     try {
@@ -257,9 +256,8 @@ GitResult GitAdapter::addNote(const std::string& commitSha, const std::string& c
 }
 
 std::optional<std::string> GitAdapter::getNote(const std::string& commitSha) const {
-    auto result = executeCommand(buildCommandString("git", {
-        "notes", "--ref=gip", "show", commitSha
-    }));
+    auto result =
+        executeCommand(buildCommandString("git", {"notes", "--ref=gip", "show", commitSha}));
 
     if (!result.success()) {
         return std::nullopt;
@@ -274,8 +272,7 @@ std::optional<std::string> GitAdapter::getNote(const std::string& commitSha) con
     return content;
 }
 
-auto GitAdapter::getHeadSha() const -> std::string
-{
+auto GitAdapter::getHeadSha() const -> std::string {
     auto result = execCommand("git rev-parse HEAD");
     if (!result.success()) {
         return "";
@@ -284,9 +281,8 @@ auto GitAdapter::getHeadSha() const -> std::string
     return trimNewlines(result.stdoutOutput);
 }
 
-auto GitAdapter::pushWithNotes(const std::string& remote,
-                               const std::string& branch) const -> GitResult
-{
+auto GitAdapter::pushWithNotes(const std::string& remote, const std::string& branch) const
+    -> GitResult {
     // First push the branch
     auto result = execCommand(buildCommand("git", {"push", remote, branch}));
     if (!result.success()) {
@@ -294,9 +290,7 @@ auto GitAdapter::pushWithNotes(const std::string& remote,
     }
 
     // Then push the notes
-    auto notesResult = execCommand(buildCommand("git", {
-        "push", remote, "refs/notes/gip"
-    }));
+    auto notesResult = execCommand(buildCommand("git", {"push", remote, "refs/notes/gip"}));
 
     // Combine results
     result.stdoutOutput += "\n" + notesResult.stdoutOutput;
@@ -308,15 +302,13 @@ auto GitAdapter::pushWithNotes(const std::string& remote,
     return result;
 }
 
-auto GitAdapter::getFileHistory(const std::string& filePath,
-                                int limit) const -> std::vector<CommitContext>
-{
+auto GitAdapter::getFileHistory(const std::string& filePath, int limit) const
+    -> std::vector<CommitContext> {
     std::vector<CommitContext> history;
 
     // Get commits that touched this file
-    auto result = execCommand(buildCommand("git", {
-        "log", "--format=%H|%s|%an|%ai", "-n", std::to_string(limit), "--", filePath
-    }));
+    auto result = execCommand(buildCommand(
+        "git", {"log", "--format=%H|%s|%an|%ai", "-n", std::to_string(limit), "--", filePath}));
 
     if (!result.success()) {
         return history;
@@ -337,8 +329,7 @@ auto GitAdapter::getFileHistory(const std::string& filePath,
         size_t pos2 = line.find('|', pos1 + 1);
         size_t pos3 = line.find('|', pos2 + 1);
 
-        if (pos1 == std::string::npos || pos2 == std::string::npos ||
-            pos3 == std::string::npos) {
+        if (pos1 == std::string::npos || pos2 == std::string::npos || pos3 == std::string::npos) {
             continue;
         }
 
@@ -357,8 +348,7 @@ auto GitAdapter::getFileHistory(const std::string& filePath,
     return history;
 }
 
-auto GitAdapter::initialize() const -> GitResult
-{
+auto GitAdapter::initialize() const -> GitResult {
     return execCommand("git init");
 }
 

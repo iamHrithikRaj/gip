@@ -7,8 +7,7 @@
 namespace gip {
 namespace commands {
 
-auto passthrough(const std::vector<std::string>& args) -> int
-{
+auto passthrough(const std::vector<std::string>& args) -> int {
     GitAdapter git;
 
     auto result = git.execute(args);

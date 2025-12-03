@@ -25,16 +25,16 @@ void setColorEnabled(bool enabled) noexcept;
 [[nodiscard]] bool isColorEnabled() noexcept;
 
 // ANSI color constants
-inline constexpr std::string_view kReset   = "\033[0m";
-inline constexpr std::string_view kBold    = "\033[1m";
-inline constexpr std::string_view kDim     = "\033[2m";
-inline constexpr std::string_view kRed     = "\033[31m";
-inline constexpr std::string_view kGreen   = "\033[32m";
-inline constexpr std::string_view kYellow  = "\033[33m";
-inline constexpr std::string_view kBlue    = "\033[34m";
+inline constexpr std::string_view kReset = "\033[0m";
+inline constexpr std::string_view kBold = "\033[1m";
+inline constexpr std::string_view kDim = "\033[2m";
+inline constexpr std::string_view kRed = "\033[31m";
+inline constexpr std::string_view kGreen = "\033[32m";
+inline constexpr std::string_view kYellow = "\033[33m";
+inline constexpr std::string_view kBlue = "\033[34m";
 inline constexpr std::string_view kMagenta = "\033[35m";
-inline constexpr std::string_view kCyan    = "\033[36m";
-inline constexpr std::string_view kWhite   = "\033[37m";
+inline constexpr std::string_view kCyan = "\033[36m";
+inline constexpr std::string_view kWhite = "\033[37m";
 
 }  // namespace colors
 

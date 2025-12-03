@@ -18,30 +18,36 @@ struct GitResult {
     std::string stderrOutput;
 
     /// @brief Check if command succeeded
-    [[nodiscard]] bool success() const noexcept { return exitCode == 0; }
+    [[nodiscard]] bool success() const noexcept {
+        return exitCode == 0;
+    }
 
     /// @brief Check if command failed
-    [[nodiscard]] bool failed() const noexcept { return exitCode != 0; }
+    [[nodiscard]] bool failed() const noexcept {
+        return exitCode != 0;
+    }
 };
 
 /// @brief Information about a staged file
 struct StagedFile {
-    std::string path;      ///< Relative path to file
-    std::string status;    ///< "A" (added), "M" (modified), "D" (deleted), "R" (renamed)
-    std::string oldPath;   ///< Original path (for renames)
+    std::string path;     ///< Relative path to file
+    std::string status;   ///< "A" (added), "M" (modified), "D" (deleted), "R" (renamed)
+    std::string oldPath;  ///< Original path (for renames)
 };
 
 /// @brief Information about a commit with its manifest
 struct CommitContext {
-    std::string sha;                           ///< Full commit SHA
-    std::string shortSha;                      ///< Short SHA (7 chars)
-    std::string message;                       ///< Commit message
-    std::string author;                        ///< Author name
-    std::string date;                          ///< Commit date
-    std::optional<std::string> manifest;       ///< TOON-formatted manifest from notes
+    std::string sha;                      ///< Full commit SHA
+    std::string shortSha;                 ///< Short SHA (7 chars)
+    std::string message;                  ///< Commit message
+    std::string author;                   ///< Author name
+    std::string date;                     ///< Commit date
+    std::optional<std::string> manifest;  ///< TOON-formatted manifest from notes
 
     /// @brief Check if commit has a manifest
-    [[nodiscard]] bool hasManifest() const noexcept { return manifest.has_value(); }
+    [[nodiscard]] bool hasManifest() const noexcept {
+        return manifest.has_value();
+    }
 };
 
 /// @brief Git adapter - wraps git operations
@@ -116,8 +122,7 @@ public:
     /// @param commitSha Target commit SHA
     /// @param content Note content
     /// @return Result of the operation
-    [[nodiscard]] GitResult addNote(const std::string& commitSha,
-                                     const std::string& content) const;
+    [[nodiscard]] GitResult addNote(const std::string& commitSha, const std::string& content) const;
 
     /// @brief Get note for a commit
     /// @param commitSha Target commit SHA
@@ -133,7 +138,7 @@ public:
     /// @param branch Branch name (default: current branch)
     /// @return Result of the push operation
     [[nodiscard]] GitResult pushWithNotes(const std::string& remote = "origin",
-                                           const std::string& branch = "") const;
+                                          const std::string& branch = "") const;
 
     // =========================================================================
     // History Queries
@@ -144,7 +149,7 @@ public:
     /// @param limit Maximum number of commits to return (default: 20)
     /// @return Vector of commit contexts with manifests
     [[nodiscard]] std::vector<CommitContext> getFileHistory(const std::string& filePath,
-                                                             int limit = 20) const;
+                                                            int limit = 20) const;
 
     // =========================================================================
     // Raw Execution

@@ -16,25 +16,21 @@ constexpr const char* kColorYellow = "\033[33m";
 constexpr const char* kColorCyan = "\033[36m";
 constexpr const char* kColorReset = "\033[0m";
 
-void printSuccess(const std::string& msg)
-{
+void printSuccess(const std::string& msg) {
     std::cout << kColorGreen << "[✓] " << msg << kColorReset << std::endl;
 }
 
-void printInfo(const std::string& msg)
-{
+void printInfo(const std::string& msg) {
     std::cout << kColorCyan << "[i] " << msg << kColorReset << std::endl;
 }
 
-void printWarning(const std::string& msg)
-{
+void printWarning(const std::string& msg) {
     std::cout << kColorYellow << "[!] " << msg << kColorReset << std::endl;
 }
 
 }  // anonymous namespace
 
-auto push(const std::vector<std::string>& args) -> int
-{
+auto push(const std::vector<std::string>& args) -> int {
     GitAdapter git;
 
     if (!git.isRepository()) {

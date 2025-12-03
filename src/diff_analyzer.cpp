@@ -6,8 +6,7 @@
 
 namespace gip {
 
-auto DiffAnalyzer::detectLanguage(const std::string& filePath) -> std::string
-{
+auto DiffAnalyzer::detectLanguage(const std::string& filePath) -> std::string {
     size_t dotPos = filePath.find_last_of('.');
     if (dotPos == std::string::npos) {
         return "unknown";
@@ -16,8 +15,7 @@ auto DiffAnalyzer::detectLanguage(const std::string& filePath) -> std::string
     std::string ext = filePath.substr(dotPos + 1);
     std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
 
-    if (ext == "cpp" || ext == "cc" || ext == "cxx" || ext == "c" ||
-        ext == "h" || ext == "hpp") {
+    if (ext == "cpp" || ext == "cc" || ext == "cxx" || ext == "c" || ext == "h" || ext == "hpp") {
         return "cpp";
     } else if (ext == "py") {
         return "python";
@@ -38,15 +36,13 @@ auto DiffAnalyzer::detectLanguage(const std::string& filePath) -> std::string
     return "unknown";
 }
 
-auto DiffAnalyzer::extractSymbolName(const std::string& line,
-                                      const std::string& language) -> std::string
-{
+auto DiffAnalyzer::extractSymbolName(const std::string& line, const std::string& language)
+    -> std::string {
     std::smatch match;
 
     if (language == "cpp" || language == "c") {
         // Match function definitions: returnType functionName(...)
-        std::regex funcPattern(
-            R"((?:[\w:]+\s+)+(\w+)\s*\([^)]*\)\s*(?:const)?\s*(?:\{|$))");
+        std::regex funcPattern(R"((?:[\w:]+\s+)+(\w+)\s*\([^)]*\)\s*(?:const)?\s*(?:\{|$))");
         if (std::regex_search(line, match, funcPattern)) {
             return match[1].str();
         }
@@ -121,11 +117,8 @@ auto DiffAnalyzer::extractSymbolName(const std::string& line,
     return "";
 }
 
-auto DiffAnalyzer::extractSymbols(const std::string& filePath,
-                                   const std::string& fileDiff,
-                                   const std::string& changeType)
-    -> std::vector<SymbolInfo>
-{
+auto DiffAnalyzer::extractSymbols(const std::string& filePath, const std::string& fileDiff,
+                                  const std::string& changeType) -> std::vector<SymbolInfo> {
     std::vector<SymbolInfo> symbols;
     std::string language = detectLanguage(filePath);
 
@@ -174,8 +167,7 @@ auto DiffAnalyzer::extractSymbols(const std::string& filePath,
     return symbols;
 }
 
-auto DiffAnalyzer::analyze(const std::string& diff) -> std::vector<SymbolInfo>
-{
+auto DiffAnalyzer::analyze(const std::string& diff) -> std::vector<SymbolInfo> {
     std::vector<SymbolInfo> allSymbols;
 
     // Split diff by file
@@ -193,8 +185,7 @@ auto DiffAnalyzer::analyze(const std::string& diff) -> std::vector<SymbolInfo>
     // Extract symbols from each file's diff
     for (size_t i = 0; i < filePositions.size(); ++i) {
         size_t start = filePositions[i].first;
-        size_t endPos =
-            (i + 1 < filePositions.size()) ? filePositions[i + 1].first : diff.size();
+        size_t endPos = (i + 1 < filePositions.size()) ? filePositions[i + 1].first : diff.size();
 
         std::string fileDiff = diff.substr(start, endPos - start);
         std::string filePath = filePositions[i].second;
@@ -215,8 +206,7 @@ auto DiffAnalyzer::analyze(const std::string& diff) -> std::vector<SymbolInfo>
 }
 
 auto DiffAnalyzer::getChangedFiles(const std::string& diffStatus)
-    -> std::vector<std::pair<std::string, std::string>>
-{
+    -> std::vector<std::pair<std::string, std::string>> {
     std::vector<std::pair<std::string, std::string>> files;
 
     std::istringstream stream(diffStatus);

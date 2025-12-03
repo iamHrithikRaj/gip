@@ -18,13 +18,11 @@ constexpr const char* kColorGreen = "\033[32m";
 constexpr const char* kColorCyan = "\033[36m";
 constexpr const char* kColorReset = "\033[0m";
 
-void printSuccess(const std::string& msg)
-{
+void printSuccess(const std::string& msg) {
     std::cout << kColorGreen << "[✓] " << msg << kColorReset << std::endl;
 }
 
-void printInfo(const std::string& msg)
-{
+void printInfo(const std::string& msg) {
     std::cout << kColorCyan << "[i] " << msg << kColorReset << std::endl;
 }
 
@@ -112,8 +110,7 @@ Use `gip commit -f -m "message"` to skip manifest requirement.
 | `gip <anything>` | Passthrough to git |
 )";
 
-auto createOrAppendCopilotInstructions(const std::string& repoRoot) -> bool
-{
+auto createOrAppendCopilotInstructions(const std::string& repoRoot) -> bool {
     fs::path githubDir = fs::path(repoRoot) / ".github";
     fs::path instructionsPath = githubDir / "copilot-instructions.md";
 
@@ -156,8 +153,7 @@ auto createOrAppendCopilotInstructions(const std::string& repoRoot) -> bool
 
 }  // anonymous namespace
 
-auto init(const std::vector<std::string>& args) -> int
-{
+auto init(const std::vector<std::string>& args) -> int {
     GitAdapter git;
 
     // Check if already a git repo

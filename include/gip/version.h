@@ -32,4 +32,4 @@ std::string getVersionFull();
 /// @return true if current version >= specified version
 bool isVersionAtLeast(int major, int minor, int patch);
 
-} // namespace gip
+}  // namespace gip

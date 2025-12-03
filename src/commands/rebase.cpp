@@ -4,6 +4,7 @@
 /// @copyright MIT License
 
 #include "rebase.h"
+
 #include "../git_adapter.h"
 #include "../merge_driver.h"
 
@@ -22,8 +23,7 @@ constexpr const char* kColorReset = "\033[0m";
 constexpr const char* kColorBold = "\033[1m";
 
 /// @brief Get the SHA of REBASE_HEAD (the commit being applied)
-std::string getRebaseHead(const GitAdapter& git)
-{
+std::string getRebaseHead(const GitAdapter& git) {
     auto result = git.execute({"rev-parse", "--short", "REBASE_HEAD"});
     if (result.success()) {
         std::string sha = result.stdoutOutput;
@@ -37,8 +37,7 @@ std::string getRebaseHead(const GitAdapter& git)
 }
 
 /// @brief Get the SHA of HEAD (current position)
-std::string getHead(const GitAdapter& git)
-{
+std::string getHead(const GitAdapter& git) {
     auto result = git.execute({"rev-parse", "--short", "HEAD"});
     if (result.success()) {
         std::string sha = result.stdoutOutput;
@@ -51,8 +50,7 @@ std::string getHead(const GitAdapter& git)
 }
 
 /// @brief Check if we're in the middle of a rebase
-bool isRebaseInProgress(const GitAdapter& git)
-{
+bool isRebaseInProgress(const GitAdapter& git) {
     // Check for .git/rebase-merge or .git/rebase-apply directories
     auto result = git.execute({"rev-parse", "--git-path", "rebase-merge"});
     if (result.success()) {
@@ -68,24 +66,22 @@ bool isRebaseInProgress(const GitAdapter& git)
 }
 
 /// @brief Configure git to preserve notes during rebase
-void configureNotesRewrite(const GitAdapter& git)
-{
+void configureNotesRewrite(const GitAdapter& git) {
     // Enable note rewriting for rebase
     git.execute({"config", "notes.rewrite.rebase", "true"});
-    
+
     // Set the notes ref to rewrite
     git.execute({"config", "notes.rewriteRef", "refs/notes/gip"});
-    
+
     // Set rewrite mode to overwrite (replace old note with new)
     git.execute({"config", "notes.rewriteMode", "overwrite"});
 }
 
 /// @brief Print help for rebase conflicts
-void printConflictHelp()
-{
+void printConflictHelp() {
     std::cerr << "\n" << kColorCyan << "Gip Conflict Resolution:" << kColorReset << "\n";
     std::cerr << "  Conflict markers have been enriched with manifest context.\n";
-    std::cerr << "  Look for " << kColorBold << "||| Gip CONTEXT" << kColorReset 
+    std::cerr << "  Look for " << kColorBold << "||| Gip CONTEXT" << kColorReset
               << " lines for structured intent information.\n";
     std::cerr << "\n";
     std::cerr << "  After resolving conflicts:\n";
@@ -98,20 +94,18 @@ void printConflictHelp()
 
 }  // anonymous namespace
 
-auto rebase(const std::vector<std::string>& args) -> int
-{
+auto rebase(const std::vector<std::string>& args) -> int {
     GitAdapter git;
-    
+
     // Check if we're in a git repository
     if (!git.isRepository()) {
-        std::cerr << kColorRed << "Error: " << kColorReset 
-                  << "Not a git repository" << std::endl;
+        std::cerr << kColorRed << "Error: " << kColorReset << "Not a git repository" << std::endl;
         return 128;
     }
-    
+
     // Configure notes preservation before any rebase operation
     configureNotesRewrite(git);
-    
+
     // Check for --continue flag (resuming after conflict resolution)
     bool isContinue = false;
     for (const auto& arg : args) {
@@ -120,57 +114,60 @@ auto rebase(const std::vector<std::string>& args) -> int
             break;
         }
     }
-    
+
     // Build the git rebase command
     std::vector<std::string> rebaseArgs = {"rebase"};
     rebaseArgs.insert(rebaseArgs.end(), args.begin(), args.end());
-    
+
     // Store current HEAD before rebase for conflict enrichment
     std::string headBefore = getHead(git);
-    
+
     // Execute the rebase
     auto result = git.execute(rebaseArgs);
-    
+
     // Output git's stdout
     if (!result.stdoutOutput.empty()) {
         std::cout << result.stdoutOutput;
     }
-    
+
     // Check if we have conflicts
     if (result.exitCode != 0 && isRebaseInProgress(git)) {
         // Get the commit being rebased (the "theirs" side)
         std::string rebaseHead = getRebaseHead(git);
         std::string currentHead = getHead(git);
-        
+
         if (!rebaseHead.empty() && !currentHead.empty()) {
             MergeDriver driver;
             auto conflictedFiles = driver.getConflictedFiles();
-            
+
             if (!conflictedFiles.empty()) {
-                std::cerr << "\n" << kColorYellow << "Enriching conflict markers with manifest context..." 
+                std::cerr << "\n"
+                          << kColorYellow << "Enriching conflict markers with manifest context..."
                           << kColorReset << "\n";
-                
+
                 int enrichedCount = driver.enrichAllConflicts(currentHead, rebaseHead);
-                
+
                 if (enrichedCount > 0) {
-                    std::cerr << kColorGreen << "✓ " << kColorReset 
-                              << "Enriched " << enrichedCount << " file(s) with Gip context\n";
-                    
+                    std::cerr << kColorGreen << "✓ " << kColorReset << "Enriched " << enrichedCount
+                              << " file(s) with Gip context\n";
+
                     // List enriched files
-                    std::cerr << "\n" << kColorCyan << "Files with enriched conflicts:" << kColorReset << "\n";
+                    std::cerr << "\n"
+                              << kColorCyan << "Files with enriched conflicts:" << kColorReset
+                              << "\n";
                     for (const auto& file : conflictedFiles) {
                         std::cerr << "  " << file << "\n";
                     }
-                    
+
                     printConflictHelp();
                 } else {
-                    std::cerr << kColorYellow << "Note: " << kColorReset 
+                    std::cerr << kColorYellow << "Note: " << kColorReset
                               << "No manifests found for conflicting commits.\n";
                     std::cerr << "Conflict markers are standard Git format.\n";
                 }
             }
         }
-        
+
         // Still output git's stderr
         if (!result.stderrOutput.empty()) {
             std::cerr << result.stderrOutput;
@@ -180,13 +177,13 @@ auto rebase(const std::vector<std::string>& args) -> int
         if (!result.stderrOutput.empty()) {
             std::cerr << result.stderrOutput;
         }
-        
+
         if (result.success() && !isContinue) {
-            std::cerr << kColorGreen << "✓ " << kColorReset 
+            std::cerr << kColorGreen << "✓ " << kColorReset
                       << "Rebase completed. Gip notes preserved.\n";
         }
     }
-    
+
     return result.exitCode;
 }
 

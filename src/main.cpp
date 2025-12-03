@@ -8,11 +8,6 @@
  * @copyright Copyright (c) 2025
  */
 
-#include <cstring>
-#include <iostream>
-#include <string>
-#include <vector>
-
 #include "commands/commit.h"
 #include "commands/context.h"
 #include "commands/init.h"
@@ -21,6 +16,11 @@
 #include "commands/push.h"
 #include "commands/rebase.h"
 
+#include <cstring>
+#include <iostream>
+#include <string>
+#include <vector>
+
 namespace {
 
 constexpr const char* kVersion = "1.0.0";
@@ -28,36 +28,28 @@ constexpr const char* kColorCyan = "\033[36m";
 constexpr const char* kColorReset = "\033[0m";
 constexpr const char* kColorBold = "\033[1m";
 
-void printVersion()
-{
+void printVersion() {
     std::cout << "gip version " << kVersion << std::endl;
     std::cout << "Git with Intent Protocol - LLM-native version control" << std::endl;
 }
 
-void printHelp()
-{
+void printHelp() {
     std::cout << kColorBold << "Gip - Git with Intent Protocol" << kColorReset << std::endl;
     std::cout << std::endl;
     std::cout << "A drop-in replacement for git that enforces semantic context" << std::endl;
     std::cout << "for LLM-native development workflows." << std::endl;
     std::cout << std::endl;
     std::cout << kColorCyan << "ENHANCED COMMANDS:" << kColorReset << std::endl;
-    std::cout << "  gip init                  Initialize repo with AI instructions"
-              << std::endl;
+    std::cout << "  gip init                  Initialize repo with AI instructions" << std::endl;
     std::cout << "  gip commit -m \"msg\"       Commit with manifest (required)" << std::endl;
     std::cout << "  gip commit -f -m \"msg\"    Force commit without manifest" << std::endl;
-    std::cout << "  gip push                  Push code AND context notes to remote"
-              << std::endl;
-    std::cout << "  gip merge <branch>        Merge with enriched conflict markers"
-              << std::endl;
-    std::cout << "  gip rebase <branch>       Rebase with enriched conflict markers"
-              << std::endl;
+    std::cout << "  gip push                  Push code AND context notes to remote" << std::endl;
+    std::cout << "  gip merge <branch>        Merge with enriched conflict markers" << std::endl;
+    std::cout << "  gip rebase <branch>       Rebase with enriched conflict markers" << std::endl;
     std::cout << std::endl;
     std::cout << kColorCyan << "CONTEXT COMMANDS:" << kColorReset << std::endl;
-    std::cout << "  gip context <file>              Show semantic history of a file"
-              << std::endl;
-    std::cout << "  gip context <file> --json       Output as JSON (machine-readable)"
-              << std::endl;
+    std::cout << "  gip context <file>              Show semantic history of a file" << std::endl;
+    std::cout << "  gip context <file> --json       Output as JSON (machine-readable)" << std::endl;
     std::cout << "  gip context --all               Show context for all tracked files"
               << std::endl;
     std::cout << "  gip context --behavior <type>   Filter by behavior (feature, bugfix, etc.)"
@@ -79,8 +71,7 @@ void printHelp()
 
 }  // anonymous namespace
 
-auto main(int argc, char* argv[]) -> int
-{
+auto main(int argc, char* argv[]) -> int {
     // No arguments - show help
     if (argc < 2) {
         printHelp();

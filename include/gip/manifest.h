@@ -1,11 +1,11 @@
 #pragma once
 
+#include "ctoon.h"
+
 #include <optional>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include "ctoon.h"
 
 namespace gip {
 
@@ -22,11 +22,11 @@ struct ManifestEntry {
     std::string behavior;   ///< Semantic category: feature, bugfix, refactor, perf
     std::string rationale;  ///< Human-readable explanation of why
 
-    bool breaking = false;                    ///< Is this a breaking change?
-    std::vector<std::string> migrations;      ///< Migration steps if breaking
-    std::vector<std::string> inputs;          ///< Input contract (args/params)
-    std::string outputs;                      ///< Output contract (return type/value)
-    std::vector<std::string> errorModel;      ///< Error conditions/exceptions
+    bool breaking = false;                ///< Is this a breaking change?
+    std::vector<std::string> migrations;  ///< Migration steps if breaking
+    std::vector<std::string> inputs;      ///< Input contract (args/params)
+    std::string outputs;                  ///< Output contract (return type/value)
+    std::vector<std::string> errorModel;  ///< Error conditions/exceptions
 
     std::vector<std::string> preconditions;   ///< What must be true before this change
     std::vector<std::string> postconditions;  ///< What is guaranteed after this change
@@ -40,20 +40,24 @@ struct ManifestEntry {
  * stored in TOON format for efficient LLM consumption.
  */
 struct Manifest {
-    std::string schemaVersion = "2.0";  ///< Manifest schema version
+    std::string schemaVersion = "2.0";   ///< Manifest schema version
     std::vector<ManifestEntry> entries;  ///< List of change entries
 
     /**
      * @brief Check if manifest is empty.
      * @return true if no entries
      */
-    [[nodiscard]] bool empty() const noexcept { return entries.empty(); }
+    [[nodiscard]] bool empty() const noexcept {
+        return entries.empty();
+    }
 
     /**
      * @brief Get number of entries.
      * @return Entry count
      */
-    [[nodiscard]] size_t size() const noexcept { return entries.size(); }
+    [[nodiscard]] size_t size() const noexcept {
+        return entries.size();
+    }
 
     /**
      * @brief Serialize manifest to TOON format string.
@@ -72,16 +76,14 @@ struct Manifest {
      * @param toonStr The TOON-encoded manifest string
      * @return Parsed manifest, or nullopt if parsing fails
      */
-    [[nodiscard]] static auto fromToon(const std::string& toonStr)
-        -> std::optional<Manifest>;
+    [[nodiscard]] static auto fromToon(const std::string& toonStr) -> std::optional<Manifest>;
 
     /**
      * @brief Parse a manifest from a ctoon::Value.
      * @param value The ctoon::Value to parse
      * @return Parsed manifest, or nullopt if parsing fails
      */
-    [[nodiscard]] static auto fromValue(const ctoon::Value& value)
-        -> std::optional<Manifest>;
+    [[nodiscard]] static auto fromValue(const ctoon::Value& value) -> std::optional<Manifest>;
 };
 
 /**
@@ -105,8 +107,7 @@ public:
          * @brief Check if a manifest was successfully parsed.
          * @return true if manifest is present
          */
-        [[nodiscard]] auto hasManifest() const noexcept -> bool
-        {
+        [[nodiscard]] auto hasManifest() const noexcept -> bool {
             return manifest.has_value();
         }
 
@@ -114,8 +115,7 @@ public:
          * @brief Check if parsing encountered an error.
          * @return true if an error occurred
          */
-        [[nodiscard]] auto hasError() const noexcept -> bool
-        {
+        [[nodiscard]] auto hasError() const noexcept -> bool {
             return !error.empty();
         }
 
@@ -123,8 +123,7 @@ public:
          * @brief Check if parsing was successful.
          * @return true if no error and manifest found
          */
-        [[nodiscard]] auto isValid() const noexcept -> bool
-        {
+        [[nodiscard]] auto isValid() const noexcept -> bool {
             return !hasError() && hasManifest();
         }
     };
@@ -151,9 +150,8 @@ public:
      * @param files Vector of (file_path, git_status) pairs
      * @return TOON-formatted manifest template string
      */
-    [[nodiscard]] static auto generateTemplate(
-        const std::vector<std::pair<std::string, std::string>>& files)
-        -> std::string;
+    [[nodiscard]] static auto
+    generateTemplate(const std::vector<std::pair<std::string, std::string>>& files) -> std::string;
 
     /**
      * @brief Validate a manifest.

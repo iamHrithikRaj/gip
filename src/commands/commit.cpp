@@ -22,40 +22,32 @@ constexpr const char* kColorCyan = "\033[36m";
 constexpr const char* kColorReset = "\033[0m";
 constexpr const char* kColorBold = "\033[1m";
 
-void printError(const std::string& msg)
-{
+void printError(const std::string& msg) {
     std::cerr << kColorRed << "[!] " << msg << kColorReset << std::endl;
 }
 
-void printSuccess(const std::string& msg)
-{
+void printSuccess(const std::string& msg) {
     std::cout << kColorGreen << "[✓] " << msg << kColorReset << std::endl;
 }
 
-void printInfo(const std::string& msg)
-{
+void printInfo(const std::string& msg) {
     std::cout << kColorCyan << "[i] " << msg << kColorReset << std::endl;
 }
 
-auto hasFlag(const std::vector<std::string>& args,
-             const std::string& shortFlag,
-             const std::string& longFlag) -> bool
-{
+auto hasFlag(const std::vector<std::string>& args, const std::string& shortFlag,
+             const std::string& longFlag) -> bool {
     return std::find(args.begin(), args.end(), shortFlag) != args.end() ||
            std::find(args.begin(), args.end(), longFlag) != args.end();
 }
 
-auto getFlagValue(const std::vector<std::string>& args,
-                  const std::string& shortFlag,
-                  const std::string& longFlag) -> std::string
-{
+auto getFlagValue(const std::vector<std::string>& args, const std::string& shortFlag,
+                  const std::string& longFlag) -> std::string {
     for (size_t i = 0; i < args.size(); ++i) {
         if ((args[i] == shortFlag || args[i] == longFlag) && i + 1 < args.size()) {
             return args[i + 1];
         }
         // Handle -m"message" or --message="message" format
-        if (args[i].substr(0, shortFlag.size()) == shortFlag &&
-            args[i].size() > shortFlag.size()) {
+        if (args[i].substr(0, shortFlag.size()) == shortFlag && args[i].size() > shortFlag.size()) {
             return args[i].substr(shortFlag.size());
         }
         if (args[i].substr(0, longFlag.size() + 1) == longFlag + "=") {
@@ -67,8 +59,7 @@ auto getFlagValue(const std::vector<std::string>& args,
 
 }  // anonymous namespace
 
-auto commit(const std::vector<std::string>& args) -> int
-{
+auto commit(const std::vector<std::string>& args) -> int {
     GitAdapter git;
 
     // Check if we're in a git repo
@@ -125,7 +116,7 @@ auto commit(const std::vector<std::string>& args) -> int
         std::cout << result.stdoutOutput << std::endl;
         return 0;
     }
-    
+
     // Check if manifest was provided
     if (!parseResult.hasManifest()) {
         // Generate template for error message
@@ -144,14 +135,15 @@ auto commit(const std::vector<std::string>& args) -> int
         }
 
         std::cerr << std::endl;
-        std::cerr << kColorCyan << "Please retry with this block appended to your commit message:"
-                  << kColorReset << std::endl;
+        std::cerr << kColorCyan
+                  << "Please retry with this block appended to your commit message:" << kColorReset
+                  << std::endl;
         std::cerr << std::endl;
         std::cerr << templ << std::endl;
         std::cerr << std::endl;
-        std::cerr << kColorYellow << "Or use " << kColorBold << "gip commit -f"
-                  << kColorReset << kColorYellow
-                  << " to force commit without manifest." << kColorReset << std::endl;
+        std::cerr << kColorYellow << "Or use " << kColorBold << "gip commit -f" << kColorReset
+                  << kColorYellow << " to force commit without manifest." << kColorReset
+                  << std::endl;
 
         return 1;
     }
@@ -161,13 +153,11 @@ auto commit(const std::vector<std::string>& args) -> int
     bool valid = true;
 
     for (const auto& entry : manifest.entries) {
-        if (entry.rationale.empty() ||
-            entry.rationale.find('<') != std::string::npos) {
+        if (entry.rationale.empty() || entry.rationale.find('<') != std::string::npos) {
             printError("Manifest entry for '" + entry.file + "' has incomplete rationale.");
             valid = false;
         }
-        if (entry.behavior.empty() ||
-            entry.behavior.find('<') != std::string::npos) {
+        if (entry.behavior.empty() || entry.behavior.find('<') != std::string::npos) {
             printError("Manifest entry for '" + entry.file + "' has incomplete behavior.");
             valid = false;
         }

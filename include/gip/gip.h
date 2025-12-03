@@ -9,10 +9,10 @@
 
 #pragma once
 
-#include "gip/version.h"
-#include "gip/types.h"
 #include "gip/git_adapter.h"
 #include "gip/manifest.h"
+#include "gip/types.h"
+#include "gip/version.h"
 
 /// @namespace gip
 /// @brief Root namespace for Gip library
@@ -25,4 +25,4 @@ bool initialize();
 /// @brief Shutdown Gip library and cleanup resources
 void shutdown();
 
-} // namespace gip
+}  // namespace gip

@@ -35,8 +35,7 @@ public:
      * @param diff The unified diff output from git
      * @return Vector of symbols found in the diff
      */
-    [[nodiscard]] static auto analyze(const std::string& diff)
-        -> std::vector<SymbolInfo>;
+    [[nodiscard]] static auto analyze(const std::string& diff) -> std::vector<SymbolInfo>;
 
     /**
      * @brief Get list of changed files with their status.
@@ -59,8 +58,8 @@ private:
      * @return Vector of symbols found in the file diff
      */
     [[nodiscard]] static auto extractSymbols(const std::string& filePath,
-                                              const std::string& fileDiff,
-                                              const std::string& changeType)
+                                             const std::string& fileDiff,
+                                             const std::string& changeType)
         -> std::vector<SymbolInfo>;
 
     /**
@@ -68,8 +67,7 @@ private:
      * @param filePath Path to the file
      * @return Language identifier (cpp, python, javascript, etc.)
      */
-    [[nodiscard]] static auto detectLanguage(const std::string& filePath)
-        -> std::string;
+    [[nodiscard]] static auto detectLanguage(const std::string& filePath) -> std::string;
 
     /**
      * @brief Extract function/symbol name from a line.
@@ -78,8 +76,7 @@ private:
      * @return Symbol name if found, empty string otherwise
      */
     [[nodiscard]] static auto extractSymbolName(const std::string& line,
-                                                 const std::string& language)
-        -> std::string;
+                                                const std::string& language) -> std::string;
 };
 
 }  // namespace gip

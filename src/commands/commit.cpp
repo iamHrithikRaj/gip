@@ -121,9 +121,9 @@ auto commit(const std::vector<std::string>& args) -> int {
     if (!parseResult.hasManifest()) {
         // Generate template for error message
         std::vector<std::pair<std::string, std::string>> files;
-        for (const auto& f : stagedFiles) {
-            files.emplace_back(f.path, f.status);
-        }
+        files.reserve(stagedFiles.size());
+        std::transform(stagedFiles.begin(), stagedFiles.end(), std::back_inserter(files),
+                       [](const auto& f) { return std::make_pair(f.path, f.status); });
 
         std::string templ = ManifestParser::generateTemplate(files);
 

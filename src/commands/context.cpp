@@ -57,7 +57,7 @@ void printCommitContext(const CommitContext& ctx) {
         if (manifest && !manifest->entries.empty()) {
             std::cout << kColorYellow << "│" << kColorReset << std::endl;
 
-            for (const auto& entry : manifest->entries) {
+            std::for_each(manifest->entries.begin(), manifest->entries.end(), [](const auto& entry) {
                 // Behavior
                 if (!entry.behavior.empty()) {
                     std::cout << kColorYellow << "│  " << kColorReset;
@@ -162,7 +162,7 @@ void printCommitContext(const CommitContext& ctx) {
                     }
                     std::cout << std::endl;
                 }
-            }
+            });
         }
     } else {
         std::cout << kColorYellow << "│  " << kColorReset;
@@ -442,11 +442,11 @@ auto parseContextArgs(const std::vector<std::string>& args) -> ContextOptions {
 
 auto context(const std::vector<std::string>& args) -> int {
     // Check for help flag
-    for (const auto& arg : args) {
-        if (arg == "-h" || arg == "--help") {
-            printUsage();
-            return 0;
-        }
+    if (std::any_of(args.begin(), args.end(), [](const std::string& arg) {
+            return arg == "-h" || arg == "--help";
+        })) {
+        printUsage();
+        return 0;
     }
 
     ContextOptions opts = parseContextArgs(args);
@@ -481,12 +481,11 @@ auto context(const std::vector<std::string>& args) -> int {
 
             // Apply filters
             std::vector<CommitContext> filtered;
-            for (const auto& ctx : history) {
-                if (matchesBehaviorFilter(ctx, opts.behaviorFilter) &&
-                    isAfterDate(ctx.date, opts.sinceDate)) {
-                    filtered.push_back(ctx);
-                }
-            }
+            std::copy_if(history.begin(), history.end(), std::back_inserter(filtered),
+                         [&](const auto& ctx) {
+                             return matchesBehaviorFilter(ctx, opts.behaviorFilter) &&
+                                    isAfterDate(ctx.date, opts.sinceDate);
+                         });
 
             if (!filtered.empty()) {
                 allHistory.emplace_back(file, filtered);
@@ -538,12 +537,11 @@ auto context(const std::vector<std::string>& args) -> int {
 
     // Apply filters
     std::vector<CommitContext> filtered;
-    for (const auto& ctx : history) {
-        if (matchesBehaviorFilter(ctx, opts.behaviorFilter) &&
-            isAfterDate(ctx.date, opts.sinceDate)) {
-            filtered.push_back(ctx);
-        }
-    }
+    std::copy_if(history.begin(), history.end(), std::back_inserter(filtered),
+                 [&](const auto& ctx) {
+                     return matchesBehaviorFilter(ctx, opts.behaviorFilter) &&
+                            isAfterDate(ctx.date, opts.sinceDate);
+                 });
 
     if (filtered.empty()) {
         printError("No commits match the specified filters");

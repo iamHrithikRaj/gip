@@ -1,0 +1,125 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compiler: [gcc-12, clang-15]
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake ninja-build
+    
+    - name: Configure CMake
+      run: |
+        cmake -B build -G Ninja \
+          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+          -DGIP_BUILD_TESTS=ON \
+          -DGIP_ENABLE_WARNINGS=ON
+    
+    - name: Build
+      run: cmake --build build --config ${{env.BUILD_TYPE}}
+    
+    - name: Test
+      working-directory: build
+      run: ctest -C ${{env.BUILD_TYPE}} --output-on-failure
+  
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Configure CMake
+      run: |
+        cmake -B build `
+          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} `
+          -DGIP_BUILD_TESTS=ON `
+          -DGIP_ENABLE_WARNINGS=ON
+    
+    - name: Build
+      run: cmake --build build --config ${{env.BUILD_TYPE}}
+    
+    - name: Test
+      working-directory: build
+      run: ctest -C ${{env.BUILD_TYPE}} --output-on-failure
+  
+  build-macos:
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Configure CMake
+      run: |
+        cmake -B build \
+          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+          -DGIP_BUILD_TESTS=ON \
+          -DGIP_ENABLE_WARNINGS=ON
+    
+    - name: Build
+      run: cmake --build build --config ${{env.BUILD_TYPE}}
+    
+    - name: Test
+      working-directory: build
+      run: ctest -C ${{env.BUILD_TYPE}} --output-on-failure
+
+  static-analysis:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Install tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y clang-tidy cppcheck
+    
+    - name: Configure CMake
+      run: |
+        cmake -B build \
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+          -DGIP_ENABLE_CLANG_TIDY=ON
+    
+    - name: Run clang-tidy
+      run: |
+        find src -name '*.cpp' | xargs clang-tidy -p build
+    
+    - name: Run cppcheck
+      run: |
+        cppcheck --enable=all --error-exitcode=1 \
+          --suppress=missingIncludeSystem \
+          -I include src/
+
+  code-format:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Check formatting
+      run: |
+        find src include -name '*.cpp' -o -name '*.h' | \
+          xargs clang-format --dry-run --Werror

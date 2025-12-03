@@ -1,0 +1,86 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    
+    steps:
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Gip ${{ github.ref }}
+        draft: false
+        prerelease: false
+  
+  build-and-upload:
+    needs: create-release
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: gip-linux-x64
+          - os: windows-latest
+            artifact: gip-windows-x64
+          - os: macos-latest
+            artifact: gip-macos-x64
+    
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Configure CMake
+      run: cmake -B build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+    
+    - name: Build
+      run: cmake --build build --config ${{env.BUILD_TYPE}}
+    
+    - name: Package (Linux/macOS)
+      if: runner.os != 'Windows'
+      run: |
+        cd build
+        tar -czvf ${{ matrix.artifact }}.tar.gz gip
+    
+    - name: Package (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        cd build/Release
+        Compress-Archive -Path gip.exe -DestinationPath ${{ matrix.artifact }}.zip
+    
+    - name: Upload Release Asset (Linux/macOS)
+      if: runner.os != 'Windows'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: build/${{ matrix.artifact }}.tar.gz
+        asset_name: ${{ matrix.artifact }}.tar.gz
+        asset_content_type: application/gzip
+    
+    - name: Upload Release Asset (Windows)
+      if: runner.os == 'Windows'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: build/Release/${{ matrix.artifact }}.zip
+        asset_name: ${{ matrix.artifact }}.zip
+        asset_content_type: application/zip

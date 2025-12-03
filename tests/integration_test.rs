@@ -48,7 +48,10 @@ fn test_gip_init() {
     assert!(gip_dir.exists(), ".gip directory should exist");
 
     let manifest_path = repo_path.join("manifest.toon");
-    assert!(manifest_path.exists(), "manifest.toon template should exist");
+    assert!(
+        manifest_path.exists(),
+        "manifest.toon template should exist"
+    );
 }
 
 #[test]
@@ -60,7 +63,7 @@ fn test_gip_commit_and_context() {
     run_git(&["init"], repo_path);
     run_git(&["config", "user.name", "Test User"], repo_path);
     run_git(&["config", "user.email", "test@example.com"], repo_path);
-    
+
     let mut cmd = Command::cargo_bin("gip").unwrap();
     cmd.current_dir(repo_path).arg("init").assert().success();
 
@@ -106,14 +109,14 @@ fn test_gip_merge_enrichment() {
     run_git(&["checkout", "-b", "main"], repo_path);
     run_git(&["config", "user.name", "Test User"], repo_path);
     run_git(&["config", "user.email", "test@example.com"], repo_path);
-    
+
     let mut cmd = Command::cargo_bin("gip").unwrap();
     cmd.current_dir(repo_path).arg("init").assert().success();
 
     // Initial commit
     fs::write(repo_path.join("file.txt"), "base content").unwrap();
     run_git(&["add", "file.txt"], repo_path);
-    
+
     let mut cmd = Command::cargo_bin("gip").unwrap();
     cmd.current_dir(repo_path)
         .arg("commit")
@@ -124,11 +127,11 @@ fn test_gip_merge_enrichment() {
 
     // Create branch
     run_git(&["checkout", "-b", "feature"], repo_path);
-    
+
     // Modify file on feature
     fs::write(repo_path.join("file.txt"), "feature content").unwrap();
     run_git(&["add", "file.txt"], repo_path);
-    
+
     // Update manifest for feature
     let manifest_path = repo_path.join("manifest.toon");
     let manifest_content = r#"schemaVersion: "2.0"
@@ -162,7 +165,7 @@ entries[1]:
     // Modify file on main (conflict)
     fs::write(repo_path.join("file.txt"), "main content").unwrap();
     run_git(&["add", "file.txt"], repo_path);
-    
+
     // Update manifest for main
     let manifest_content_main = r#"schemaVersion: "2.0"
 commit: HEAD
@@ -200,7 +203,7 @@ entries[1]:
 
     // Check file content for enriched markers
     let content = fs::read_to_string(repo_path.join("file.txt")).unwrap();
-    
+
     // Should contain standard git markers
     assert!(content.contains("<<<<<<< HEAD"));
     assert!(content.contains("======="));
@@ -210,7 +213,7 @@ entries[1]:
     assert!(content.contains("||| Gip CONTEXT (HEAD - Your changes)"));
     assert!(content.contains("||| behaviorClass: refactor"));
     assert!(content.contains("||| rationale: Main change rationale"));
-    
+
     assert!(content.contains("||| Gip CONTEXT (feature - Their changes)"));
     assert!(content.contains("||| behaviorClass: feature"));
     assert!(content.contains("||| rationale: Feature change rationale"));

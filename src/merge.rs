@@ -32,7 +32,7 @@ pub fn enrich_all_conflicts(ours_sha: &str, theirs_sha: &str) -> Result<usize> {
 fn get_conflicted_files() -> Result<Vec<String>> {
     // git diff --name-only --diff-filter=U
     let output = git::run_git_cmd(&["diff", "--name-only", "--diff-filter=U"], None)?;
-    
+
     Ok(output.lines().map(|s| s.trim().to_string()).collect())
 }
 
@@ -44,7 +44,7 @@ fn enrich_conflict_markers(file_path: &str, ours_sha: &str, theirs_sha: &str) ->
     }
 
     let content = fs::read_to_string(path).context("Failed to read conflicted file")?;
-    
+
     if !content.contains(CONFLICT_START) {
         return Ok(false);
     }
@@ -64,7 +64,7 @@ fn enrich_conflict_markers(file_path: &str, ours_sha: &str, theirs_sha: &str) ->
         if line.starts_with(CONFLICT_START) {
             output.push_str(line);
             output.push('\n');
-            
+
             if let Some(ref m) = ours_manifest {
                 let context = format_enriched_marker("HEAD", "Your changes", m, file_path);
                 output.push_str(&context);
@@ -75,12 +75,12 @@ fn enrich_conflict_markers(file_path: &str, ours_sha: &str, theirs_sha: &str) ->
         } else if line.starts_with(CONFLICT_END) {
             // Extract branch name from marker if possible
             let branch = line.trim_start_matches(CONFLICT_END).trim();
-            
+
             if let Some(ref m) = theirs_manifest {
                 let context = format_enriched_marker(branch, "Their changes", m, file_path);
                 output.push_str(&context);
             }
-            
+
             output.push_str(line);
             output.push('\n');
         } else {
@@ -93,9 +93,14 @@ fn enrich_conflict_markers(file_path: &str, ours_sha: &str, theirs_sha: &str) ->
     Ok(true)
 }
 
-fn format_enriched_marker(side: &str, description: &str, manifest: &Manifest, file_path: &str) -> String {
+fn format_enriched_marker(
+    side: &str,
+    description: &str,
+    manifest: &Manifest,
+    file_path: &str,
+) -> String {
     let mut output = String::new();
-    
+
     output.push_str(&format!("||| Gip CONTEXT ({} - {})\n", side, description));
     output.push_str(&format!("||| Commit: {}\n", manifest.commit));
 
@@ -104,16 +109,19 @@ fn format_enriched_marker(side: &str, description: &str, manifest: &Manifest, fi
 
     if let Some(e) = entry {
         if !e.behavior_class.is_empty() {
-            output.push_str(&format!("||| behaviorClass: {}\n", e.behavior_class.join(", ")));
+            output.push_str(&format!(
+                "||| behaviorClass: {}\n",
+                e.behavior_class.join(", ")
+            ));
         }
-        
+
         if !e.rationale.is_empty() {
             output.push_str(&format!("||| rationale: {}\n", e.rationale));
         }
 
         if let Some(ref compat) = e.compatibility {
             output.push_str(&format!("||| breaking: {}\n", compat.breaking));
-            
+
             if let Some(ref migs) = compat.migrations {
                 for (i, mig) in migs.iter().enumerate() {
                     output.push_str(&format!("||| migrations[{}]: {}\n", i, mig));
@@ -159,7 +167,10 @@ fn format_enriched_marker(side: &str, description: &str, manifest: &Manifest, fi
     } else {
         // Fallback to global intent if no specific entry found
         if let Some(ref gi) = manifest.global_intent {
-            output.push_str(&format!("||| behaviorClass: {}\n", gi.behavior_class.join(", ")));
+            output.push_str(&format!(
+                "||| behaviorClass: {}\n",
+                gi.behavior_class.join(", ")
+            ));
             output.push_str(&format!("||| rationale: {}\n", gi.rationale));
         }
     }
@@ -175,9 +186,12 @@ fn find_entry<'a>(manifest: &'a Manifest, file_path: &str) -> Option<&'a crate::
 
     // Try filename match
     let filename = Path::new(file_path).file_name()?.to_str()?;
-    
+
     manifest.entries.iter().find(|e| {
-        Path::new(&e.anchor.file).file_name().map(|n| n.to_str().unwrap_or("")) == Some(filename)
+        Path::new(&e.anchor.file)
+            .file_name()
+            .map(|n| n.to_str().unwrap_or(""))
+            == Some(filename)
     })
 }
 
@@ -201,7 +215,10 @@ mod tests {
                 change_type: "modify".to_string(),
                 signature_delta: None,
                 contract: Contract {
-                    inputs: Some(vec!["amount: float".to_string(), "currency: string".to_string()]),
+                    inputs: Some(vec![
+                        "amount: float".to_string(),
+                        "currency: string".to_string(),
+                    ]),
                     outputs: Some("bool success".to_string()),
                     preconditions: vec![],
                     postconditions: vec![],

@@ -12,7 +12,10 @@ pub fn run(commit: Option<String>, export: bool, json: bool) -> Result<()> {
     let manifest = match manifest::load(&commit_sha, None) {
         Ok(m) => m,
         Err(_) => {
-            println!("{}", format!("No context found for commit {}", commit_sha).yellow());
+            println!(
+                "{}",
+                format!("No context found for commit {}", commit_sha).yellow()
+            );
             return Ok(());
         }
     };
@@ -36,8 +39,12 @@ pub fn run(commit: Option<String>, export: bool, json: bool) -> Result<()> {
 }
 
 fn print_manifest(manifest: &Manifest) {
-    println!("┌─ Commit {} (schema v{})", manifest.commit.cyan(), manifest.schema_version);
-    
+    println!(
+        "┌─ Commit {} (schema v{})",
+        manifest.commit.cyan(),
+        manifest.schema_version
+    );
+
     if let Some(ref gi) = manifest.global_intent {
         println!("│");
         println!("│  Global Intent:");
@@ -51,11 +58,11 @@ fn print_manifest(manifest: &Manifest) {
         println!("│  Symbol: {}", entry.anchor.symbol.yellow());
         println!("│  Change: {}", entry.change_type.green());
         println!("│  Rationale: {}", entry.rationale);
-        
+
         if !entry.behavior_class.is_empty() {
             println!("│  Behavior: {}", entry.behavior_class.join(", ").blue());
         }
-        
+
         if !entry.contract.preconditions.is_empty() {
             println!("│  Preconditions: {:?}", entry.contract.preconditions);
         }

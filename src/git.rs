@@ -57,15 +57,7 @@ pub fn has_staged_changes() -> bool {
 /// Add a note to a commit using the custom gip ref
 pub fn add_note(commit_sha: &str, content: &str, cwd: Option<&Path>) -> Result<()> {
     run_git_cmd(
-        &[
-            "notes",
-            "--ref=gip",
-            "add",
-            "-f",
-            "-m",
-            content,
-            commit_sha,
-        ],
+        &["notes", "--ref=gip", "add", "-f", "-m", content, commit_sha],
         cwd,
     )?;
     Ok(())
@@ -87,7 +79,6 @@ pub fn fetch_notes(remote: &str) -> Result<()> {
     run_git_cmd(&["fetch", remote, "refs/notes/gip:refs/notes/gip"], None)?;
     Ok(())
 }
-
 
 /// Get the .gip directory path
 pub fn get_gip_dir() -> Result<PathBuf> {

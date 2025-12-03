@@ -21,8 +21,11 @@ pub fn run(message: Option<String>, args: &[String]) -> Result<()> {
         // If manifest.toon exists, use it. If not, proceed as normal git commit?
         // But the user might want to enforce it.
         // For now, if no manifest.toon, we just commit.
-        println!("{}", "No manifest.toon found. Committing without context.".yellow());
-        
+        println!(
+            "{}",
+            "No manifest.toon found. Committing without context.".yellow()
+        );
+
         // Pass through to git commit
         let mut git_args = vec!["commit".to_string()];
         if let Some(msg) = message {
@@ -30,7 +33,7 @@ pub fn run(message: Option<String>, args: &[String]) -> Result<()> {
             git_args.push(msg);
         }
         git_args.extend_from_slice(args);
-        
+
         return crate::commands::passthrough::run(&git_args);
     };
 
@@ -52,7 +55,7 @@ pub fn run(message: Option<String>, args: &[String]) -> Result<()> {
 
     // 4. Attach manifest as git note
     let commit_sha = git::get_current_commit()?;
-    
+
     // Update manifest with actual commit SHA
     let mut final_manifest = manifest.clone();
     final_manifest.commit = commit_sha.clone();

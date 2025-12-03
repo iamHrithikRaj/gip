@@ -79,7 +79,11 @@ fn main() -> Result<()> {
         Some(Commands::Push { args }) => commands::push::run(&args),
         Some(Commands::Merge { args }) => commands::merge::run(&args),
         Some(Commands::Rebase { args }) => commands::rebase::run(&args),
-        Some(Commands::Context { target, export, json }) => commands::context::run(target, export, json),
+        Some(Commands::Context {
+            target,
+            export,
+            json,
+        }) => commands::context::run(target, export, json),
         Some(Commands::External(args)) => commands::passthrough::run(&args),
         None => {
             // Show help if no args

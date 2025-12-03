@@ -58,9 +58,9 @@ fn enrich_conflict_markers(file_path: &str, ours_sha: &str, theirs_sha: &str) ->
     }
 
     let mut output = String::new();
-    let mut lines = content.lines();
+    let lines = content.lines();
 
-    while let Some(line) = lines.next() {
+    for line in lines {
         if line.starts_with(CONFLICT_START) {
             output.push_str(line);
             output.push('\n');

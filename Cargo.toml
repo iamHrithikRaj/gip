@@ -1,6 +1,6 @@
 [package]
 name = "gip"
-version = "2.0.1"
+version = "2.0.2"
 edition = "2021"
 authors = ["Hrithik Raj <iamhrithikraj@gmail.com>"]
 description = "A lightweight Git wrapper that enriches merge conflicts with structured context for humans and LLMs"

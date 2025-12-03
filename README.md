@@ -197,6 +197,23 @@ gip --help
 # Git with Intent Preservation - Context-aware git wrapper
 ```
 
+### Troubleshooting (Windows)
+
+**Conflict with `Get-NetIPConfiguration`**
+
+PowerShell has a default alias `gip` for `Get-NetIPConfiguration`. If running `gip` shows network details instead of the tool:
+
+1.  **Remove the alias for the current session:**
+    ```powershell
+    Remove-Item alias:gip
+    ```
+
+2.  **Make it permanent:**
+    Add this line to your PowerShell profile (`code $PROFILE`):
+    ```powershell
+    Remove-Item alias:gip -ErrorAction SilentlyContinue
+    ```
+
 ---
 
 ## Quick Start

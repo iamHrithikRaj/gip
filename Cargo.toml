@@ -1,6 +1,6 @@
 [package]
 name = "gip"
-version = "2.0.2"
+version = "2.0.3"
 edition = "2021"
 authors = ["Hrithik Raj <iamhrithikraj@gmail.com>"]
 description = "A lightweight Git wrapper that enriches merge conflicts with structured context for humans and LLMs"
@@ -23,7 +23,7 @@ path = "src/main.rs"
 clap = { version = "4.5", features = ["derive", "cargo"] }
 
 # Git integration
-git2 = "0.18"
+git2 = { version = "0.18", features = ["vendored-openssl"] }
 
 # Serialization
 serde = { version = "1.0", features = ["derive"] }

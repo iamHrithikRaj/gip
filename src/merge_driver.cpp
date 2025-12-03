@@ -12,6 +12,7 @@
 #include <regex>
 #include <sstream>
 #include <iostream>
+#include <cstring>
 
 namespace gip {
 

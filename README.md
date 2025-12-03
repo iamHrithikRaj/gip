@@ -37,7 +37,7 @@ The commit message says **what** changed. The diff shows **how** it changed. But
 This matters because:
 
 - **Code reviews** become archaeology expeditions
-- **AI Agents** fail to resolve conflicts because git markers lack semantic data
+- **AI Agents** lack the confidence to resolve conflicts autonomously because git markers lack semantic data
 - **Merge conflicts** are resolved by guessing intent
 - **Onboarding** requires tribal knowledge transfer
 - **Refactoring** risks breaking implicit assumptions
@@ -316,6 +316,11 @@ gip merge feature-branch
 gip rebase main
 ```
 
+When a conflict occurs, Gip automatically:
+1. Detects conflicted files
+2. Looks up manifests for both sides of the conflict
+3. Injects structured context into conflict markers
+
 **Example of enriched conflict markers:**
 
 ```cpp
@@ -415,7 +420,7 @@ gip:
 
 ### 2. Safe Conflict Resolution
 
-Traditional git markers offer no semantic context, making it impossible for LLMs to reliably resolve logical conflicts. Gip solves this by injecting **contracts** and **breaking changes** directly into the markers, providing the explicit ground truth agents need for safe, autonomous resolution.
+While Git perfectly captures *textual* conflicts, it doesn't capture the *intent* required for safe resolution. LLMs are forced to guess, often leading to subtle bugs. Gip bridges this gap by injecting **contracts** and **breaking changes** directly into the markers, providing the explicit ground truth agents need for safe, autonomous resolution.
 
 **Scenario:**
 *   **HEAD**: Adds a new parameter to `processPayment` (Breaking Change).

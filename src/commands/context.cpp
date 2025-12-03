@@ -5,9 +5,9 @@
 
 #include <algorithm>
 #include <fstream>
-#include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <string>
 
 namespace gip::commands {
 
@@ -44,6 +44,110 @@ void printHeader(const std::string& filePath) {
     std::cout << '\n';
 }
 
+void printManifestEntry(const ManifestEntry& entry) {
+    // Behavior
+    if (!entry.behavior.empty()) {
+        std::cout << kColorYellow << "│  " << kColorReset;
+        std::cout << kColorMagenta << "Intent: " << kColorReset << entry.behavior << '\n';
+    }
+
+    // Rationale
+    if (!entry.rationale.empty()) {
+        std::cout << kColorYellow << "│  " << kColorReset;
+        std::cout << kColorGreen << "Rationale: " << kColorReset << entry.rationale << '\n';
+    }
+
+    // Breaking
+    if (entry.breaking) {
+        std::cout << kColorYellow << "│  " << kColorReset;
+        std::cout << kColorRed << "BREAKING CHANGE" << kColorReset << '\n';
+    }
+
+    // Migrations
+    if (!entry.migrations.empty()) {
+        std::cout << kColorYellow << "│  " << kColorReset;
+        std::cout << kColorRed << "Migrations: " << kColorReset;
+        for (size_t i = 0; i < entry.migrations.size(); ++i) {
+            if (i > 0) {
+                std::cout << ", ";
+            }
+            std::cout << entry.migrations[i];
+        }
+        std::cout << '\n';
+    }
+
+    // Inputs
+    if (!entry.inputs.empty()) {
+        std::cout << kColorYellow << "│  " << kColorReset;
+        std::cout << kColorCyan << "Inputs: " << kColorReset;
+        for (size_t i = 0; i < entry.inputs.size(); ++i) {
+            if (i > 0) {
+                std::cout << ", ";
+            }
+            std::cout << entry.inputs[i];
+        }
+        std::cout << '\n';
+    }
+
+    // Outputs
+    if (!entry.outputs.empty()) {
+        std::cout << kColorYellow << "│  " << kColorReset;
+        std::cout << kColorCyan << "Outputs: " << kColorReset << entry.outputs << '\n';
+    }
+
+    // Error Model
+    if (!entry.errorModel.empty()) {
+        std::cout << kColorYellow << "│  " << kColorReset;
+        std::cout << kColorRed << "Error Model: " << kColorReset;
+        for (size_t i = 0; i < entry.errorModel.size(); ++i) {
+            if (i > 0) {
+                std::cout << ", ";
+            }
+            std::cout << entry.errorModel[i];
+        }
+        std::cout << '\n';
+    }
+
+    // Preconditions
+    if (!entry.preconditions.empty()) {
+        std::cout << kColorYellow << "│  " << kColorReset;
+        std::cout << kColorCyan << "Preconditions: " << kColorReset;
+        for (size_t i = 0; i < entry.preconditions.size(); ++i) {
+            if (i > 0) {
+                std::cout << ", ";
+            }
+            std::cout << entry.preconditions[i];
+        }
+        std::cout << '\n';
+    }
+
+    // Postconditions
+    if (!entry.postconditions.empty()) {
+        std::cout << kColorYellow << "│  " << kColorReset;
+        std::cout << kColorCyan << "Postconditions: " << kColorReset;
+        for (size_t i = 0; i < entry.postconditions.size(); ++i) {
+            if (i > 0) {
+                std::cout << ", ";
+            }
+            std::cout << entry.postconditions[i];
+        }
+        std::cout << '\n';
+    }
+
+    // Side effects
+    if (!entry.sideEffects.empty()) {
+        std::cout << kColorYellow << "│  " << kColorReset;
+        std::cout << kColorRed << "Side Effects: " << kColorReset;
+        for (size_t i = 0; i < entry.sideEffects.size(); ++i) {
+            if (i > 0) {
+                std::cout << ", ";
+            }
+            std::cout << entry.sideEffects[i];
+        }
+        std::cout << '\n';
+    }
+}
+
 void printCommitContext(const CommitContext& ctx) {
     std::cout << kColorYellow << "┌─ Commit " << kColorBold << ctx.sha.substr(0, 7) << kColorReset;
     std::cout << kColorDim << " (" << ctx.date.substr(0, 10) << " by " << ctx.author << ")"
@@ -58,113 +162,8 @@ void printCommitContext(const CommitContext& ctx) {
         if (manifest && !manifest->entries.empty()) {
             std::cout << kColorYellow << "│" << kColorReset << '\n';
 
-            std::for_each(
-                manifest->entries.begin(), manifest->entries.end(), [](const auto& entry) {
-                    // Behavior
-                    if (!entry.behavior.empty()) {
-                        std::cout << kColorYellow << "│  " << kColorReset;
-                        std::cout << kColorMagenta << "Intent: " << kColorReset << entry.behavior
-                                  << '\n';
-                    }
-
-                    // Rationale
-                    if (!entry.rationale.empty()) {
-                        std::cout << kColorYellow << "│  " << kColorReset;
-                        std::cout << kColorGreen << "Rationale: " << kColorReset << entry.rationale
-                                  << '\n';
-                    }
-
-                    // Breaking
-                    if (entry.breaking) {
-                        std::cout << kColorYellow << "│  " << kColorReset;
-                        std::cout << kColorRed << "BREAKING CHANGE" << kColorReset << '\n';
-                    }
-
-                    // Migrations
-                    if (!entry.migrations.empty()) {
-                        std::cout << kColorYellow << "│  " << kColorReset;
-                        std::cout << kColorRed << "Migrations: " << kColorReset;
-                        for (size_t i = 0; i < entry.migrations.size(); ++i) {
-                            if (i > 0) {
-                                std::cout << ", ";
-                            }
-                            std::cout << entry.migrations[i];
-                        }
-                        std::cout << '\n';
-                    }
-
-                    // Inputs
-                    if (!entry.inputs.empty()) {
-                        std::cout << kColorYellow << "│  " << kColorReset;
-                        std::cout << kColorCyan << "Inputs: " << kColorReset;
-                        for (size_t i = 0; i < entry.inputs.size(); ++i) {
-                            if (i > 0) {
-                                std::cout << ", ";
-                            }
-                            std::cout << entry.inputs[i];
-                        }
-                        std::cout << '\n';
-                    }
-
-                    // Outputs
-                    if (!entry.outputs.empty()) {
-                        std::cout << kColorYellow << "│  " << kColorReset;
-                        std::cout << kColorCyan << "Outputs: " << kColorReset << entry.outputs
-                                  << '\n';
-                    }
-
-                    // Error Model
-                    if (!entry.errorModel.empty()) {
-                        std::cout << kColorYellow << "│  " << kColorReset;
-                        std::cout << kColorRed << "Error Model: " << kColorReset;
-                        for (size_t i = 0; i < entry.errorModel.size(); ++i) {
-                            if (i > 0) {
-                                std::cout << ", ";
-                            }
-                            std::cout << entry.errorModel[i];
-                        }
-                        std::cout << '\n';
-                    }
-
-                    // Preconditions
-                    if (!entry.preconditions.empty()) {
-                        std::cout << kColorYellow << "│  " << kColorReset;
-                        std::cout << kColorCyan << "Preconditions: " << kColorReset;
-                        for (size_t i = 0; i < entry.preconditions.size(); ++i) {
-                            if (i > 0) {
-                                std::cout << ", ";
-                            }
-                            std::cout << entry.preconditions[i];
-                        }
-                        std::cout << '\n';
-                    }
-
-                    // Postconditions
-                    if (!entry.postconditions.empty()) {
-                        std::cout << kColorYellow << "│  " << kColorReset;
-                        std::cout << kColorCyan << "Postconditions: " << kColorReset;
-                        for (size_t i = 0; i < entry.postconditions.size(); ++i) {
-                            if (i > 0) {
-                                std::cout << ", ";
-                            }
-                            std::cout << entry.postconditions[i];
-                        }
-                        std::cout << '\n';
-                    }
-
-                    // Side effects
-                    if (!entry.sideEffects.empty()) {
-                        std::cout << kColorYellow << "│  " << kColorReset;
-                        std::cout << kColorRed << "Side Effects: " << kColorReset;
-                        for (size_t i = 0; i < entry.sideEffects.size(); ++i) {
-                            if (i > 0) {
-                                std::cout << ", ";
-                            }
-                            std::cout << entry.sideEffects[i];
-                        }
-                        std::cout << '\n';
-                    }
-                });
+            std::for_each(manifest->entries.begin(), manifest->entries.end(),
+                          [](const auto& entry) { printManifestEntry(entry); });
         }
     } else {
         std::cout << kColorYellow << "│  " << kColorReset;

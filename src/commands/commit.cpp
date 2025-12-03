@@ -1,14 +1,16 @@
 #include "commit.h"
 
-#include "../diff_analyzer.h"
 #include "../git_adapter.h"
 #include "../manifest.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <fstream>
 #include <iostream>
 #include <iterator>
 #include <sstream>
+#include <string>
+#include <utility>
 #include <vector>
 
 namespace gip::commands {
@@ -62,24 +64,25 @@ auto getFlagValue(const std::vector<std::string>& args, const std::string& short
 
 }  // anonymous namespace
 
+// NOLINTNEXTLINE(readability-function-size)
 auto commit(const std::vector<std::string>& args) -> int {
-    const GitAdapter git;
+    const GitAdapter gitAdapter;
 
     // Check if we're in a git repo
-    if (!git.isRepository()) {
+    if (!gitAdapter.isRepository()) {
         printError("Not a git repository");
         return 1;
     }
 
     // Check for force flag (-f / --force)
-    bool force = hasFlag(args, "-f", "--force");
+    const bool force = hasFlag(args, "-f", "--force");
 
     // Get commit message
     std::string message = getFlagValue(args, "-m", "--message");
-    std::string file = getFlagValue(args, "-F", "--file");
+    const std::string file = getFlagValue(args, "-F", "--file");
 
     if (!file.empty()) {
-        std::ifstream ifs(file);
+        const std::ifstream ifs(file);
         if (ifs) {
             std::ostringstream oss;
             oss << ifs.rdbuf();
@@ -96,7 +99,7 @@ auto commit(const std::vector<std::string>& args) -> int {
     }
 
     // Get staged files
-    auto stagedFiles = git.getStagedFiles();
+    auto stagedFiles = gitAdapter.getStagedFiles();
     if (stagedFiles.empty()) {
         printError("No staged changes. Use 'git add' first.");
         return 1;
@@ -109,7 +112,7 @@ auto commit(const std::vector<std::string>& args) -> int {
     if (force) {
         printInfo("Force mode: Skipping manifest check");
 
-        auto result = git.commit(parseResult.cleanMessage);
+        auto result = gitAdapter.commit(parseResult.cleanMessage);
         if (!result.success()) {
             printError("Commit failed: " + result.stderrOutput);
             return 1;
@@ -126,15 +129,15 @@ auto commit(const std::vector<std::string>& args) -> int {
         std::vector<std::pair<std::string, std::string>> files;
         files.reserve(stagedFiles.size());
         std::transform(stagedFiles.begin(), stagedFiles.end(), std::back_inserter(files),
-                       [](const auto& f) { return std::make_pair(f.path, f.status); });
+                       [](const auto& entry) { return std::make_pair(entry.path, entry.status); });
 
-        std::string templ = ManifestParser::generateTemplate(files);
+        const std::string templ = ManifestParser::generateTemplate(files);
 
         printError("Commit Rejected: Missing Context Manifest\n");
 
         std::cerr << kColorYellow << "Detected changes in:" << kColorReset << '\n';
-        for (const auto& f : stagedFiles) {
-            std::cerr << "  - " << f.path << " (" << f.status << ")" << '\n';
+        for (const auto& entry : stagedFiles) {
+            std::cerr << "  - " << entry.path << " (" << entry.status << ")" << '\n';
         }
 
         std::cerr << '\n';
@@ -151,6 +154,11 @@ auto commit(const std::vector<std::string>& args) -> int {
     }
 
     // Validate manifest has required fields
+    if (!parseResult.manifest.has_value()) {
+        printError("Internal error: Manifest missing despite hasManifest() returning true");
+        return 1;
+    }
+
     const auto& manifest = *parseResult.manifest;
     bool valid = true;
 
@@ -171,18 +179,18 @@ auto commit(const std::vector<std::string>& args) -> int {
     }
 
     // Commit with clean message
-    auto result = git.commit(parseResult.cleanMessage);
+    auto result = gitAdapter.commit(parseResult.cleanMessage);
     if (!result.success()) {
         printError("Commit failed: " + result.stderrOutput);
         return 1;
     }
 
     // Get the new commit SHA
-    std::string commitSha = git.getHeadSha();
+    const std::string commitSha = gitAdapter.getHeadSha();
 
     // Store manifest in Git Notes
-    std::string toonManifest = manifest.toToon();
-    auto noteResult = git.addNote(commitSha, toonManifest);
+    const std::string toonManifest = manifest.toToon();
+    auto noteResult = gitAdapter.addNote(commitSha, toonManifest);
 
     if (!noteResult.success()) {
         printError("Warning: Failed to store manifest in notes: " + noteResult.stderrOutput);

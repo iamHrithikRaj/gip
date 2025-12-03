@@ -1,5 +1,7 @@
 #include "gip/types.h"
 
+#include <string>
+
 namespace gip {
 
 // cppcheck-suppress unusedFunction

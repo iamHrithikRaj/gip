@@ -17,8 +17,8 @@ Gip (Git with Intent Protocol) is a drop-in replacement for Git that enforces se
 ┌─────────────────────────────────────────────────────────────────┐
 │                          Gip CLI                                 │
 │  ┌─────────────────────────────────────────────────────────────┐│
-│  │                      main.cpp                               ││
-│  │  - Command parsing                                          ││
+│  │                      main.rs                                ││
+│  │  - Command parsing (clap)                                   ││
 │  │  - Route to handlers                                        ││
 │  └─────────────────────────────────────────────────────────────┘│
 │                              │                                   │
@@ -28,18 +28,18 @@ Gip (Git with Intent Protocol) is a drop-in replacement for Git that enforces se
 │  └───────────┴───────────┴───────────┴───────────┴───────────┘ │
 │                              │                                   │
 │  ┌─────────────────────────────────────────────────────────────┐│
-│  │                    Core Libraries                            ││
+│  │                    Core Modules                              ││
 │  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  ││
-│  │  │ GitAdapter  │  │  Manifest   │  │   DiffAnalyzer      │  ││
-│  │  │             │  │  Parser     │  │                     │  ││
+│  │  │   git.rs    │  │  manifest/  │  │      merge.rs       │  ││
+│  │  │             │  │             │  │                     │  ││
 │  │  └─────────────┘  └─────────────┘  └─────────────────────┘  ││
 │  └─────────────────────────────────────────────────────────────┘│
 │                              │                                   │
 │  ┌─────────────────────────────────────────────────────────────┐│
 │  │                    External Dependencies                     ││
 │  │  ┌─────────────┐  ┌─────────────┐                           ││
-│  │  │   ctoon     │  │  libgit2    │                           ││
-│  │  │ (TOON fmt)  │  │ (optional)  │                           ││
+│  │  │ toon-format │  │    git2     │                           ││
+│  │  │             │  │             │                           ││
 │  │  └─────────────┘  └─────────────┘                           ││
 │  └─────────────────────────────────────────────────────────────┘│
 └─────────────────────────────────────────────────────────────────┘
@@ -57,7 +57,7 @@ Gip (Git with Intent Protocol) is a drop-in replacement for Git that enforces se
 
 ## Component Details
 
-### CLI Layer (`src/main.cpp`)
+### CLI Layer (`src/main.rs`)
 
 Entry point that:
 - Parses command line arguments
@@ -68,44 +68,36 @@ Entry point that:
 
 | Handler | File | Responsibility |
 |---------|------|----------------|
-| `commit` | `commit.cpp` | Intercepts commits, enforces manifests |
-| `init` | `init.cpp` | Initializes repo with AI instructions |
-| `context` | `context.cpp` | Queries semantic history |
-| `push` | `push.cpp` | Pushes code and notes |
-| `passthrough` | `passthrough.cpp` | Forwards unknown commands to git |
+| `commit` | `commit.rs` | Intercepts commits, enforces manifests |
+| `init` | `init.rs` | Initializes repo with AI instructions |
+| `context` | `context.rs` | Queries semantic history |
+| `push` | `push.rs` | Pushes code and notes |
+| `passthrough` | `passthrough.rs` | Forwards unknown commands to git |
 
 ### Core Libraries
 
-#### GitAdapter (`git_adapter.h/cpp`)
+#### Git Integration (`src/git.rs`)
 
 Abstracts git operations:
-- `isRepository()` - Check if in a git repo
-- `getRepositoryRoot()` - Get repo root path
-- `getStagedFiles()` - Get list of staged files
-- `getStagedDiff()` - Get diff content
-- `getTrackedFiles()` - Get all tracked files
-- `getCurrentBranch()` - Get current branch name
-- `commit()` - Create a commit
-- `initialize()` - Initialize a repository
-- `addNote()` / `getNote()` - Manage git notes
-- `pushWithNotes()` - Push code and notes
-- `getFileHistory()` - Query commit history
-- `execute()` - Run raw git commands
+- `is_git_repo()` - Check if in a git repo
+- `get_repo_root()` - Get repo root path
+- `get_staged_diff()` - Get diff content
+- `add_note()` / `get_note()` - Manage git notes
+- `push_notes()` - Push code and notes
+- `run_git_cmd()` - Run raw git commands
 
-#### ManifestParser (`manifest.h/cpp`)
+#### Manifest Module (`src/manifest/`)
 
 Handles manifest operations:
-- `parse()` - Extract manifest from commit message
-- `generateTemplate()` - Create manifest template
-- `validate()` - Validate manifest content
-- TOON/JSON serialization via Manifest methods
+- `load()` / `save()` - Storage in Git Notes
+- `serialize_manifest_toon()` - TOON serialization
+- `types.rs` - Data structures (Manifest, Entry, etc.)
 
-#### DiffAnalyzer (`diff_analyzer.h/cpp`)
+#### Merge Driver (`src/merge.rs`)
 
-Analyzes code changes:
-- Symbol extraction
-- Change type detection
-- Impact analysis
+Handles conflict enrichment:
+- `enrich_all_conflicts()` - Detects and enriches conflicts
+- `enrich_conflict_markers()` - Injects context into markers
 
 ### Data Storage
 
@@ -149,13 +141,13 @@ Manifests are stored in Git Notes under `refs/notes/gip`:
 ### Adding New Commands
 
 1. Create handler in `src/commands/`
-2. Add to routing in `main.cpp`
+2. Add to routing in `main.rs`
 3. Update help text
 4. Add tests
 
 ### Adding New Output Formats
 
-1. Add serializer method to `ManifestSerializer`
+1. Add serializer method to `src/manifest/toon.rs`
 2. Add format option to context command
 3. Update documentation
 

@@ -6,8 +6,12 @@
 
 **The missing link between your code changes and the context that explains them.**
 
+[![CI](https://github.com/iamHrithikRaj/gip/actions/workflows/ci.yml/badge.svg)](https://github.com/iamHrithikRaj/gip/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/iamHrithikRaj/gip?style=flat&logo=github)](https://github.com/iamHrithikRaj/gip/releases)
+[![Downloads](https://img.shields.io/github/downloads/iamHrithikRaj/gip/total?style=flat&logo=github)](https://github.com/iamHrithikRaj/gip/releases)
 [![Rust](https://img.shields.io/badge/Rust-1.75+-orange.svg?style=flat&logo=rust)](https://www.rust-lang.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+<br>
 [![Windows](https://img.shields.io/badge/Windows-0078D6?style=flat&logo=windows)](https://microsoft.com/windows)
 [![Linux](https://img.shields.io/badge/Linux-FCC624?style=flat&logo=linux&logoColor=black)](https://kernel.org)
 [![macOS](https://img.shields.io/badge/macOS-000000?style=flat&logo=apple)](https://apple.com/macos)
@@ -538,10 +542,10 @@ This acts as a **RAG-ready knowledge base** for your LLM, allowing it to answer 
 
 | Component | Purpose | Location |
 |-----------|---------|----------|
-| **Git Adapter** | Wraps git CLI with typed C++ interface | `src/git_adapter.cpp` |
-| **Manifest Parser** | Parses and validates manifest files | `src/manifest.cpp` |
+| **Git Adapter** | Wraps git CLI with typed Rust interface | `src/git.rs` |
+| **Manifest Parser** | Parses and validates manifest files | `src/manifest/mod.rs` |
 | **Command Handlers** | Individual command implementations | `src/commands/` |
-| **ctoon** | TOON format serialization (static library) | `ctoon/` |
+| **toon** | TOON format serialization | `src/toon/` |
 
 ### Storage Model
 
@@ -629,25 +633,22 @@ We welcome contributions! Gip is built with enterprise-grade standards in mind.
 ### Development Setup
 
 ```bash
-# Clone with submodules
-git clone --recursive https://github.com/AZBucky/gip.git
+# Clone the repository
+git clone https://github.com/AZBucky/gip.git
 cd gip
 
 # Build with tests
-cmake -B build -DGIP_BUILD_TESTS=ON
-cmake --build build
+cargo build --tests
 
 # Run tests
-ctest --test-dir build
+cargo test
 ```
 
 ### Code Standards
 
-- **C++17** with modern idioms
-- **Enterprise naming**: Full descriptive names (`isRepository()` not `isRepo()`)
-- **Const correctness**: Use `const` wherever possible
-- **RAII**: Resource management via constructors/destructors
-- **Error handling**: Return types over exceptions for expected failures
+- **Rust 2021** with modern idioms
+- **Enterprise naming**: Full descriptive names (`is_repository()` not `is_repo()`)
+- **Error handling**: Result types over panics for expected failures
 
 See [CODING_STANDARDS.md](docs/CODING_STANDARDS.md) for detailed guidelines.
 

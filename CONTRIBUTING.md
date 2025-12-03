@@ -10,8 +10,7 @@ Please be respectful and constructive in all interactions.
 
 ### Prerequisites
 
-- C++17 compatible compiler (GCC 9+, Clang 10+, MSVC 2019+)
-- CMake 3.15+
+- Rust 1.75+ (stable)
 - Git
 
 ### Building
@@ -19,16 +18,13 @@ Please be respectful and constructive in all interactions.
 ```bash
 git clone https://github.com/iamHrithikRaj/gip.git
 cd gip
-mkdir build && cd build
-cmake .. -DGIP_BUILD_TESTS=ON
-cmake --build .
+cargo build
 ```
 
 ### Running Tests
 
 ```bash
-cd build
-ctest --output-on-failure
+cargo test
 ```
 
 ## Development Workflow
@@ -70,41 +66,53 @@ gip:
 
 ### Formatting
 
-We use clang-format. Run before committing:
+We use rustfmt. Run before committing:
 
 ```bash
-find src include -name '*.cpp' -o -name '*.h' | xargs clang-format -i
+cargo fmt
 ```
 
 ### Guidelines
 
-- Use `snake_case` for file names
-- Use `CamelCase` for types
-- Use `camelCase` for functions and variables
-- Prefix private members with underscore suffix (`member_`)
-- Use `[[nodiscard]]` for functions with return values that shouldn't be ignored
-- Document public APIs with Doxygen comments
+- Use `snake_case` for file names, functions, and variables
+- Use `PascalCase` for types and traits
+- Use `UPPER_SNAKE_CASE` for constants
+- Document public APIs with doc comments (`///`)
 
 ### Example
 
-```cpp
-/// @brief Calculate tax for a given price
-/// @param price The base price (must be >= 0)
-/// @return Price with tax applied
-/// @throws std::invalid_argument if price is negative
-[[nodiscard]] double calculateTax(double price);
+```rust
+/// Calculate tax for a given price
+///
+/// # Arguments
+///
+/// * `price` - The base price (must be >= 0)
+///
+/// # Returns
+///
+/// Price with tax applied, or an error if price is negative
+pub fn calculate_tax(price: f64) -> Result<f64, Error> {
+    if price < 0.0 {
+        return Err(Error::InvalidInput);
+    }
+    Ok(price * 1.08)
+}
 ```
 
 ## Testing
 
 ### Unit Tests
 
-Located in `tests/unit/`. Use Catch2 framework:
+Located in `src/` alongside code or in `tests/unit/`. Use standard test framework:
 
-```cpp
-TEST_CASE("Description", "[tag]") {
-    SECTION("specific case") {
-        REQUIRE(result == expected);
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_calculate_tax() {
+        assert_eq!(calculate_tax(100.0).unwrap(), 108.0);
     }
 }
 ```

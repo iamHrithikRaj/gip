@@ -20,7 +20,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Install Rust
+    - name: Install Toolchain
       uses: dtolnay/rust-toolchain@stable
       
     - name: Build
@@ -36,7 +36,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Install Rust
+    - name: Install Toolchain
       uses: dtolnay/rust-toolchain@stable
       with:
         components: clippy, rustfmt

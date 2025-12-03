@@ -1,15 +1,15 @@
 #!/bin/bash
 # scripts/install.sh
-# Installs Gip (Rust Edition) from source
+# Installs Gip from source
 
 set -e
 
-echo -e "\033[0;36mInstalling Gip (Rust Edition)...\033[0m"
+echo -e "\033[0;36mInstalling Gip...\033[0m"
 echo "Performing user-space installation (no sudo required)."
 
 # Check prerequisites
 if ! command -v cargo &> /dev/null; then
-    echo "Error: Cargo is required but not found. Please install Rust."
+    echo "Error: Cargo is required but not found. Please install the toolchain."
     exit 1
 fi
 

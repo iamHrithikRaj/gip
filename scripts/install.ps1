@@ -1,14 +1,14 @@
 # scripts/install.ps1
-# Installs Gip (Rust Edition) from source
+# Installs Gip from source
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "Installing Gip (Rust Edition)..." -ForegroundColor Cyan
+Write-Host "Installing Gip..." -ForegroundColor Cyan
 Write-Host "Performing user-space installation (no Admin privileges required)." -ForegroundColor Gray
 
 # Check prerequisites
 if (-not (Get-Command cargo -ErrorAction SilentlyContinue)) {
-    Write-Error "Cargo is required but not found. Please install Rust."
+    Write-Error "Cargo is required but not found. Please install the toolchain."
     exit 1
 }
 

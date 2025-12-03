@@ -56,6 +56,7 @@ bool isMergeInProgress(const GitAdapter& git) {
 }
 
 /// @brief Extract the branch name from merge arguments
+// cppcheck-suppress unusedFunction
 std::string extractMergeBranch(const std::vector<std::string>& args) {
     for (const auto& arg : args) {
         // Skip flags

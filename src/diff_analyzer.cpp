@@ -167,6 +167,7 @@ std::vector<SymbolInfo> DiffAnalyzer::extractSymbols(const std::string& filePath
     return symbols;
 }
 
+// cppcheck-suppress unusedFunction
 std::vector<SymbolInfo> DiffAnalyzer::analyze(const std::string& diff) {
     std::vector<SymbolInfo> allSymbols;
 
@@ -205,6 +206,7 @@ std::vector<SymbolInfo> DiffAnalyzer::analyze(const std::string& diff) {
     return allSymbols;
 }
 
+// cppcheck-suppress unusedFunction
 std::vector<std::pair<std::string, std::string>>
 DiffAnalyzer::getChangedFiles(const std::string& diffStatus) {
     std::vector<std::pair<std::string, std::string>> files;

@@ -23,6 +23,7 @@ struct GitResult {
     }
 
     /// @brief Check if command failed
+    // cppcheck-suppress unusedFunction
     [[nodiscard]] bool failed() const noexcept {
         return exitCode != 0;
     }

@@ -107,13 +107,8 @@ auto rebase(const std::vector<std::string>& args) -> int {
     configureNotesRewrite(git);
 
     // Check for --continue flag (resuming after conflict resolution)
-    bool isContinue = false;
-    for (const auto& arg : args) {
-        if (arg == "--continue") {
-            isContinue = true;
-            break;
-        }
-    }
+    bool isContinue = std::any_of(args.begin(), args.end(),
+                                  [](const std::string& arg) { return arg == "--continue"; });
 
     // Build the git rebase command
     std::vector<std::string> rebaseArgs = {"rebase"};

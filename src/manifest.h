@@ -123,6 +123,7 @@ public:
          * @brief Check if parsing was successful.
          * @return true if no error and manifest found
          */
+        // cppcheck-suppress unusedFunction
         [[nodiscard]] bool isValid() const noexcept {
             return !hasError() && hasManifest();
         }

@@ -356,12 +356,9 @@ auto matchesBehaviorFilter(const CommitContext& ctx, const std::string& behavior
         return false;
     }
 
-    for (const auto& entry : manifest->entries) {
-        if (entry.behavior == behaviorFilter) {
-            return true;
-        }
-    }
-    return false;
+    return std::any_of(
+        manifest->entries.begin(), manifest->entries.end(),
+        [&behaviorFilter](const auto& entry) { return entry.behavior == behaviorFilter; });
 }
 
 /// Check if a commit is after the given date (YYYY-MM-DD format)

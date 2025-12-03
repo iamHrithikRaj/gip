@@ -137,6 +137,7 @@ std::string GitAdapter::getRepositoryRoot() const {
     return root;
 }
 
+// cppcheck-suppress unusedFunction
 std::string GitAdapter::getCurrentBranch() const {
     auto result = executeCommand("git rev-parse --abbrev-ref HEAD");
     if (!result.success()) {
@@ -145,6 +146,7 @@ std::string GitAdapter::getCurrentBranch() const {
     return trimNewlines(result.stdoutOutput);
 }
 
+// cppcheck-suppress unusedFunction
 std::vector<std::string> GitAdapter::getTrackedFiles() const {
     std::vector<std::string> files;
     auto result = executeCommand("git ls-files");
@@ -203,6 +205,7 @@ std::vector<StagedFile> GitAdapter::getStagedFiles() const {
     return files;
 }
 
+// cppcheck-suppress unusedFunction
 std::string GitAdapter::getStagedDiff() const {
     auto result = executeCommand("git diff --cached");
     return result.success() ? result.stdoutOutput : "";
@@ -281,6 +284,7 @@ auto GitAdapter::getHeadSha() const -> std::string {
     return trimNewlines(result.stdoutOutput);
 }
 
+// cppcheck-suppress unusedFunction
 GitResult GitAdapter::pushWithNotes(const std::string& remote, const std::string& branch) const {
     // First push the branch
     auto result = execCommand(buildCommand("git", {"push", remote, branch}));

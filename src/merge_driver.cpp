@@ -49,32 +49,13 @@ std::string trim(const std::string& str) {
     return str.substr(start, end - start + 1);
 }
 
-/// @brief Check if string starts with prefix
-bool startsWith(const std::string& str, const std::string& prefix) {
-    return str.size() >= prefix.size() && str.compare(0, prefix.size(), prefix) == 0;
-}
-
-/// @brief Extract value from TOON-style line: "key: value" or "key: \"value\""
-std::string extractToonValue(const std::string& line) {
-    auto colonPos = line.find(':');
-    if (colonPos == std::string::npos)
-        return "";
-
-    std::string value = trim(line.substr(colonPos + 1));
-
-    // Remove quotes if present
-    if (value.length() >= 2 && value.front() == '"' && value.back() == '"') {
-        value = value.substr(1, value.length() - 2);
-    }
-    return value;
-}
-
 }  // anonymous namespace
 
 // =============================================================================
 // Conflict Detection
 // =============================================================================
 
+// cppcheck-suppress unusedFunction
 bool MergeDriver::hasConflictMarkers(const std::string& filePath) const {
     std::string content = readFile(filePath);
     return content.find(kConflictStart) != std::string::npos;

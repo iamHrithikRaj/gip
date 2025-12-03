@@ -410,6 +410,7 @@ ManifestParser::generateTemplate(const std::vector<std::pair<std::string, std::s
     return ss.str();
 }
 
+// cppcheck-suppress unusedFunction
 std::string ManifestParser::validate(const Manifest& manifest) {
     if (manifest.entries.empty()) {
         return "Manifest has no entries";

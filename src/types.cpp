@@ -2,6 +2,7 @@
 
 namespace gip {
 
+// cppcheck-suppress unusedFunction
 const char* fileStatusToString(FileStatus status) noexcept {
     switch (status) {
         case FileStatus::Added:
@@ -19,6 +20,7 @@ const char* fileStatusToString(FileStatus status) noexcept {
     }
 }
 
+// cppcheck-suppress unusedFunction
 FileStatus parseFileStatus(char code) noexcept {
     switch (code) {
         case 'A':
@@ -36,6 +38,7 @@ FileStatus parseFileStatus(char code) noexcept {
     }
 }
 
+// cppcheck-suppress unusedFunction
 const char* behaviorClassToString(BehaviorClass behavior) noexcept {
     switch (behavior) {
         case BehaviorClass::Feature:
@@ -59,6 +62,7 @@ const char* behaviorClassToString(BehaviorClass behavior) noexcept {
     }
 }
 
+// cppcheck-suppress unusedFunction
 BehaviorClass parseBehaviorClass(const std::string& str) noexcept {
     if (str == "feature")
         return BehaviorClass::Feature;

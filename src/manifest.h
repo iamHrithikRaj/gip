@@ -63,27 +63,27 @@ struct Manifest {
      * @brief Serialize manifest to TOON format string.
      * @return TOON-encoded string representation
      */
-    [[nodiscard]] auto toToon() const -> std::string;
+    [[nodiscard]] std::string toToon() const;
 
     /**
      * @brief Convert manifest to ctoon::Value for further processing.
      * @return ctoon::Value representation of the manifest
      */
-    [[nodiscard]] auto toValue() const -> ctoon::Value;
+    [[nodiscard]] ctoon::Value toValue() const;
 
     /**
      * @brief Parse a manifest from a TOON format string.
      * @param toonStr The TOON-encoded manifest string
      * @return Parsed manifest, or nullopt if parsing fails
      */
-    [[nodiscard]] static auto fromToon(const std::string& toonStr) -> std::optional<Manifest>;
+    [[nodiscard]] static std::optional<Manifest> fromToon(const std::string& toonStr);
 
     /**
      * @brief Parse a manifest from a ctoon::Value.
      * @param value The ctoon::Value to parse
      * @return Parsed manifest, or nullopt if parsing fails
      */
-    [[nodiscard]] static auto fromValue(const ctoon::Value& value) -> std::optional<Manifest>;
+    [[nodiscard]] static std::optional<Manifest> fromValue(const ctoon::Value& value);
 };
 
 /**
@@ -107,7 +107,7 @@ public:
          * @brief Check if a manifest was successfully parsed.
          * @return true if manifest is present
          */
-        [[nodiscard]] auto hasManifest() const noexcept -> bool {
+        [[nodiscard]] bool hasManifest() const noexcept {
             return manifest.has_value();
         }
 
@@ -115,7 +115,7 @@ public:
          * @brief Check if parsing encountered an error.
          * @return true if an error occurred
          */
-        [[nodiscard]] auto hasError() const noexcept -> bool {
+        [[nodiscard]] bool hasError() const noexcept {
             return !error.empty();
         }
 
@@ -123,7 +123,7 @@ public:
          * @brief Check if parsing was successful.
          * @return true if no error and manifest found
          */
-        [[nodiscard]] auto isValid() const noexcept -> bool {
+        [[nodiscard]] bool isValid() const noexcept {
             return !hasError() && hasManifest();
         }
     };
@@ -138,7 +138,7 @@ public:
      * @param message The full commit message to parse
      * @return ParseResult containing clean message and optional manifest
      */
-    [[nodiscard]] static auto parse(const std::string& message) -> ParseResult;
+    [[nodiscard]] static ParseResult parse(const std::string& message);
 
     /**
      * @brief Generate a template manifest for staged files.
@@ -150,15 +150,15 @@ public:
      * @param files Vector of (file_path, git_status) pairs
      * @return TOON-formatted manifest template string
      */
-    [[nodiscard]] static auto
-    generateTemplate(const std::vector<std::pair<std::string, std::string>>& files) -> std::string;
+    [[nodiscard]] static std::string generateTemplate(
+        const std::vector<std::pair<std::string, std::string>>& files);
 
     /**
      * @brief Validate a manifest.
      * @param manifest The manifest to validate
      * @return Error message if invalid, empty string if valid
      */
-    [[nodiscard]] static auto validate(const Manifest& manifest) -> std::string;
+    [[nodiscard]] static std::string validate(const Manifest& manifest);
 
 private:
     /**
@@ -166,8 +166,7 @@ private:
      * @param message The message to search
      * @return Pair of (start, end) positions, or (npos, npos) if not found
      */
-    [[nodiscard]] static auto findManifestBlock(const std::string& message)
-        -> std::pair<size_t, size_t>;
+    [[nodiscard]] static std::pair<size_t, size_t> findManifestBlock(const std::string& message);
 };
 
 }  // namespace gip

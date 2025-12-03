@@ -11,7 +11,7 @@ namespace gip {
 // Manifest Implementation
 // ============================================================================
 
-auto Manifest::toValue() const -> ctoon::Value {
+ctoon::Value Manifest::toValue() const {
     ctoon::Object root;
     root["schemaVersion"] = ctoon::Value(ctoon::Primitive(schemaVersion));
 
@@ -77,12 +77,12 @@ auto Manifest::toValue() const -> ctoon::Value {
     return ctoon::Value(root);
 }
 
-auto Manifest::toToon() const -> std::string {
+std::string Manifest::toToon() const {
     // Use JSON format for now to avoid issues with nested arrays in TOON table format
     return ctoon::dumpsJson(toValue());
 }
 
-auto Manifest::fromValue(const ctoon::Value& value) -> std::optional<Manifest> {
+std::optional<Manifest> Manifest::fromValue(const ctoon::Value& value) {
     if (!value.isObject()) {
         return std::nullopt;
     }
@@ -159,7 +159,7 @@ auto Manifest::fromValue(const ctoon::Value& value) -> std::optional<Manifest> {
     return manifest;
 }
 
-auto Manifest::fromToon(const std::string& toonStr) -> std::optional<Manifest> {
+std::optional<Manifest> Manifest::fromToon(const std::string& toonStr) {
     try {
         // Try decoding as TOON first
         auto value = ctoon::decode(toonStr);
@@ -184,7 +184,7 @@ auto Manifest::fromToon(const std::string& toonStr) -> std::optional<Manifest> {
 // ManifestParser Implementation
 // ============================================================================
 
-auto ManifestParser::findManifestBlock(const std::string& message) -> std::pair<size_t, size_t> {
+std::pair<size_t, size_t> ManifestParser::findManifestBlock(const std::string& message) {
     // Look for "gip:"
     size_t start = message.find("gip:");
     if (start == std::string::npos) {
@@ -258,7 +258,7 @@ auto ManifestParser::findManifestBlock(const std::string& message) -> std::pair<
     return {start, message.size()};
 }
 
-auto ManifestParser::parse(const std::string& message) -> ParseResult {
+ManifestParser::ParseResult ManifestParser::parse(const std::string& message) {
     ParseResult result;
 
     auto [start, end] = findManifestBlock(message);
@@ -348,8 +348,7 @@ auto ManifestParser::parse(const std::string& message) -> ParseResult {
     return result;
 }
 
-auto ManifestParser::generateTemplate(const std::vector<std::pair<std::string, std::string>>& files)
-    -> std::string {
+std::string ManifestParser::generateTemplate(const std::vector<std::pair<std::string, std::string>>& files) {
     std::ostringstream ss;
 
     ss << "gip:\n";
@@ -411,7 +410,7 @@ auto ManifestParser::generateTemplate(const std::vector<std::pair<std::string, s
     return ss.str();
 }
 
-auto ManifestParser::validate(const Manifest& manifest) -> std::string {
+std::string ManifestParser::validate(const Manifest& manifest) {
     if (manifest.entries.empty()) {
         return "Manifest has no entries";
     }

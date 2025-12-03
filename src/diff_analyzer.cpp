@@ -6,7 +6,7 @@
 
 namespace gip {
 
-auto DiffAnalyzer::detectLanguage(const std::string& filePath) -> std::string {
+std::string DiffAnalyzer::detectLanguage(const std::string& filePath) {
     size_t dotPos = filePath.find_last_of('.');
     if (dotPos == std::string::npos) {
         return "unknown";
@@ -36,8 +36,7 @@ auto DiffAnalyzer::detectLanguage(const std::string& filePath) -> std::string {
     return "unknown";
 }
 
-auto DiffAnalyzer::extractSymbolName(const std::string& line, const std::string& language)
-    -> std::string {
+std::string DiffAnalyzer::extractSymbolName(const std::string& line, const std::string& language) {
     std::smatch match;
 
     if (language == "cpp" || language == "c") {
@@ -117,8 +116,8 @@ auto DiffAnalyzer::extractSymbolName(const std::string& line, const std::string&
     return "";
 }
 
-auto DiffAnalyzer::extractSymbols(const std::string& filePath, const std::string& fileDiff,
-                                  const std::string& changeType) -> std::vector<SymbolInfo> {
+std::vector<SymbolInfo> DiffAnalyzer::extractSymbols(const std::string& filePath, const std::string& fileDiff,
+                                  const std::string& changeType) {
     std::vector<SymbolInfo> symbols;
     std::string language = detectLanguage(filePath);
 
@@ -167,7 +166,7 @@ auto DiffAnalyzer::extractSymbols(const std::string& filePath, const std::string
     return symbols;
 }
 
-auto DiffAnalyzer::analyze(const std::string& diff) -> std::vector<SymbolInfo> {
+std::vector<SymbolInfo> DiffAnalyzer::analyze(const std::string& diff) {
     std::vector<SymbolInfo> allSymbols;
 
     // Split diff by file
@@ -205,8 +204,7 @@ auto DiffAnalyzer::analyze(const std::string& diff) -> std::vector<SymbolInfo> {
     return allSymbols;
 }
 
-auto DiffAnalyzer::getChangedFiles(const std::string& diffStatus)
-    -> std::vector<std::pair<std::string, std::string>> {
+std::vector<std::pair<std::string, std::string>> DiffAnalyzer::getChangedFiles(const std::string& diffStatus) {
     std::vector<std::pair<std::string, std::string>> files;
 
     std::istringstream stream(diffStatus);

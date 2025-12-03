@@ -281,8 +281,7 @@ auto GitAdapter::getHeadSha() const -> std::string {
     return trimNewlines(result.stdoutOutput);
 }
 
-auto GitAdapter::pushWithNotes(const std::string& remote, const std::string& branch) const
-    -> GitResult {
+GitResult GitAdapter::pushWithNotes(const std::string& remote, const std::string& branch) const {
     // First push the branch
     auto result = execCommand(buildCommand("git", {"push", remote, branch}));
     if (!result.success()) {
@@ -302,8 +301,7 @@ auto GitAdapter::pushWithNotes(const std::string& remote, const std::string& bra
     return result;
 }
 
-auto GitAdapter::getFileHistory(const std::string& filePath, int limit) const
-    -> std::vector<CommitContext> {
+std::vector<CommitContext> GitAdapter::getFileHistory(const std::string& filePath, int limit) const {
     std::vector<CommitContext> history;
 
     // Get commits that touched this file

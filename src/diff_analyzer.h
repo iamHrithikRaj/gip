@@ -35,7 +35,7 @@ public:
      * @param diff The unified diff output from git
      * @return Vector of symbols found in the diff
      */
-    [[nodiscard]] static auto analyze(const std::string& diff) -> std::vector<SymbolInfo>;
+    [[nodiscard]] static std::vector<SymbolInfo> analyze(const std::string& diff);
 
     /**
      * @brief Get list of changed files with their status.
@@ -46,8 +46,8 @@ public:
      * @param diffStatus Output from git diff-index or similar
      * @return Vector of (filepath, status) pairs where status is A/M/D/R
      */
-    [[nodiscard]] static auto getChangedFiles(const std::string& diffStatus)
-        -> std::vector<std::pair<std::string, std::string>>;
+    [[nodiscard]] static std::vector<std::pair<std::string, std::string>> getChangedFiles(
+        const std::string& diffStatus);
 
 private:
     /**
@@ -57,17 +57,16 @@ private:
      * @param changeType Type of change (add, modify, delete)
      * @return Vector of symbols found in the file diff
      */
-    [[nodiscard]] static auto extractSymbols(const std::string& filePath,
-                                             const std::string& fileDiff,
-                                             const std::string& changeType)
-        -> std::vector<SymbolInfo>;
+    [[nodiscard]] static std::vector<SymbolInfo> extractSymbols(const std::string& filePath,
+                                                                const std::string& fileDiff,
+                                                                const std::string& changeType);
 
     /**
      * @brief Detect programming language from file extension.
      * @param filePath Path to the file
      * @return Language identifier (cpp, python, javascript, etc.)
      */
-    [[nodiscard]] static auto detectLanguage(const std::string& filePath) -> std::string;
+    [[nodiscard]] static std::string detectLanguage(const std::string& filePath);
 
     /**
      * @brief Extract function/symbol name from a line.
@@ -75,8 +74,8 @@ private:
      * @param language Language identifier
      * @return Symbol name if found, empty string otherwise
      */
-    [[nodiscard]] static auto extractSymbolName(const std::string& line,
-                                                const std::string& language) -> std::string;
+    [[nodiscard]] static std::string extractSymbolName(const std::string& line,
+                                                       const std::string& language);
 };
 
 }  // namespace gip

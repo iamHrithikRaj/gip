@@ -276,8 +276,7 @@ auto commitToJson(const CommitContext& ctx, const std::string& indent = "    ") 
 }
 
 /// Generate JSON output for file history
-auto historyToJson(const std::string& filePath, const std::vector<CommitContext>& history)
-    -> std::string {
+std::string historyToJson(const std::string& filePath, const std::vector<CommitContext>& history) {
     std::ostringstream oss;
     oss << "{\n";
     oss << "  \"file\": \"" << escapeJson(filePath) << "\",\n";
@@ -309,9 +308,8 @@ auto historyToJson(const std::string& filePath, const std::vector<CommitContext>
 }
 
 /// Generate JSON for all files context
-auto allFilesToJson(
-    const std::vector<std::pair<std::string, std::vector<CommitContext>>>& allHistory)
-    -> std::string {
+std::string allFilesToJson(
+    const std::vector<std::pair<std::string, std::vector<CommitContext>>>& allHistory) {
     std::ostringstream oss;
     oss << "{\n";
     oss << "  \"generatedAt\": \"" << __DATE__ << " " << __TIME__ << "\",\n";

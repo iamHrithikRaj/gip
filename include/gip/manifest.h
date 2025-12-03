@@ -150,8 +150,8 @@ public:
      * @param files Vector of (file_path, git_status) pairs
      * @return TOON-formatted manifest template string
      */
-    [[nodiscard]] static std::string generateTemplate(
-        const std::vector<std::pair<std::string, std::string>>& files);
+    [[nodiscard]] static std::string
+    generateTemplate(const std::vector<std::pair<std::string, std::string>>& files);
 
     /**
      * @brief Validate a manifest.

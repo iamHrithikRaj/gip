@@ -308,8 +308,8 @@ std::string historyToJson(const std::string& filePath, const std::vector<CommitC
 }
 
 /// Generate JSON for all files context
-std::string allFilesToJson(
-    const std::vector<std::pair<std::string, std::vector<CommitContext>>>& allHistory) {
+std::string
+allFilesToJson(const std::vector<std::pair<std::string, std::vector<CommitContext>>>& allHistory) {
     std::ostringstream oss;
     oss << "{\n";
     oss << "  \"generatedAt\": \"" << __DATE__ << " " << __TIME__ << "\",\n";

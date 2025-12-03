@@ -46,8 +46,8 @@ public:
      * @param diffStatus Output from git diff-index or similar
      * @return Vector of (filepath, status) pairs where status is A/M/D/R
      */
-    [[nodiscard]] static std::vector<std::pair<std::string, std::string>> getChangedFiles(
-        const std::string& diffStatus);
+    [[nodiscard]] static std::vector<std::pair<std::string, std::string>>
+    getChangedFiles(const std::string& diffStatus);
 
 private:
     /**

@@ -348,7 +348,8 @@ ManifestParser::ParseResult ManifestParser::parse(const std::string& message) {
     return result;
 }
 
-std::string ManifestParser::generateTemplate(const std::vector<std::pair<std::string, std::string>>& files) {
+std::string
+ManifestParser::generateTemplate(const std::vector<std::pair<std::string, std::string>>& files) {
     std::ostringstream ss;
 
     ss << "gip:\n";

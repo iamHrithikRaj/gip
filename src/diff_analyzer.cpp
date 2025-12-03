@@ -116,8 +116,9 @@ std::string DiffAnalyzer::extractSymbolName(const std::string& line, const std::
     return "";
 }
 
-std::vector<SymbolInfo> DiffAnalyzer::extractSymbols(const std::string& filePath, const std::string& fileDiff,
-                                  const std::string& changeType) {
+std::vector<SymbolInfo> DiffAnalyzer::extractSymbols(const std::string& filePath,
+                                                     const std::string& fileDiff,
+                                                     const std::string& changeType) {
     std::vector<SymbolInfo> symbols;
     std::string language = detectLanguage(filePath);
 
@@ -204,7 +205,8 @@ std::vector<SymbolInfo> DiffAnalyzer::analyze(const std::string& diff) {
     return allSymbols;
 }
 
-std::vector<std::pair<std::string, std::string>> DiffAnalyzer::getChangedFiles(const std::string& diffStatus) {
+std::vector<std::pair<std::string, std::string>>
+DiffAnalyzer::getChangedFiles(const std::string& diffStatus) {
     std::vector<std::pair<std::string, std::string>> files;
 
     std::istringstream stream(diffStatus);

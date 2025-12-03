@@ -301,7 +301,8 @@ GitResult GitAdapter::pushWithNotes(const std::string& remote, const std::string
     return result;
 }
 
-std::vector<CommitContext> GitAdapter::getFileHistory(const std::string& filePath, int limit) const {
+std::vector<CommitContext> GitAdapter::getFileHistory(const std::string& filePath,
+                                                      int limit) const {
     std::vector<CommitContext> history;
 
     // Get commits that touched this file

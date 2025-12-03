@@ -430,13 +430,9 @@ std::string ManifestParser::validate(const Manifest& manifest) {
         static const std::vector<std::string> kValidBehaviors = {
             "feature", "bugfix", "refactor", "perf", "security", "docs", "test", "chore"};
 
-        bool validBehavior = false;
-        for (const auto& valid : kValidBehaviors) {
-            if (entry.behavior == valid) {
-                validBehavior = true;
-                break;
-            }
-        }
+        bool validBehavior =
+            std::any_of(kValidBehaviors.begin(), kValidBehaviors.end(),
+                        [&entry](const std::string& valid) { return entry.behavior == valid; });
 
         if (!validBehavior) {
             return "Entry " + std::to_string(i + 1) + ": invalid behavior '" + entry.behavior +

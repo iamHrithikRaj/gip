@@ -49,6 +49,11 @@ std::string trim(const std::string& str) {
     return str.substr(start, end - start + 1);
 }
 
+/// @brief Check if string starts with prefix
+bool startsWith(const std::string& str, const std::string& prefix) {
+    return str.size() >= prefix.size() && str.compare(0, prefix.size(), prefix) == 0;
+}
+
 /// @brief Extract value from TOON-style line: "key: value" or "key: \"value\""
 std::string extractToonValue(const std::string& line) {
     auto colonPos = line.find(':');
@@ -62,245 +67,6 @@ std::string extractToonValue(const std::string& line) {
         value = value.substr(1, value.length() - 2);
     }
     return value;
-}
-
-/// @brief Extract array values from TOON content for a given key
-std::vector<std::string> extractToonArray(const std::string& content, const std::string& key) {
-    std::vector<std::string> result;
-    std::istringstream stream(content);
-    std::string line;
-    bool inArray = false;
-
-    while (std::getline(stream, line)) {
-        std::string trimmedLine = trim(line);
-
-        // Check for key start
-        if (trimmedLine.find(key + ":") == 0) {
-            inArray = true;
-            // Check if value is on same line
-            std::string value = extractToonValue(trimmedLine);
-            if (!value.empty() && value != "[" && value != "{") {
-                result.push_back(value);
-                inArray = false;
-            }
-            continue;
-        }
-
-        if (inArray) {
-            // Check for array item (starts with -)
-            if (!trimmedLine.empty() && trimmedLine.front() == '-') {
-                std::string item = trim(trimmedLine.substr(1));
-                // Remove quotes if present
-                if (item.length() >= 2 && item.front() == '"' && item.back() == '"') {
-                    item = item.substr(1, item.length() - 2);
-                }
-                result.push_back(item);
-            }
-            // Check for end of array (next key at same indentation)
-            else if (!trimmedLine.empty() && trimmedLine.find(':') != std::string::npos &&
-                     line.find_first_not_of(" \t") == 0) {
-                inArray = false;
-            }
-        }
-    }
-
-    return result;
-}
-
-/// @brief Extract single value from TOON content for a given key
-/// Supports nested keys like "behavior.changes" by looking for indented content
-std::string extractToonField(const std::string& content, const std::string& key) {
-    // Check for nested key (e.g., "behavior.changes")
-    auto dotPos = key.find('.');
-    if (dotPos != std::string::npos) {
-        std::string parentKey = key.substr(0, dotPos);
-        std::string childKey = key.substr(dotPos + 1);
-
-        std::istringstream stream(content);
-        std::string line;
-        bool inParent = false;
-
-        while (std::getline(stream, line)) {
-            std::string trimmedLine = trim(line);
-
-            // Find parent section
-            if (trimmedLine.find(parentKey + ":") == 0) {
-                inParent = true;
-                continue;
-            }
-
-            if (inParent) {
-                // Check for child key (indented)
-                if (line.find_first_not_of(" \t") > 0 && trimmedLine.find(childKey + ":") == 0) {
-                    return extractToonValue(trimmedLine);
-                }
-                // Exit parent if we hit a non-indented line
-                if (!trimmedLine.empty() && line.find_first_not_of(" \t") == 0 &&
-                    trimmedLine.find(':') != std::string::npos) {
-                    inParent = false;
-                }
-            }
-        }
-        return "";
-    }
-
-    // Simple key lookup
-    std::istringstream stream(content);
-    std::string line;
-
-    while (std::getline(stream, line)) {
-        std::string trimmedLine = trim(line);
-        if (trimmedLine.find(key + ":") == 0) {
-            return extractToonValue(trimmedLine);
-        }
-    }
-
-    return "";
-}
-
-/// @brief Extract boolean value from TOON content
-bool extractToonBool(const std::string& content, const std::string& key) {
-    std::string value = extractToonField(content, key);
-    return value == "true" || value == "yes" || value == "1";
-}
-
-/// @brief Extract the first entry from an entries array in TOON format
-/// The stored manifest has format: {entries: [{file: ..., rationale: ...}]}
-/// This extracts fields from the first entry
-std::string extractFromFirstEntry(const std::string& content, const std::string& key) {
-    // Look for entries array and extract from first entry
-    std::istringstream stream(content);
-    std::string line;
-    bool inEntries = false;
-    bool inFirstEntry = false;
-    int braceDepth = 0;
-
-    while (std::getline(stream, line)) {
-        std::string trimmedLine = trim(line);
-
-        // Track brace depth to know when we're inside entries
-        for (char c : trimmedLine) {
-            if (c == '{')
-                braceDepth++;
-            else if (c == '}')
-                braceDepth--;
-        }
-
-        // Found entries array
-        if (trimmedLine.find("entries:") == 0 || trimmedLine.find("entries :") == 0) {
-            inEntries = true;
-            continue;
-        }
-
-        // Inside entries, look for first object
-        if (inEntries && !inFirstEntry && trimmedLine.find('{') != std::string::npos) {
-            inFirstEntry = true;
-        }
-
-        // Inside first entry, look for our key
-        if (inFirstEntry) {
-            if (trimmedLine.find(key + ":") == 0 || trimmedLine.find(key + " :") == 0) {
-                return extractToonValue(trimmedLine);
-            }
-            // Exit if we hit closing brace of first entry
-            if (trimmedLine.find('}') != std::string::npos && braceDepth <= 2) {
-                break;
-            }
-        }
-    }
-
-    return "";
-}
-
-/// @brief Extract array from first entry in entries array
-std::vector<std::string> extractArrayFromFirstEntry(const std::string& content,
-                                                    const std::string& key) {
-    std::vector<std::string> result;
-    std::istringstream stream(content);
-    std::string line;
-    bool inEntries = false;
-    bool inFirstEntry = false;
-    bool inTargetArray = false;
-    int braceDepth = 0;
-    int bracketDepth = 0;
-
-    while (std::getline(stream, line)) {
-        std::string trimmedLine = trim(line);
-
-        // Track depths
-        for (char c : trimmedLine) {
-            if (c == '{')
-                braceDepth++;
-            else if (c == '}')
-                braceDepth--;
-            else if (c == '[')
-                bracketDepth++;
-            else if (c == ']')
-                bracketDepth--;
-        }
-
-        // Found entries array
-        if (trimmedLine.find("entries:") == 0 || trimmedLine.find("entries :") == 0) {
-            inEntries = true;
-            continue;
-        }
-
-        if (inEntries && !inFirstEntry && trimmedLine.find('{') != std::string::npos) {
-            inFirstEntry = true;
-        }
-
-        if (inFirstEntry) {
-            // Look for target array key
-            if (trimmedLine.find(key + ":") == 0 || trimmedLine.find(key + " :") == 0) {
-                inTargetArray = true;
-                // Check for inline array like: preconditions: ["value1", "value2"]
-                auto bracketStart = trimmedLine.find('[');
-                auto bracketEnd = trimmedLine.find(']');
-                if (bracketStart != std::string::npos && bracketEnd != std::string::npos) {
-                    // Parse inline array
-                    std::string arrayContent =
-                        trimmedLine.substr(bracketStart + 1, bracketEnd - bracketStart - 1);
-                    std::istringstream arrayStream(arrayContent);
-                    std::string item;
-                    while (std::getline(arrayStream, item, ',')) {
-                        item = trim(item);
-                        // Remove quotes
-                        if (item.length() >= 2 && item.front() == '"' && item.back() == '"') {
-                            item = item.substr(1, item.length() - 2);
-                        }
-                        if (!item.empty()) {
-                            result.push_back(item);
-                        }
-                    }
-                    inTargetArray = false;
-                }
-                continue;
-            }
-
-            if (inTargetArray) {
-                // Array items start with -
-                if (!trimmedLine.empty() && trimmedLine[0] == '-') {
-                    std::string item = trim(trimmedLine.substr(1));
-                    if (item.length() >= 2 && item.front() == '"' && item.back() == '"') {
-                        item = item.substr(1, item.length() - 2);
-                    }
-                    result.push_back(item);
-                }
-                // End of array
-                else if (trimmedLine.find(']') != std::string::npos ||
-                         (!trimmedLine.empty() && trimmedLine.find(':') != std::string::npos)) {
-                    inTargetArray = false;
-                }
-            }
-
-            // Exit first entry
-            if (trimmedLine.find('}') != std::string::npos && braceDepth <= 2) {
-                break;
-            }
-        }
-    }
-
-    return result;
 }
 
 }  // anonymous namespace
@@ -391,11 +157,10 @@ int MergeDriver::enrichAllConflicts(const std::string& oursSha,
     auto conflictedFiles = getConflictedFiles();
     int enrichedCount = 0;
 
-    for (const auto& file : conflictedFiles) {
-        if (enrichConflictMarkers(file, oursSha, theirsSha)) {
-            ++enrichedCount;
-        }
-    }
+    enrichedCount = std::count_if(conflictedFiles.begin(), conflictedFiles.end(),
+                                  [this, &oursSha, &theirsSha](const std::string& file) {
+                                      return enrichConflictMarkers(file, oursSha, theirsSha);
+                                  });
 
     return enrichedCount;
 }
@@ -538,11 +303,11 @@ ConflictContext MergeDriver::parseManifest(const std::string& manifestContent,
             matchedEntry = &manifest.entries[0];
         } else {
             // Try to find exact match
-            for (const auto& entry : manifest.entries) {
-                if (entry.file == filePath) {
-                    matchedEntry = &entry;
-                    break;
-                }
+            auto it = std::find_if(
+                manifest.entries.begin(), manifest.entries.end(),
+                [&filePath](const ManifestEntry& entry) { return entry.file == filePath; });
+            if (it != manifest.entries.end()) {
+                matchedEntry = &*it;
             }
 
             // If no exact match, try to find by filename

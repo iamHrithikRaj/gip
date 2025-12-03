@@ -3,17 +3,17 @@
 /// @author Hrithik Raj
 /// @copyright MIT License
 
+#include "gip/types.h"
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
-
-#include "gip/types.h"
 
 using namespace gip;
 using Catch::Matchers::ContainsSubstring;
 
 TEST_CASE("ContextOptions parsing", "[context][options]") {
     // Note: These tests would require exposing parseContextArgs or testing through the command
-    
+
     SECTION("behavior class parsing") {
         REQUIRE(parseBehaviorClass("feature") == BehaviorClass::Feature);
         REQUIRE(parseBehaviorClass("bugfix") == BehaviorClass::Bugfix);
@@ -23,7 +23,7 @@ TEST_CASE("ContextOptions parsing", "[context][options]") {
         REQUIRE(parseBehaviorClass("unknown") == BehaviorClass::Unknown);
         REQUIRE(parseBehaviorClass("") == BehaviorClass::Unknown);
     }
-    
+
     SECTION("behavior class to string") {
         REQUIRE(std::string(behaviorClassToString(BehaviorClass::Feature)) == "feature");
         REQUIRE(std::string(behaviorClassToString(BehaviorClass::Bugfix)) == "bugfix");
@@ -41,7 +41,7 @@ TEST_CASE("FileStatus parsing", "[types]") {
         REQUIRE(parseFileStatus('?') == FileStatus::Unknown);
         REQUIRE(parseFileStatus('X') == FileStatus::Unknown);
     }
-    
+
     SECTION("converts to string") {
         REQUIRE(std::string(fileStatusToString(FileStatus::Added)) == "A");
         REQUIRE(std::string(fileStatusToString(FileStatus::Modified)) == "M");
@@ -53,7 +53,7 @@ TEST_CASE("CommitContext", "[types]") {
     SECTION("hasManifest returns correct value") {
         CommitContext ctx;
         REQUIRE_FALSE(ctx.hasManifest());
-        
+
         ctx.manifest = Manifest{};
         REQUIRE(ctx.hasManifest());
     }
@@ -64,7 +64,7 @@ TEST_CASE("Manifest", "[types]") {
         Manifest m;
         REQUIRE(m.empty());
         REQUIRE(m.size() == 0);
-        
+
         m.entries.push_back(ManifestEntry{});
         REQUIRE_FALSE(m.empty());
         REQUIRE(m.size() == 1);

@@ -3,11 +3,11 @@
 /// @author Hrithik Raj
 /// @copyright MIT License
 
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/matchers/catch_matchers_string.hpp>
-
 #include "gip/manifest.h"
 #include "gip/types.h"
+
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 
 using namespace gip;
 using Catch::Matchers::ContainsSubstring;
@@ -30,7 +30,7 @@ gip:
 })";
 
         auto result = ManifestParser::parse(message);
-        
+
         REQUIRE(result.hasManifest());
         REQUIRE_FALSE(result.hasError());
         REQUIRE(result.cleanMessage == "feat: add tax calculation");
@@ -38,20 +38,20 @@ gip:
         REQUIRE(result.manifest->entries[0].file == "src/tax.cpp");
         REQUIRE(result.manifest->entries[0].symbol == "calculate_tax");
     }
-    
+
     SECTION("handles message without manifest") {
         const std::string message = "fix: simple typo correction";
-        
+
         auto result = ManifestParser::parse(message);
-        
+
         REQUIRE_FALSE(result.hasManifest());
         REQUIRE_FALSE(result.hasError());
         REQUIRE(result.cleanMessage == message);
     }
-    
+
     SECTION("handles empty message") {
         auto result = ManifestParser::parse("");
-        
+
         REQUIRE_FALSE(result.hasManifest());
         REQUIRE(result.cleanMessage.empty());
     }
@@ -59,26 +59,21 @@ gip:
 
 TEST_CASE("ManifestParser generates valid templates", "[manifest][template]") {
     SECTION("generates template for single file") {
-        std::vector<std::pair<std::string, std::string>> files = {
-            {"src/main.cpp", "M"}
-        };
-        
+        std::vector<std::pair<std::string, std::string>> files = {{"src/main.cpp", "M"}};
+
         auto tmpl = ManifestParser::generateTemplate(files);
-        
+
         REQUIRE_THAT(tmpl, ContainsSubstring("gip:"));
         REQUIRE_THAT(tmpl, ContainsSubstring("src/main.cpp"));
         REQUIRE_THAT(tmpl, ContainsSubstring("schemaVersion"));
     }
-    
+
     SECTION("generates template for multiple files") {
         std::vector<std::pair<std::string, std::string>> files = {
-            {"src/main.cpp", "M"},
-            {"src/utils.cpp", "A"},
-            {"src/old.cpp", "D"}
-        };
-        
+            {"src/main.cpp", "M"}, {"src/utils.cpp", "A"}, {"src/old.cpp", "D"}};
+
         auto tmpl = ManifestParser::generateTemplate(files);
-        
+
         REQUIRE_THAT(tmpl, ContainsSubstring("src/main.cpp"));
         REQUIRE_THAT(tmpl, ContainsSubstring("src/utils.cpp"));
         REQUIRE_THAT(tmpl, ContainsSubstring("src/old.cpp"));
@@ -89,7 +84,7 @@ TEST_CASE("Manifest serialization handles TOON format", "[manifest][serializer]"
     SECTION("round-trips manifest through TOON") {
         Manifest original;
         original.schemaVersion = "2.0";
-        
+
         ManifestEntry entry;
         entry.file = "src/test.cpp";
         entry.symbol = "test_function";
@@ -97,25 +92,25 @@ TEST_CASE("Manifest serialization handles TOON format", "[manifest][serializer]"
         entry.rationale = "Test rationale";
         entry.preconditions = {"input >= 0"};
         entry.postconditions = {"output > input"};
-        
+
         // New fields
         entry.breaking = true;
         entry.migrations = {"Run migration script"};
         entry.inputs = {"int x", "int y"};
         entry.outputs = "int result";
         entry.errorModel = {"throws std::runtime_error"};
-        
+
         original.entries.push_back(entry);
-        
+
         auto toon = original.toToon();
         auto parsed = Manifest::fromToon(toon);
-        
+
         REQUIRE(parsed.has_value());
         REQUIRE(parsed->schemaVersion == original.schemaVersion);
         REQUIRE(parsed->entries.size() == 1);
         REQUIRE(parsed->entries[0].file == entry.file);
         REQUIRE(parsed->entries[0].rationale == entry.rationale);
-        
+
         // Verify new fields
         REQUIRE(parsed->entries[0].breaking == true);
         REQUIRE(parsed->entries[0].migrations.size() == 1);

@@ -9,7 +9,7 @@ REPO_URL="https://github.com/iamHrithikRaj/gip.git"
 TEMP_DIR=$(mktemp -d)
 
 echo "Downloading Gip source..."
-git clone --depth 1 "$REPO_URL" "$TEMP_DIR/gip"
+git clone --depth 1 --recursive "$REPO_URL" "$TEMP_DIR/gip"
 
 echo "Running installer..."
 bash "$TEMP_DIR/gip/scripts/install.sh"

@@ -8,7 +8,7 @@ $TempDir = Join-Path $env:TEMP ("gip-install-" + [Guid]::NewGuid().ToString())
 
 try {
     Write-Host "Downloading Gip source..." -ForegroundColor Cyan
-    git clone --depth 1 $RepoUrl $TempDir
+    git clone --depth 1 --recursive $RepoUrl $TempDir
 
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to clone repository."
@@ -16,7 +16,14 @@ try {
 
     Write-Host "Running installer..." -ForegroundColor Cyan
     $InstallScript = Join-Path $TempDir "scripts\install.ps1"
+    
+    # Save current location
+    $OriginalLocation = Get-Location
+    
     & $InstallScript
+    
+    # Restore location to ensure we're not locking the temp dir
+    Set-Location $OriginalLocation
 }
 catch {
     Write-Error $_

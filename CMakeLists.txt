@@ -130,20 +130,20 @@ gip_enable_sanitizers(gip_lib)
 # =============================================================================
 # Executable Target
 # =============================================================================
-add_executable(gip src/main.cpp)
+add_executable(gitp src/main.cpp)
 
-target_link_libraries(gip PRIVATE gip_lib)
+target_link_libraries(gitp PRIVATE gip_lib)
 
-target_include_directories(gip PRIVATE
+target_include_directories(gitp PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
 if(GIP_ENABLE_WARNINGS)
-    gip_set_project_warnings(gip)
+    gip_set_project_warnings(gitp)
 endif()
 
-gip_enable_sanitizers(gip)
+gip_enable_sanitizers(gitp)
 
 # =============================================================================
 # Static Analysis
@@ -151,13 +151,13 @@ gip_enable_sanitizers(gip)
 if(GIP_ENABLE_CLANG_TIDY)
     include(GipStaticAnalysis)
     gip_enable_clang_tidy(gip_lib)
-    gip_enable_clang_tidy(gip)
+    gip_enable_clang_tidy(gitp)
 endif()
 
 if(GIP_ENABLE_CPPCHECK)
     include(GipStaticAnalysis)
     gip_enable_cppcheck(gip_lib)
-    gip_enable_cppcheck(gip)
+    gip_enable_cppcheck(gitp)
 endif()
 
 # =============================================================================
@@ -194,7 +194,7 @@ endif()
 # =============================================================================
 include(GNUInstallDirs)
 
-install(TARGETS gip
+install(TARGETS gitp
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 

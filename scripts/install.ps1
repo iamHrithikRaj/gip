@@ -57,22 +57,10 @@ if ($UserPath -notlike "*$InstallDir*") {
     Write-Host "Adding install directory to User PATH..." -ForegroundColor Yellow
     [Environment]::SetEnvironmentVariable("Path", "$UserPath;$InstallDir", "User")
     $env:PATH += ";$InstallDir"
-    Write-Host "Added to PATH. You may need to restart your terminal to use 'gip' globally." -ForegroundColor Green
+    Write-Host "Added to PATH. You may need to restart your terminal to use 'gitp' globally." -ForegroundColor Green
 } else {
     Write-Host "Install directory is already in PATH." -ForegroundColor Gray
 }
 
-# Check for conflicting alias
-if (Test-Path alias:gip) {
-    Write-Host "`n[!] WARNING: 'gip' is currently aliased to '$(Get-Alias gip | Select-Object -ExpandProperty Definition)' in PowerShell." -ForegroundColor Red
-    Write-Host "To use the 'gip' command, you must remove this alias." -ForegroundColor Yellow
-    Write-Host "Running: Remove-Item alias:gip" -ForegroundColor DarkGray
-    Remove-Item alias:gip -ErrorAction SilentlyContinue
-    
-    Write-Host "`nIMPORTANT: To make this permanent, add the following line to your PowerShell profile:" -ForegroundColor Cyan
-    Write-Host "Remove-Item alias:gip -ErrorAction SilentlyContinue" -ForegroundColor White
-    Write-Host "Profile path: $PROFILE" -ForegroundColor Gray
-}
-
 Write-Host "`nGip installed successfully!" -ForegroundColor Green
-Write-Host "Run 'gip --version' to verify."
+Write-Host "Run 'gitp --version' to verify."

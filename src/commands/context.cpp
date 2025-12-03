@@ -57,112 +57,113 @@ void printCommitContext(const CommitContext& ctx) {
         if (manifest && !manifest->entries.empty()) {
             std::cout << kColorYellow << "│" << kColorReset << std::endl;
 
-            std::for_each(manifest->entries.begin(), manifest->entries.end(), [](const auto& entry) {
-                // Behavior
-                if (!entry.behavior.empty()) {
-                    std::cout << kColorYellow << "│  " << kColorReset;
-                    std::cout << kColorMagenta << "Intent: " << kColorReset << entry.behavior
-                              << std::endl;
-                }
-
-                // Rationale
-                if (!entry.rationale.empty()) {
-                    std::cout << kColorYellow << "│  " << kColorReset;
-                    std::cout << kColorGreen << "Rationale: " << kColorReset << entry.rationale
-                              << std::endl;
-                }
-
-                // Breaking
-                if (entry.breaking) {
-                    std::cout << kColorYellow << "│  " << kColorReset;
-                    std::cout << kColorRed << "BREAKING CHANGE" << kColorReset << std::endl;
-                }
-
-                // Migrations
-                if (!entry.migrations.empty()) {
-                    std::cout << kColorYellow << "│  " << kColorReset;
-                    std::cout << kColorRed << "Migrations: " << kColorReset;
-                    for (size_t i = 0; i < entry.migrations.size(); ++i) {
-                        if (i > 0) {
-                            std::cout << ", ";
-                        }
-                        std::cout << entry.migrations[i];
+            std::for_each(
+                manifest->entries.begin(), manifest->entries.end(), [](const auto& entry) {
+                    // Behavior
+                    if (!entry.behavior.empty()) {
+                        std::cout << kColorYellow << "│  " << kColorReset;
+                        std::cout << kColorMagenta << "Intent: " << kColorReset << entry.behavior
+                                  << std::endl;
                     }
-                    std::cout << std::endl;
-                }
 
-                // Inputs
-                if (!entry.inputs.empty()) {
-                    std::cout << kColorYellow << "│  " << kColorReset;
-                    std::cout << kColorCyan << "Inputs: " << kColorReset;
-                    for (size_t i = 0; i < entry.inputs.size(); ++i) {
-                        if (i > 0) {
-                            std::cout << ", ";
-                        }
-                        std::cout << entry.inputs[i];
+                    // Rationale
+                    if (!entry.rationale.empty()) {
+                        std::cout << kColorYellow << "│  " << kColorReset;
+                        std::cout << kColorGreen << "Rationale: " << kColorReset << entry.rationale
+                                  << std::endl;
                     }
-                    std::cout << std::endl;
-                }
 
-                // Outputs
-                if (!entry.outputs.empty()) {
-                    std::cout << kColorYellow << "│  " << kColorReset;
-                    std::cout << kColorCyan << "Outputs: " << kColorReset << entry.outputs
-                              << std::endl;
-                }
-
-                // Error Model
-                if (!entry.errorModel.empty()) {
-                    std::cout << kColorYellow << "│  " << kColorReset;
-                    std::cout << kColorRed << "Error Model: " << kColorReset;
-                    for (size_t i = 0; i < entry.errorModel.size(); ++i) {
-                        if (i > 0) {
-                            std::cout << ", ";
-                        }
-                        std::cout << entry.errorModel[i];
+                    // Breaking
+                    if (entry.breaking) {
+                        std::cout << kColorYellow << "│  " << kColorReset;
+                        std::cout << kColorRed << "BREAKING CHANGE" << kColorReset << std::endl;
                     }
-                    std::cout << std::endl;
-                }
 
-                // Preconditions
-                if (!entry.preconditions.empty()) {
-                    std::cout << kColorYellow << "│  " << kColorReset;
-                    std::cout << kColorCyan << "Preconditions: " << kColorReset;
-                    for (size_t i = 0; i < entry.preconditions.size(); ++i) {
-                        if (i > 0) {
-                            std::cout << ", ";
+                    // Migrations
+                    if (!entry.migrations.empty()) {
+                        std::cout << kColorYellow << "│  " << kColorReset;
+                        std::cout << kColorRed << "Migrations: " << kColorReset;
+                        for (size_t i = 0; i < entry.migrations.size(); ++i) {
+                            if (i > 0) {
+                                std::cout << ", ";
+                            }
+                            std::cout << entry.migrations[i];
                         }
-                        std::cout << entry.preconditions[i];
+                        std::cout << std::endl;
                     }
-                    std::cout << std::endl;
-                }
 
-                // Postconditions
-                if (!entry.postconditions.empty()) {
-                    std::cout << kColorYellow << "│  " << kColorReset;
-                    std::cout << kColorCyan << "Postconditions: " << kColorReset;
-                    for (size_t i = 0; i < entry.postconditions.size(); ++i) {
-                        if (i > 0) {
-                            std::cout << ", ";
+                    // Inputs
+                    if (!entry.inputs.empty()) {
+                        std::cout << kColorYellow << "│  " << kColorReset;
+                        std::cout << kColorCyan << "Inputs: " << kColorReset;
+                        for (size_t i = 0; i < entry.inputs.size(); ++i) {
+                            if (i > 0) {
+                                std::cout << ", ";
+                            }
+                            std::cout << entry.inputs[i];
                         }
-                        std::cout << entry.postconditions[i];
+                        std::cout << std::endl;
                     }
-                    std::cout << std::endl;
-                }
 
-                // Side effects
-                if (!entry.sideEffects.empty()) {
-                    std::cout << kColorYellow << "│  " << kColorReset;
-                    std::cout << kColorRed << "Side Effects: " << kColorReset;
-                    for (size_t i = 0; i < entry.sideEffects.size(); ++i) {
-                        if (i > 0) {
-                            std::cout << ", ";
-                        }
-                        std::cout << entry.sideEffects[i];
+                    // Outputs
+                    if (!entry.outputs.empty()) {
+                        std::cout << kColorYellow << "│  " << kColorReset;
+                        std::cout << kColorCyan << "Outputs: " << kColorReset << entry.outputs
+                                  << std::endl;
                     }
-                    std::cout << std::endl;
-                }
-            });
+
+                    // Error Model
+                    if (!entry.errorModel.empty()) {
+                        std::cout << kColorYellow << "│  " << kColorReset;
+                        std::cout << kColorRed << "Error Model: " << kColorReset;
+                        for (size_t i = 0; i < entry.errorModel.size(); ++i) {
+                            if (i > 0) {
+                                std::cout << ", ";
+                            }
+                            std::cout << entry.errorModel[i];
+                        }
+                        std::cout << std::endl;
+                    }
+
+                    // Preconditions
+                    if (!entry.preconditions.empty()) {
+                        std::cout << kColorYellow << "│  " << kColorReset;
+                        std::cout << kColorCyan << "Preconditions: " << kColorReset;
+                        for (size_t i = 0; i < entry.preconditions.size(); ++i) {
+                            if (i > 0) {
+                                std::cout << ", ";
+                            }
+                            std::cout << entry.preconditions[i];
+                        }
+                        std::cout << std::endl;
+                    }
+
+                    // Postconditions
+                    if (!entry.postconditions.empty()) {
+                        std::cout << kColorYellow << "│  " << kColorReset;
+                        std::cout << kColorCyan << "Postconditions: " << kColorReset;
+                        for (size_t i = 0; i < entry.postconditions.size(); ++i) {
+                            if (i > 0) {
+                                std::cout << ", ";
+                            }
+                            std::cout << entry.postconditions[i];
+                        }
+                        std::cout << std::endl;
+                    }
+
+                    // Side effects
+                    if (!entry.sideEffects.empty()) {
+                        std::cout << kColorYellow << "│  " << kColorReset;
+                        std::cout << kColorRed << "Side Effects: " << kColorReset;
+                        for (size_t i = 0; i < entry.sideEffects.size(); ++i) {
+                            if (i > 0) {
+                                std::cout << ", ";
+                            }
+                            std::cout << entry.sideEffects[i];
+                        }
+                        std::cout << std::endl;
+                    }
+                });
         }
     } else {
         std::cout << kColorYellow << "│  " << kColorReset;
@@ -442,9 +443,8 @@ auto parseContextArgs(const std::vector<std::string>& args) -> ContextOptions {
 
 auto context(const std::vector<std::string>& args) -> int {
     // Check for help flag
-    if (std::any_of(args.begin(), args.end(), [](const std::string& arg) {
-            return arg == "-h" || arg == "--help";
-        })) {
+    if (std::any_of(args.begin(), args.end(),
+                    [](const std::string& arg) { return arg == "-h" || arg == "--help"; })) {
         printUsage();
         return 0;
     }

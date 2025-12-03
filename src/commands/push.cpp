@@ -74,8 +74,8 @@ auto push(const std::vector<std::string>& args) -> int {
     pushArgs.insert(pushArgs.end(), args.begin(), args.end());
 
     // Add remote and branch if not already in args
-    bool hasRemote = std::any_of(args.begin(), args.end(),
-                                 [](const std::string& arg) { return arg[0] != '-'; });
+    bool hasRemote =
+        std::any_of(args.begin(), args.end(), [](const std::string& arg) { return arg[0] != '-'; });
 
     if (!hasRemote) {
         pushArgs.push_back(remote);

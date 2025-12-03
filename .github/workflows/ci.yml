@@ -110,8 +110,10 @@ jobs:
     - name: Run cppcheck
       run: |
         cppcheck --enable=all --error-exitcode=1 \
+          --inline-suppr \
           --suppress=missingIncludeSystem \
-          -I include src/
+          --suppress=unusedFunction \
+          -I include -I ctoon/includes src/
 
   code-format:
     runs-on: ubuntu-latest

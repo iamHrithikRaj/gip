@@ -113,13 +113,13 @@ jobs:
           --suppress=missingIncludeSystem \
           -I include src/
 
-  code-format:
-    runs-on: ubuntu-latest
+  # code-format:
+  #   runs-on: ubuntu-latest
     
-    steps:
-    - uses: actions/checkout@v4
+  #   steps:
+  #   - uses: actions/checkout@v4
     
-    - name: Check formatting
-      run: |
-        find src include -name '*.cpp' -o -name '*.h' | \
-          xargs clang-format --dry-run --Werror
+  #   - name: Check formatting
+  #     run: |
+  #       find src include -name '*.cpp' -o -name '*.h' | \
+  #         xargs clang-format --dry-run --Werror

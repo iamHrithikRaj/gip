@@ -44,28 +44,19 @@ This matters because:
 
 ## The Solution
 
-**Gip captures structured semantic context alongside your commits.**
+**Gip is the protocol for Agentic Version Control.**
 
-```bash
-# Instead of just committing...
-git commit -m "refactor: extract payment service"
+It solves the context problem by enforcing a **structured handshake** between the coder (human or AI) and the repository.
 
-# Commit with intent preservation
-gip commit -m "refactor: extract payment service"
-```
+Instead of accepting a simple text message, Gip expects a **Manifest** (`manifest.toon`)—a machine-readable declaration of *Intent*, *Behavior*, and *Contracts*.
 
-Gip attaches a **manifest**—a machine-readable document describing the *intent* behind changes—to your commits via Git notes. This context travels with your repository, invisible to normal workflows but available when you need it.
+**The Agentic Workflow:**
+1.  **The Request**: You (or an agent) attempt to commit changes.
+2.  **The Protocol**: Gip demands a `manifest.toon` describing the semantic impact of those changes.
+3.  **The Generation**: Since the manifest is structured (TOON/JSON), **LLMs can automatically generate it** by analyzing the diff.
+4.  **The Preservation**: Gip attaches this structured context to the commit history, creating a permanent, queryable record.
 
-```yaml
-# What Gip captures (manifest.toon)
-intent: "Extract payment logic to enable multi-provider support"
-behavior: "No functional changes - pure refactoring"
-testing: "All existing payment tests pass unchanged"
-reviewers: ["@payments-team"]
-decisions:
-  - "Chose strategy pattern over factory for provider extensibility"
-  - "Kept synchronous API despite async provider requirements"
-```
+This turns your git history from a flat list of changes into a **semantic knowledge base**, enabling agents to understand the *evolution* of your software, not just its current state.
 
 ## Why Gip?
 
@@ -218,17 +209,20 @@ Edit `manifest.toon` to describe your changes:
 
 ```yaml
 # manifest.toon
-version: "1.0"
-intent: "Add user preference caching to reduce API calls"
-behavior:
-  changes: "Preferences now cached for 5 minutes"
-  breaking: false
-testing:
-  required: ["unit", "integration"]
-  coverage: "New cache layer fully tested"
-decisions:
-  - rationale: "Chose 5-minute TTL based on user session analytics"
-    alternatives: ["1-minute TTL", "No caching", "Persistent cache"]
+schemaVersion: "2.0"
+globalIntent:
+  behaviorClass: ["perf"]
+  rationale: "Add user preference caching to reduce API calls"
+entries:
+  - anchor:
+      file: "src/cache.rs"
+      symbol: "UserCache"
+    changeType: "add"
+    rationale: "Implemented LRU cache for user preferences"
+    contract:
+      postconditions: ["Preferences cached for 5 minutes"]
+    compatibility:
+      breaking: false
 ```
 
 ### 3. Commit with Context
@@ -257,33 +251,34 @@ gip context --since v2.0.0 --behavior
 
 ## Manifest Schema
 
-The manifest is a structured document in TOON format:
+The manifest is a structured document in TOON format (v2.0):
 
 ```yaml
-version: "1.0"                    # Schema version (required)
+schemaVersion: "2.0"              # Schema version (required)
 
-intent: "string"                  # Why are you making this change? (required)
+globalIntent:                     # Commit-level intent
+  behaviorClass: ["feature"]      # [feature, bugfix, refactor, perf, security...]
+  rationale: "string"             # High-level explanation
 
-behavior:                         # How does this change behavior?
-  changes: "string"               # Description of behavioral changes
-  breaking: bool                  # Is this a breaking change?
-  
-testing:                          # Testing requirements
-  required: ["unit", "e2e"]       # Required test types
-  coverage: "string"              # Coverage notes
-  
-dependencies:                     # Dependency changes
-  added: ["package@version"]
-  removed: ["package"]
-  updated: ["package@old->new"]
-  
-decisions:                        # Design decisions (array)
-  - rationale: "string"           # Why this decision?
-    alternatives: ["string"]      # What else was considered?
-    tradeoffs: "string"           # What are the tradeoffs?
-
-reviewers: ["@username"]          # Suggested reviewers
-context: "string"                 # Additional context or links
+entries:                          # List of changes
+  - anchor:
+      file: "string"              # File path
+      symbol: "string"            # Function/Class name
+    changeType: "modify"          # [add, modify, delete, rename]
+    rationale: "string"           # Why this specific change?
+    
+    contract:                     # Behavioral contract
+      preconditions: ["string"]
+      postconditions: ["string"]
+      errorModel: ["string"]
+      
+    compatibility:                # Compatibility flags
+      breaking: bool
+      migrations: ["string"]      # Migration instructions
+      
+    decisions:                    # Design decisions
+      - rationale: "string"
+        alternatives: ["string"]
 ```
 
 ### Validation
@@ -301,83 +296,65 @@ gip commit -m "feat: add feature"
 
 ## CLI Reference
 
-### Core Commands
+### Command Overview
+
+| Command | Purpose | Usage Example | Key Features |
+| :--- | :--- | :--- | :--- |
+| **`init`** | Initialize Gip | `gip init` | Creates `.gip/` and `manifest.toon` template. |
+| **`commit`** | Commit with Context | `gip commit -m "msg"` | Validates manifest, commits changes, and attaches Git Note. |
+| **`push`** | Push Code + Notes | `gip push` | Pushes commits AND `refs/notes/gip` to remote. |
+| **`context`** | Query Intent | `gip context <sha>` | Retrieves semantic context for humans or agents. |
+| **`merge`** | Smart Merge | `gip merge feature` | Injects intent & contracts into conflict markers. |
+| **`rebase`** | Smart Rebase | `gip rebase main` | Preserves intent during rebase conflicts. |
+
+### Merge & Rebase (Enriched Conflicts)
+
+Gip wraps `git merge` and `git rebase` to provide **enriched conflict markers** when conflicts occur. This is critical for agents to resolve conflicts autonomously.
 
 ```bash
-gip init                          # Initialize Gip in repository
-gip commit [-m "msg"]             # Commit with manifest attachment
-gip push [--with-notes]           # Push commits and notes to remote
-gip context [<commit>]            # Display context for commit(s)
-gip merge <branch>                # Merge with enriched conflict markers
-gip rebase <branch>               # Rebase with enriched conflict markers
+gip merge feature-branch
+gip rebase main
 ```
-
-### Merge & Rebase Commands
-
-Gip wraps `git merge` and `git rebase` to provide **enriched conflict markers** when conflicts occur:
-
-```bash
-gip merge feature-branch          # Merge with intent-enriched conflicts
-gip rebase main                   # Rebase with intent-enriched conflicts
-gip rebase -i HEAD~3              # Interactive rebase (conflicts enriched)
-```
-
-When a conflict occurs, Gip automatically:
-1. Detects conflicted files
-2. Looks up manifests for both sides of the conflict
-3. Injects structured context into conflict markers
 
 **Example of enriched conflict markers:**
 
-```
+```cpp
 <<<<<<< HEAD
 total += item.price * 1.08
 ||| Gip CONTEXT (HEAD - Your changes)
-||| Commit: 3c7d3422
 ||| behaviorClass: feature
 ||| rationale: Added 8% sales tax to comply with state law
 ||| postconditions[0]: returns total with 8% sales tax
-||| sideEffects: none
 ||| symbol: calculate_total
 =======
 total += item.price + 5.99
 ||| Gip CONTEXT (feature-branch - Their changes)
-||| Commit: 1825fc7c
 ||| behaviorClass: feature
 ||| rationale: Added $5.99 flat shipping fee for all orders
 ||| postconditions[0]: returns total plus flat shipping
-||| sideEffects: none
 ||| symbol: calculate_total
 >>>>>>> feature-branch
 ```
 
-**Now LLMs can understand:**
-- **behaviorClass**: Both are features (not bugfixes)
-- **rationale**: Tax compliance vs. shipping fee
-- **postconditions**: One applies 8% tax, the other adds $5.99
-- **Resolution**: These are additive changes—combine both!
+### The `context` Command
 
-### Context Command Options
+The `context` command is the bridge between your git history and AI agents.
 
-```bash
-gip context                       # Show context for HEAD
-gip context <sha>                 # Show context for specific commit
-gip context --all                 # Show context for all commits
-gip context --since <ref>         # Show context since reference
-gip context --behavior            # Show only behavioral changes
-gip context --export              # Export full context document
-gip context --json                # Output in JSON format
-gip context --toon                # Output in TOON format (default)
-```
+| Usage | Description |
+| :--- | :--- |
+| `gip context` | Show the human-readable manifest for the current `HEAD`. |
+| `gip context <sha>` | Show the manifest for a specific commit. |
+| `gip context --json` | Output in JSON format (for CI/CD pipelines or scripts). |
+| `gip context --export` | Export raw TOON format (optimized for LLM context windows). |
 
 ### Git Passthrough
 
-Any unrecognized command passes through to Git:
+Any command not listed above is passed directly to git, so you can use `gip` as your daily driver:
 
 ```bash
-gip status                        # → git status
-gip log --oneline                 # → git log --oneline
-gip branch -a                     # → git branch -a
+gip status
+gip log --oneline --graph
+gip checkout -b feature/new-ui
 ```
 
 ---
@@ -399,11 +376,10 @@ gip commit -m "refactor: update user schema"
 #   schemaVersion: "2.0",
 #   entries: [
 #     {
-#       file: "src/user.cpp",
-#       behavior: "<feature|bugfix|refactor>",
+#       anchor: { file: "src/user.rs", symbol: "User" },
+#       behaviorClass: ["refactor"],
 #       rationale: "<why?>",
-#       breaking: false,
-#       ...
+#       compatibility: { breaking: false }
 #     }
 #   ]
 # }
@@ -417,16 +393,20 @@ gip commit -m "refactor: update user schema
 
 gip:
 {
+  schemaVersion: "2.0",
   entries: [
     {
-      file: "src/user.cpp",
-      symbol: "User::validate",
-      behavior: "refactor",
+      anchor: { file: "src/user.rs", symbol: "User::validate" },
+      behaviorClass: ["refactor"],
       rationale: "Enforce strict password complexity rules per security audit",
-      breaking: true,
-      migrations: ["Run db_migrate_v2.sql to update existing hashes"],
-      inputs: ["password: string", "options: ValidationOptions"],
-      errorModel: ["throws WeakPasswordException"]
+      compatibility: {
+        breaking: true,
+        migrations: ["Run db_migrate_v2.sql to update existing hashes"]
+      },
+      contract: {
+        inputs: ["password: string", "options: ValidationOptions"],
+        errorModel: ["throws WeakPasswordException"]
+      }
     }
   ]
 }"

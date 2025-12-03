@@ -44,4 +44,4 @@ if [[ ":$PATH:" != *":$INSTALL_DIR/bin:"* ]]; then
     echo "  export PATH=\"\$PATH:$INSTALL_DIR/bin\""
 fi
 
-echo "Run 'gitp --version' to verify."
+echo "Run 'gip --version' to verify."

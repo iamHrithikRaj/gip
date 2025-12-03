@@ -48,7 +48,7 @@ This matters because:
 git commit -m "refactor: extract payment service"
 
 # Commit with intent preservation
-gitp commit -m "refactor: extract payment service"
+gip commit -m "refactor: extract payment service"
 ```
 
 Gip attaches a **manifest**—a machine-readable document describing the *intent* behind changes—to your commits via Git notes. This context travels with your repository, invisible to normal workflows but available when you need it.
@@ -86,13 +86,13 @@ decisions:
 
 Gip was designed for the Agentic future, enabling **true agentic workflows**:
 
-1.  **Context Injection**: Agents can query `gitp context` to understand the codebase before making changes.
+1.  **Context Injection**: Agents can query `gip context` to understand the codebase before making changes.
 2.  **Structured Commits**: Gip forces agents to document their intent via the manifest rejection loop.
 3.  **Autonomous Resolution**: Enriched conflict markers provide the ground truth agents need to resolve merges without human help.
 
 ```bash
 # Export context for your Agent
-gitp context --export > context.toon
+gip context --export > context.toon
 ```
 
 The TOON format used by Gip is **49% smaller than JSON** and **23% smaller than YAML**, making it ideal for LLM context windows.
@@ -190,11 +190,21 @@ cmake --install build
 ### Verify Installation
 
 ```bash
-gitp --version
+gip --version
 # gip 1.0.0 (c++ edition)
 
-gitp --help
+gip --help
 # Git with Intent Preservation - Context-aware git wrapper
+```
+
+### Troubleshooting (Windows)
+
+**Conflict with `Get-NetIPConfiguration`**
+
+PowerShell has a default alias `gip` for `Get-NetIPConfiguration`. The installation script will attempt to remove this alias for you. If you still see network information when running `gip`, you can manually add this to your PowerShell profile:
+
+```powershell
+Remove-Item alias:gip -ErrorAction SilentlyContinue
 ```
 
 ---
@@ -205,7 +215,7 @@ gitp --help
 
 ```bash
 cd your-project
-gitp init
+gip init
 # ✓ Gip initialized successfully
 # Created: .gip/
 # Created: manifest.toon (template)
@@ -233,7 +243,7 @@ decisions:
 ### 3. Commit with Context
 
 ```bash
-gitp commit -m "perf: add preference caching"
+gip commit -m "perf: add preference caching"
 # ✓ Manifest validated
 # ✓ Changes committed with context
 # ✓ Manifest attached as git note
@@ -243,13 +253,13 @@ gitp commit -m "perf: add preference caching"
 
 ```bash
 # View manifest for any commit
-gitp context abc1234
+gip context abc1234
 
 # Export for Agents
-gitp context --export --json > context.json
+gip context --export --json > context.json
 
 # View all behavioral changes since last release
-gitp context --since v2.0.0 --behavior
+gip context --since v2.0.0 --behavior
 ```
 
 ---
@@ -290,7 +300,7 @@ context: "string"                 # Additional context or links
 Gip validates manifests before committing:
 
 ```bash
-gitp commit -m "feat: add feature"
+gip commit -m "feat: add feature"
 # ✗ Manifest validation failed:
 #   - Missing required field: 'intent'
 #   - 'behavior.breaking' must be boolean
@@ -303,12 +313,12 @@ gitp commit -m "feat: add feature"
 ### Core Commands
 
 ```bash
-gitp init                          # Initialize Gip in repository
-gitp commit [-m "msg"]             # Commit with manifest attachment
-gitp push [--with-notes]           # Push commits and notes to remote
-gitp context [<commit>]            # Display context for commit(s)
-gitp merge <branch>                # Merge with enriched conflict markers
-gitp rebase <branch>               # Rebase with enriched conflict markers
+gip init                          # Initialize Gip in repository
+gip commit [-m "msg"]             # Commit with manifest attachment
+gip push [--with-notes]           # Push commits and notes to remote
+gip context [<commit>]            # Display context for commit(s)
+gip merge <branch>                # Merge with enriched conflict markers
+gip rebase <branch>               # Rebase with enriched conflict markers
 ```
 
 ### Merge & Rebase Commands
@@ -316,9 +326,9 @@ gitp rebase <branch>               # Rebase with enriched conflict markers
 Gip wraps `git merge` and `git rebase` to provide **enriched conflict markers** when conflicts occur:
 
 ```bash
-gitp merge feature-branch          # Merge with intent-enriched conflicts
-gitp rebase main                   # Rebase with intent-enriched conflicts
-gitp rebase -i HEAD~3              # Interactive rebase (conflicts enriched)
+gip merge feature-branch          # Merge with intent-enriched conflicts
+gip rebase main                   # Rebase with intent-enriched conflicts
+gip rebase -i HEAD~3              # Interactive rebase (conflicts enriched)
 ```
 
 When a conflict occurs, Gip automatically:
@@ -359,14 +369,14 @@ total += item.price + 5.99
 ### Context Command Options
 
 ```bash
-gitp context                       # Show context for HEAD
-gitp context <sha>                 # Show context for specific commit
-gitp context --all                 # Show context for all commits
-gitp context --since <ref>         # Show context since reference
-gitp context --behavior            # Show only behavioral changes
-gitp context --export              # Export full context document
-gitp context --json                # Output in JSON format
-gitp context --toon                # Output in TOON format (default)
+gip context                       # Show context for HEAD
+gip context <sha>                 # Show context for specific commit
+gip context --all                 # Show context for all commits
+gip context --since <ref>         # Show context since reference
+gip context --behavior            # Show only behavioral changes
+gip context --export              # Export full context document
+gip context --json                # Output in JSON format
+gip context --toon                # Output in TOON format (default)
 ```
 
 ### Git Passthrough
@@ -374,9 +384,9 @@ gitp context --toon                # Output in TOON format (default)
 Any unrecognized command passes through to Git:
 
 ```bash
-gitp status                        # → git status
-gitp log --oneline                 # → git log --oneline
-gitp branch -a                     # → git branch -a
+gip status                        # → git status
+gip log --oneline                 # → git log --oneline
+gip branch -a                     # → git branch -a
 ```
 
 ---
@@ -389,7 +399,7 @@ Gip is designed to be the "missing link" for AI agents. When an agent (or human)
 
 **Step 1: Agent tries to commit**
 ```bash
-gitp commit -m "refactor: update user schema"
+gip commit -m "refactor: update user schema"
 # ✗ Commit Rejected: Missing Context Manifest
 # 
 # Please retry with this block appended to your commit message:
@@ -412,7 +422,7 @@ gitp commit -m "refactor: update user schema"
 The agent reads the diff, understands the semantic impact, and fills out the manifest—including critical safety info like breaking changes.
 
 ```bash
-gitp commit -m "refactor: update user schema
+gip commit -m "refactor: update user schema
 
 gip:
 {
@@ -479,7 +489,7 @@ void processPayment(float amount) {
 Stop guessing why code exists. Query the repository for intent.
 
 ```bash
-gitp context src/auth_service.cpp
+gip context src/auth_service.cpp
 ```
 
 **Output:**
@@ -589,7 +599,7 @@ No. Gip enhances commit messages with structured context. You still write normal
 Gip works without manifests. Commits without manifests are just regular git commits. You can add context later:
 
 ```bash
-gitp context --add <sha>
+gip context --add <sha>
 ```
 
 ### How do I sync notes with remotes?
@@ -599,7 +609,7 @@ gitp context --add <sha>
 git fetch origin refs/notes/gip:refs/notes/gip
 
 # Push notes to remote
-gitp push --with-notes
+gip push --with-notes
 # or: git push origin refs/notes/gip
 ```
 
@@ -617,7 +627,7 @@ Gip requires Git 2.28+ for full functionality (worktree support). Core features 
 
 ### Can I use Gip with existing repositories?
 
-Absolutely. Run `gitp init` in any git repository. Gip won't modify existing history—it only adds context to future commits.
+Absolutely. Run `gip init` in any git repository. Gip won't modify existing history—it only adds context to future commits.
 
 ### What's the performance impact?
 
@@ -659,7 +669,7 @@ See [CODING_STANDARDS.md](docs/CODING_STANDARDS.md) for detailed guidelines.
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feat/amazing-feature`)
 3. **Write a manifest** for your changes (`manifest.toon`)
-4. Commit with Gip (`gitp commit -m "feat: add amazing feature"`)
+4. Commit with Gip (`gip commit -m "feat: add amazing feature"`)
 5. Push and open a PR
 
 ### Issue Templates

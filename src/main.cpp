@@ -30,45 +30,45 @@ constexpr const char* kColorBold = "\033[1m";
 
 void printVersion()
 {
-    std::cout << "gitp version " << kVersion << std::endl;
+    std::cout << "gip version " << kVersion << std::endl;
     std::cout << "Git with Intent Protocol - LLM-native version control" << std::endl;
 }
 
 void printHelp()
 {
-    std::cout << kColorBold << "Gip (gitp) - Git with Intent Protocol" << kColorReset << std::endl;
+    std::cout << kColorBold << "Gip - Git with Intent Protocol" << kColorReset << std::endl;
     std::cout << std::endl;
     std::cout << "A drop-in replacement for git that enforces semantic context" << std::endl;
     std::cout << "for LLM-native development workflows." << std::endl;
     std::cout << std::endl;
     std::cout << kColorCyan << "ENHANCED COMMANDS:" << kColorReset << std::endl;
-    std::cout << "  gitp init                  Initialize repo with AI instructions"
+    std::cout << "  gip init                  Initialize repo with AI instructions"
               << std::endl;
-    std::cout << "  gitp commit -m \"msg\"       Commit with manifest (required)" << std::endl;
-    std::cout << "  gitp commit -f -m \"msg\"    Force commit without manifest" << std::endl;
-    std::cout << "  gitp push                  Push code AND context notes to remote"
+    std::cout << "  gip commit -m \"msg\"       Commit with manifest (required)" << std::endl;
+    std::cout << "  gip commit -f -m \"msg\"    Force commit without manifest" << std::endl;
+    std::cout << "  gip push                  Push code AND context notes to remote"
               << std::endl;
-    std::cout << "  gitp merge <branch>        Merge with enriched conflict markers"
+    std::cout << "  gip merge <branch>        Merge with enriched conflict markers"
               << std::endl;
-    std::cout << "  gitp rebase <branch>       Rebase with enriched conflict markers"
+    std::cout << "  gip rebase <branch>       Rebase with enriched conflict markers"
               << std::endl;
     std::cout << std::endl;
     std::cout << kColorCyan << "CONTEXT COMMANDS:" << kColorReset << std::endl;
-    std::cout << "  gitp context <file>              Show semantic history of a file"
+    std::cout << "  gip context <file>              Show semantic history of a file"
               << std::endl;
-    std::cout << "  gitp context <file> --json       Output as JSON (machine-readable)"
+    std::cout << "  gip context <file> --json       Output as JSON (machine-readable)"
               << std::endl;
-    std::cout << "  gitp context --all               Show context for all tracked files"
+    std::cout << "  gip context --all               Show context for all tracked files"
               << std::endl;
-    std::cout << "  gitp context --behavior <type>   Filter by behavior (feature, bugfix, etc.)"
+    std::cout << "  gip context --behavior <type>   Filter by behavior (feature, bugfix, etc.)"
               << std::endl;
-    std::cout << "  gitp context --since <date>      Filter commits since date (YYYY-MM-DD)"
+    std::cout << "  gip context --since <date>      Filter commits since date (YYYY-MM-DD)"
               << std::endl;
-    std::cout << "  gitp context --export <file>     Export context to JSON file" << std::endl;
+    std::cout << "  gip context --export <file>     Export context to JSON file" << std::endl;
     std::cout << std::endl;
     std::cout << kColorCyan << "PASSTHROUGH:" << kColorReset << std::endl;
     std::cout << "  All other git commands are passed through directly." << std::endl;
-    std::cout << "  Example: gitp status, gitp log, gitp branch, etc." << std::endl;
+    std::cout << "  Example: gip status, gip log, gip branch, etc." << std::endl;
     std::cout << std::endl;
     std::cout << kColorCyan << "OPTIONS:" << kColorReset << std::endl;
     std::cout << "  --version, -v         Show version" << std::endl;

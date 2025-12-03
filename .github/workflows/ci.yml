@@ -105,7 +105,7 @@ jobs:
     
     - name: Run clang-tidy
       run: |
-        find src -name '*.cpp' | xargs clang-tidy -p build
+        find src -name '*.cpp' | xargs clang-tidy -p build -header-filter='^(src|include)/.*'
     
     - name: Run cppcheck
       run: |

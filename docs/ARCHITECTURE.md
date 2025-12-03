@@ -127,7 +127,7 @@ Manifests are stored in Git Notes under `refs/notes/gip`:
 ### Context Query Flow
 
 ```
-1. User runs: gip context src/file.cpp
+1. User runs: gip context src/file.rs
 2. GitAdapter queries file history
 3. For each commit, retrieve note
 4. Parse manifests from notes

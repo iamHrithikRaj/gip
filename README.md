@@ -231,32 +231,32 @@ gip rebase main
 ```
 
 **Standard Git Conflict:**
-```cpp
+```rust
 <<<<<<< HEAD
-void processPayment(float amount, Currency currency) {
+fn process_payment(amount: f32, currency: Currency) {
 =======
-void processPayment(float amount) {
+fn process_payment(amount: f32) {
 >>>>>>> feature-branch
 ```
 *Result: Agent guesses which one is correct.*
 
 **Gip Enriched Conflict:**
-```cpp
+```rust
 <<<<<<< HEAD
-void processPayment(float amount, Currency currency) {
+fn process_payment(amount: f32, currency: Currency) {
 ||| Gip CONTEXT (HEAD - Your changes)
 ||| behaviorClass: refactor
 ||| rationale: Added currency support for internationalization
 ||| breaking: true
 ||| migrations[0]: Update all callsites to pass Currency::USD by default
-||| symbol: processPayment
+||| symbol: process_payment
 =======
-void processPayment(float amount) {
+fn process_payment(amount: f32) {
 ||| Gip CONTEXT (feature-branch - Their changes)
 ||| behaviorClass: feature
 ||| rationale: Simplified payment flow for guest checkout
 ||| breaking: false
-||| symbol: processPayment
+||| symbol: process_payment
 >>>>>>> feature-branch
 ```
 *Result: Agent sees `breaking: true` and `migrations` instructions, allowing it to correctly update the feature branch code to match the new signature.*
@@ -270,7 +270,7 @@ Turn your git history into a RAG-ready knowledge base.
 
 ```bash
 # "Why do we use Redis here?"
-gip context src/auth_service.cpp
+gip context src/auth_service.rs
 ```
 **Output:**
 ```text
@@ -402,7 +402,7 @@ gip checkout -b feature/new-ui
 │                                        │                     │
 │                                        v                     │
 │                              ┌──────────────────┐            │
-│                              │  ctoon (static)  │            │
+│                              │   toon-format    │            │
 │                              │  TOON serializer │            │
 │                              └──────────────────┘            │
 └──────────────────────────────────────────────────────────────┘
@@ -560,7 +560,7 @@ See [CODING_STANDARDS.md](docs/CODING_STANDARDS.md) for detailed guidelines.
 
 ## Related Projects
 
-- [ctoon](ctoon/) - TOON format serialization library
+- [toon-format](https://crates.io/crates/toon-format) - TOON format serialization library
 - [gip-legacy](https://github.com/AZBucky/gip-legacy) - Original Rust implementation
 
 ---

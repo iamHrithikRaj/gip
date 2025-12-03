@@ -28,46 +28,50 @@ ctoon::Value Manifest::toValue() const {
 
         // Migrations array
         ctoon::Array migArray;
-        for (const auto& mig : entry.migrations) {
-            migArray.push_back(ctoon::Value(ctoon::Primitive(mig)));
-        }
+        std::transform(entry.migrations.begin(), entry.migrations.end(),
+                       std::back_inserter(migArray), [](const std::string& mig) {
+                           return ctoon::Value(ctoon::Primitive(mig));
+                       });
         entryObj["migrations"] = ctoon::Value(migArray);
 
         // Inputs array
         ctoon::Array inputsArray;
-        for (const auto& inp : entry.inputs) {
-            inputsArray.push_back(ctoon::Value(ctoon::Primitive(inp)));
-        }
+        std::transform(entry.inputs.begin(), entry.inputs.end(), std::back_inserter(inputsArray),
+                       [](const std::string& inp) { return ctoon::Value(ctoon::Primitive(inp)); });
         entryObj["inputs"] = ctoon::Value(inputsArray);
 
         entryObj["outputs"] = ctoon::Value(ctoon::Primitive(entry.outputs));
 
         // Error model array
         ctoon::Array errorArray;
-        for (const auto& err : entry.errorModel) {
-            errorArray.push_back(ctoon::Value(ctoon::Primitive(err)));
-        }
+        std::transform(entry.errorModel.begin(), entry.errorModel.end(),
+                       std::back_inserter(errorArray), [](const std::string& err) {
+                           return ctoon::Value(ctoon::Primitive(err));
+                       });
         entryObj["errorModel"] = ctoon::Value(errorArray);
 
         // Preconditions array
         ctoon::Array preArray;
-        for (const auto& pre : entry.preconditions) {
-            preArray.push_back(ctoon::Value(ctoon::Primitive(pre)));
-        }
+        std::transform(entry.preconditions.begin(), entry.preconditions.end(),
+                       std::back_inserter(preArray), [](const std::string& pre) {
+                           return ctoon::Value(ctoon::Primitive(pre));
+                       });
         entryObj["preconditions"] = ctoon::Value(preArray);
 
         // Postconditions array
         ctoon::Array postArray;
-        for (const auto& post : entry.postconditions) {
-            postArray.push_back(ctoon::Value(ctoon::Primitive(post)));
-        }
+        std::transform(entry.postconditions.begin(), entry.postconditions.end(),
+                       std::back_inserter(postArray), [](const std::string& post) {
+                           return ctoon::Value(ctoon::Primitive(post));
+                       });
         entryObj["postconditions"] = ctoon::Value(postArray);
 
         // Side effects array
         ctoon::Array sideArray;
-        for (const auto& side : entry.sideEffects) {
-            sideArray.push_back(ctoon::Value(ctoon::Primitive(side)));
-        }
+        std::transform(entry.sideEffects.begin(), entry.sideEffects.end(),
+                       std::back_inserter(sideArray), [](const std::string& side) {
+                           return ctoon::Value(ctoon::Primitive(side));
+                       });
         entryObj["sideEffects"] = ctoon::Value(sideArray);
 
         entriesArray.push_back(ctoon::Value(entryObj));
@@ -381,7 +385,7 @@ ManifestParser::generateTemplate(const std::vector<std::pair<std::string, std::s
         }
         size_t dotPos = symbol.find_last_of('.');
         if (dotPos != std::string::npos) {
-            symbol = symbol.substr(0, dotPos);
+            symbol.resize(dotPos);
         }
 
         ss << "    {\n";

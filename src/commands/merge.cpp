@@ -105,7 +105,7 @@ auto merge(const std::vector<std::string>& args) -> int {
     }
 
     // Store current HEAD before merge
-    std::string headBefore = getHead(git);
+    // std::string headBefore = getHead(git);
 
     // Build the git merge command
     std::vector<std::string> mergeArgs = {"merge"};

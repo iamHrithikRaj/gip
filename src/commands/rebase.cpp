@@ -68,13 +68,13 @@ bool isRebaseInProgress(const GitAdapter& git) {
 /// @brief Configure git to preserve notes during rebase
 void configureNotesRewrite(const GitAdapter& git) {
     // Enable note rewriting for rebase
-    git.execute({"config", "notes.rewrite.rebase", "true"});
+    (void)git.execute({"config", "notes.rewrite.rebase", "true"});
 
     // Set the notes ref to rewrite
-    git.execute({"config", "notes.rewriteRef", "refs/notes/gip"});
+    (void)git.execute({"config", "notes.rewriteRef", "refs/notes/gip"});
 
     // Set rewrite mode to overwrite (replace old note with new)
-    git.execute({"config", "notes.rewriteMode", "overwrite"});
+    (void)git.execute({"config", "notes.rewriteMode", "overwrite"});
 }
 
 /// @brief Print help for rebase conflicts
@@ -120,7 +120,7 @@ auto rebase(const std::vector<std::string>& args) -> int {
     rebaseArgs.insert(rebaseArgs.end(), args.begin(), args.end());
 
     // Store current HEAD before rebase for conflict enrichment
-    std::string headBefore = getHead(git);
+    // std::string headBefore = getHead(git);
 
     // Execute the rebase
     auto result = git.execute(rebaseArgs);

@@ -283,12 +283,8 @@ std::string historyToJson(const std::string& filePath, const std::vector<CommitC
     oss << "  \"generatedAt\": \"" << __DATE__ << " " << __TIME__ << "\",\n";
     oss << "  \"totalCommits\": " << history.size() << ",\n";
 
-    int withManifest = 0;
-    for (const auto& ctx : history) {
-        if (ctx.manifest) {
-            withManifest++;
-        }
-    }
+    int withManifest = std::count_if(history.begin(), history.end(),
+                                     [](const auto& ctx) { return ctx.manifest.has_value(); });
 
     oss << "  \"commitsWithManifest\": " << withManifest << ",\n";
     oss << "  \"commits\": [\n";

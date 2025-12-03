@@ -174,7 +174,7 @@ auto init(const std::vector<std::string>& args) -> int {
     if (!args.empty() && !isRepo) {
         std::vector<std::string> gitArgs = {"init"};
         gitArgs.insert(gitArgs.end(), args.begin(), args.end());
-        git.execute(gitArgs);
+        (void)git.execute(gitArgs);
     }
 
     // Get repo root

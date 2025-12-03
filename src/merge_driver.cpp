@@ -88,7 +88,7 @@ std::vector<std::string> extractToonArray(const std::string& content, const std:
 
         if (inArray) {
             // Check for array item (starts with -)
-            if (trimmedLine.front() == '-') {
+            if (!trimmedLine.empty() && trimmedLine.front() == '-') {
                 std::string item = trim(trimmedLine.substr(1));
                 // Remove quotes if present
                 if (item.length() >= 2 && item.front() == '"' && item.back() == '"') {

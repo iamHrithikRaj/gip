@@ -107,7 +107,7 @@ You can install Gip with a single command. This will clone the repository to a t
 
 **Windows (PowerShell):**
 ```powershell
-irm https://raw.githubusercontent.com/iamHrithikRaj/gip/main/scripts/bootstrap.ps1 | iex
+Set-ExecutionPolicy Bypass -Scope Process -Force; irm https://raw.githubusercontent.com/iamHrithikRaj/gip/main/scripts/bootstrap.ps1 | iex
 ```
 
 **Linux / macOS:**

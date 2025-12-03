@@ -1,0 +1,62 @@
+[package]
+name = "gip"
+version = "2.0.0"
+edition = "2021"
+authors = ["Hrithik Raj <iamhrithikraj@gmail.com>"]
+description = "A lightweight Git wrapper that enriches merge conflicts with structured context for humans and LLMs"
+repository = "https://github.com/iamHrithikRaj/gip"
+license = "MIT"
+readme = "README.md"
+keywords = ["git", "merge", "conflict", "llm", "ai"]
+categories = ["command-line-utilities", "development-tools"]
+
+[lib]
+name = "gip"
+path = "src/lib.rs"
+
+[[bin]]
+name = "gip"
+path = "src/main.rs"
+
+[dependencies]
+# CLI and argument parsing
+clap = { version = "4.5", features = ["derive", "cargo"] }
+
+# Git integration
+git2 = "0.18"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toon-format = "0.3"
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Terminal colors and formatting
+colored = "2.1"
+
+# Interactive prompts
+dialoguer = { version = "0.11", features = ["fuzzy-select"] }
+
+# File system operations
+walkdir = "2.5"
+
+# Regular expressions
+regex = "1.10"
+lazy_static = "1.4"
+
+[dev-dependencies]
+# Testing utilities
+tempfile = "3.10"
+assert_cmd = "2.0"
+predicates = "3.1"
+pretty_assertions = "1.4"
+
+[profile.release]
+opt-level = "z"     # Optimize for size
+lto = true          # Enable Link Time Optimization
+codegen-units = 1   # Better optimization
+strip = true        # Strip symbols from binary
+panic = "abort"     # Smaller binary size

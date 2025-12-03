@@ -6,8 +6,7 @@
 
 **The missing link between your code changes and the context that explains them.**
 
-[![C++17](https://img.shields.io/badge/C++-17-blue.svg?style=flat&logo=cplusplus)](https://en.cppreference.com/w/cpp/17)
-[![CMake](https://img.shields.io/badge/CMake-3.15+-064F8C.svg?style=flat&logo=cmake)](https://cmake.org)
+[![Rust](https://img.shields.io/badge/Rust-1.75+-orange.svg?style=flat&logo=rust)](https://www.rust-lang.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Windows](https://img.shields.io/badge/Windows-0078D6?style=flat&logo=windows)](https://microsoft.com/windows)
 [![Linux](https://img.shields.io/badge/Linux-FCC624?style=flat&logo=linux&logoColor=black)](https://kernel.org)
@@ -121,14 +120,14 @@ If you prefer to inspect the code first or build from source:
 
 **Windows (PowerShell):**
 ```powershell
-git clone --recursive https://github.com/iamHrithikRaj/gip.git
+git clone https://github.com/iamHrithikRaj/gip.git
 cd gip
 .\scripts\install.ps1
 ```
 
 **Linux / macOS:**
 ```bash
-git clone --recursive https://github.com/iamHrithikRaj/gip.git
+git clone https://github.com/iamHrithikRaj/gip.git
 cd gip
 ./scripts/install.sh
 ```
@@ -158,40 +157,28 @@ sudo mv gip /usr/local/bin/
 ### Build from Source
 
 **Requirements:**
-- C++17 compatible compiler (MSVC 19.14+, GCC 8+, Clang 7+)
-- CMake 3.15+
+- Rust 1.75+ (stable)
 - Git 2.28+ (for worktree support)
 
 ```bash
-git clone --recursive https://github.com/AZBucky/gip.git
+git clone https://github.com/AZBucky/gip.git
 cd gip
 
-# 1. Configure the project
-cmake -S . -B build
+# 1. Build the project (Release mode)
+cargo build --release
 
-# 2. Build the project (Release mode)
-cmake --build build --config Release
+# 2. Run Tests
+cargo test
 
-# 3. Run Tests
-ctest --test-dir build --output-on-failure
-
-# 4. Install (optional)
-cmake --install build
+# 3. Install
+cargo install --path .
 ```
-
-**Build Options:**
-
-| Option | Default | Description |
-|--------|---------|-------------|
-| `GIP_BUILD_TESTS` | `ON` | Build unit tests |
-| `GIP_USE_LIBGIT2` | `OFF` | Use libgit2 instead of git CLI |
-| `GIP_ENABLE_SANITIZERS` | `OFF` | Enable ASan/UBSan |
 
 ### Verify Installation
 
 ```bash
 gip --version
-# gip 1.0.0 (c++ edition)
+# gip 1.0.0
 
 gip --help
 # Git with Intent Preservation - Context-aware git wrapper

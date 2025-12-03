@@ -1,41 +1,25 @@
 # scripts/install.ps1
-# Installs Gip (C++ Edition) from source
+# Installs Gip (Rust Edition) from source
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "Installing Gip (C++ Edition)..." -ForegroundColor Cyan
+Write-Host "Installing Gip (Rust Edition)..." -ForegroundColor Cyan
 Write-Host "Performing user-space installation (no Admin privileges required)." -ForegroundColor Gray
 
 # Check prerequisites
-if (-not (Get-Command cmake -ErrorAction SilentlyContinue)) {
-    Write-Error "CMake is required but not found. Please install CMake."
+if (-not (Get-Command cargo -ErrorAction SilentlyContinue)) {
+    Write-Error "Cargo is required but not found. Please install Rust."
     exit 1
 }
 
 # Define paths
 $RepoRoot = Resolve-Path "$PSScriptRoot\.."
-$BuildDir = Join-Path $RepoRoot "build"
 $InstallDir = "$env:LOCALAPPDATA\Programs\gip"
-
-# Clean build dir if it exists
-if (Test-Path $BuildDir) {
-    Write-Host "Cleaning build directory..." -ForegroundColor Gray
-    Remove-Item -Recurse -Force $BuildDir
-}
-
-# Configure
-Write-Host "Configuring CMake..." -ForegroundColor Yellow
-Set-Location $RepoRoot
-cmake -S . -B $BuildDir -DCMAKE_INSTALL_PREFIX="$InstallDir"
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Error "Configuration failed."
-    exit 1
-}
 
 # Build
 Write-Host "Building Release..." -ForegroundColor Yellow
-cmake --build $BuildDir --config Release
+Set-Location $RepoRoot
+cargo build --release
 
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Build failed."
@@ -44,7 +28,11 @@ if ($LASTEXITCODE -ne 0) {
 
 # Install
 Write-Host "Installing to $InstallDir..." -ForegroundColor Yellow
-cmake --install $BuildDir --config Release
+if (-not (Test-Path $InstallDir)) {
+    New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
+}
+
+Copy-Item "$RepoRoot\target\release\gip.exe" "$InstallDir\gip.exe" -Force
 
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Installation failed."

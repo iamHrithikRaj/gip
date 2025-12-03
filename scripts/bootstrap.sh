@@ -9,12 +9,33 @@ REPO_OWNER="iamHrithikRaj"
 REPO_NAME="gip"
 INSTALL_DIR="$HOME/.local/bin"
 
-# Detect OS
+# Detect OS and Architecture
 OS="$(uname -s)"
+ARCH="$(uname -m)"
+
 case "${OS}" in
-    Linux*)     ASSET_NAME="gip-linux-x64.tar.gz";;
-    Darwin*)    ASSET_NAME="gip-macos-universal.tar.gz";;
-    *)          echo "Unsupported OS: ${OS}"; exit 1;;
+    Linux*)
+        if [ "$ARCH" = "x86_64" ]; then
+            ASSET_NAME="gip-linux-x64.tar.gz"
+        else
+            echo "Unsupported Linux architecture: ${ARCH}"
+            exit 1
+        fi
+        ;;
+    Darwin*)
+        if [ "$ARCH" = "arm64" ]; then
+            ASSET_NAME="gip-macos-arm64.tar.gz"
+        elif [ "$ARCH" = "x86_64" ]; then
+            ASSET_NAME="gip-macos-x64.tar.gz"
+        else
+            echo "Unsupported macOS architecture: ${ARCH}"
+            exit 1
+        fi
+        ;;
+    *)
+        echo "Unsupported OS: ${OS}"
+        exit 1
+        ;;
 esac
 
 echo -e "\033[0;36mFetching latest release info...\033[0m"

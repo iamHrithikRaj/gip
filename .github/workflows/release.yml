@@ -9,99 +9,77 @@ permissions:
   contents: write
 
 jobs:
-  build-windows:
-    runs-on: windows-latest
+  build-release:
+    name: Build Release (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact_name: gip-windows-x64.zip
+            asset_name: gip-windows-x64.zip
+            exe_suffix: .exe
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact_name: gip-linux-x64.tar.gz
+            asset_name: gip-linux-x64.tar.gz
+            exe_suffix: ""
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            artifact_name: gip-macos-x64.tar.gz
+            asset_name: gip-macos-x64.tar.gz
+            exe_suffix: ""
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact_name: gip-macos-arm64.tar.gz
+            asset_name: gip-macos-arm64.tar.gz
+            exe_suffix: ""
+
     steps:
     - uses: actions/checkout@v4
+    
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
       with:
-        submodules: recursive
-
-    - name: Configure CMake
-      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+        targets: ${{ matrix.target }}
 
     - name: Build
-      run: cmake --build build --config Release
+      run: cargo build --release --target ${{ matrix.target }}
 
-    - name: Package
+    - name: Package (Windows)
+      if: matrix.os == 'windows-latest'
       run: |
-        cd build/Release
-        Compress-Archive -Path gip.exe -DestinationPath ../../gip-windows-x64.zip
+        cd target/${{ matrix.target }}/release
+        Compress-Archive -Path gip.exe -DestinationPath ../../../${{ matrix.artifact_name }}
+
+    - name: Package (Unix)
+      if: matrix.os != 'windows-latest'
+      run: |
+        cd target/${{ matrix.target }}/release
+        tar -czf ../../../${{ matrix.artifact_name }} gip
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: gip-windows-x64
-        path: gip-windows-x64.zip
+        name: ${{ matrix.asset_name }}
+        path: ${{ matrix.artifact_name }}
 
-  build-linux:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: recursive
-
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y cmake
-
-    - name: Configure CMake
-      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-
-    - name: Build
-      run: cmake --build build --config Release
-
-    - name: Package
-      run: |
-        cd build
-        tar -czf ../gip-linux-x64.tar.gz gip
-
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: gip-linux-x64
-        path: gip-linux-x64.tar.gz
-
-  build-macos:
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v4
-      with:
-        submodules: recursive
-
-    - name: Install dependencies
-      run: brew install cmake
-
-    - name: Configure CMake
-      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-
-    - name: Build
-      run: cmake --build build --config Release
-
-    - name: Package
-      run: |
-        cd build
-        tar -czf ../gip-macos-universal.tar.gz gip
-
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: gip-macos-universal
-        path: gip-macos-universal.tar.gz
-
-  release:
-    needs: [build-windows, build-linux, build-macos]
+  create-release:
+    needs: build-release
     runs-on: ubuntu-latest
     steps:
     - uses: actions/download-artifact@v4
       with:
         path: artifacts
 
+    - name: Display structure of downloaded files
+      run: ls -R artifacts
+
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          artifacts/gip-windows-x64/gip-windows-x64.zip
-          artifacts/gip-linux-x64/gip-linux-x64.tar.gz
-          artifacts/gip-macos-universal/gip-macos-universal.tar.gz
+          artifacts/**/*.zip
+          artifacts/**/*.tar.gz
         generate_release_notes: true

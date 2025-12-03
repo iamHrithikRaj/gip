@@ -1,182 +1,131 @@
-param (
-    [string]$GipPath
-)
+# tests/integration/test_e2e.ps1
+# End-to-End Integration Test for Gip (Windows/PowerShell)
 
-$ErrorActionPreference = "Continue"
+$ErrorActionPreference = "Stop"
+$ScriptDir = $PSScriptRoot
+$GipExe = "$ScriptDir\..\..\target\release\gip.exe"
 
-function Assert-Success {
-    param($LastExitCode, $Message)
-    if ($LastExitCode -ne 0) {
-        Write-Error "FAILED: $Message (Exit Code: $LastExitCode)"
+if (-not (Test-Path $GipExe)) {
+    Write-Warning "Gip binary not found at $GipExe. Please run 'cargo build --release' first."
+    # Try to find in debug
+    $GipExe = "$ScriptDir\..\..\target\debug\gip.exe"
+    if (-not (Test-Path $GipExe)) {
+        Write-Error "Gip binary not found."
         exit 1
     }
-    Write-Host "PASS: $Message" -ForegroundColor Green
 }
 
-function Assert-Failure {
-    param($LastExitCode, $Message)
-    if ($LastExitCode -eq 0) {
-        Write-Error "FAILED: $Message (Expected failure, but got success)"
-        exit 1
-    }
-    Write-Host "PASS: $Message" -ForegroundColor Green
-}
+Write-Host "Using Gip binary: $GipExe" -ForegroundColor Cyan
 
-# 1. Setup Test Environment
-$TestDir = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "gip_e2e_" + [Guid]::NewGuid().ToString())
-New-Item -ItemType Directory -Path $TestDir | Out-Null
-Write-Host "Test Directory: $TestDir"
-Push-Location $TestDir
+# Create temp directory
+$TestDir = Join-Path ([System.IO.Path]::GetTempPath()) "gip_test_$(Get-Random)"
+New-Item -ItemType Directory -Path $TestDir -Force | Out-Null
+Set-Location $TestDir
 
 try {
-    # 2. Init
-    & $GipPath init
-    Assert-Success $LASTEXITCODE "gip init"
-
+    Write-Host "`n[1/5] Initializing Repository..." -ForegroundColor Yellow
+    git init | Out-Null
     git config user.name "Test User"
     git config user.email "test@example.com"
     
-    # Ensure we are on 'main' branch
-    git branch -m main
+    & $GipExe init
+    if ($LASTEXITCODE -ne 0) { throw "gip init failed" }
+    if (-not (Test-Path ".gip")) { throw ".gip directory missing" }
 
-
-    # 3. Test Missing Manifest
-    "print('hello')" | Out-File main.py -Encoding utf8
-    git add main.py
+    Write-Host "`n[2/5] Creating Initial Commit..." -ForegroundColor Yellow
+    "initial content" | Set-Content "file.txt"
+    git add file.txt
     
-    # Temporarily allow failure
-    $oldPreference = $ErrorActionPreference
-    $ErrorActionPreference = "Continue"
+    & $GipExe commit -m "feat: initial commit"
+    if ($LASTEXITCODE -ne 0) { throw "gip commit failed" }
+
+    Write-Host "`n[3/5] Creating Feature Branch..." -ForegroundColor Yellow
+    git checkout -b feature | Out-Null
+    "feature content" | Set-Content "file.txt"
+    git add file.txt
     
-    $output = & $GipPath commit -m "feat: initial" 2>&1 | Out-String
-    $exitCode = $LASTEXITCODE
+    # Create manifest for feature
+    $Manifest = @'
+schemaVersion: "2.0"
+commit: HEAD
+entries[1]:
+  - anchor:
+      file: file.txt
+      symbol: main
+      hunkId: H#1
+    changeType: modify
+    contract:
+      preconditions[0]:
+      postconditions[0]:
+      errorModel[0]:
+    behaviorClass[1]: feature
+    sideEffects[0]:
+    rationale: Feature change rationale
+'@
+    $Manifest | Set-Content "manifest.toon"
     
-    $ErrorActionPreference = $oldPreference
+    & $GipExe commit -m "feat: feature change"
+    if ($LASTEXITCODE -ne 0) { throw "gip commit failed" }
+
+    Write-Host "`n[4/5] Creating Conflict on Main..." -ForegroundColor Yellow
+    git checkout main | Out-Null
+    "main content" | Set-Content "file.txt"
+    git add file.txt
     
-    Assert-Failure $exitCode "gip commit without manifest should fail"
+    # Create manifest for main
+    $ManifestMain = @'
+schemaVersion: "2.0"
+commit: HEAD
+entries[1]:
+  - anchor:
+      file: file.txt
+      symbol: main
+      hunkId: H#1
+    changeType: modify
+    contract:
+      preconditions[0]:
+      postconditions[0]:
+      errorModel[0]:
+    behaviorClass[1]: refactor
+    sideEffects[0]:
+    rationale: Main change rationale
+'@
+    $ManifestMain | Set-Content "manifest.toon"
     
-    if ($output -notmatch "Commit Rejected") {
-        Write-Error "FAILED: Output did not contain 'Commit Rejected'"
-        exit 1
-    }
+    & $GipExe commit -m "refactor: main change"
+    if ($LASTEXITCODE -ne 0) { throw "gip commit failed" }
 
-    # 4. Test Valid Commit
-    $manifest = @"
-feat: initial
-
-gip:
-{
-  schemaVersion: "2.0",
-  entries: [
-    {
-      file: "main.py",
-      behavior: "feature",
-      rationale: "Initial commit",
-      breaking: false
-    }
-  ]
-}
-"@
-    $manifest | Out-File "manifest_initial.txt" -Encoding utf8
-    $output = & $GipPath commit -F "manifest_initial.txt" 2>&1 | Out-String
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "Command Output:" -ForegroundColor Yellow
-        Write-Host $output
-        Assert-Success $LASTEXITCODE "gip commit with manifest"
-    }
-    Assert-Success $LASTEXITCODE "gip commit with manifest"
-
-    # 5. Setup Conflict Scenario
-    # Branch A (feature)
-    git checkout -b feature
-    "print('hello feature')" | Out-File main.py -Encoding utf8
-    git add main.py
+    Write-Host "`n[5/5] Merging with Conflict Enrichment..." -ForegroundColor Yellow
+    # This is expected to fail with conflict
+    & $GipExe merge feature
     
-    $manifestFeature = @"
-feat: feature change
-
-gip:
-{
-  schemaVersion: "1.0",
-  entries: [
-    {
-      file: "main.py",
-      behavior: "feature",
-      rationale: "Feature change rationale",
-      breaking: false
-    }
-  ]
-}
-"@
-    $manifestFeature | Out-File "manifest_feature.txt" -Encoding utf8
-    & $GipPath commit -F "manifest_feature.txt"
-    Assert-Success $LASTEXITCODE "Commit on feature branch"
-
-    # Branch B (main)
-    git checkout main
-    "print('hello main')" | Out-File main.py -Encoding utf8
-    git add main.py
-
-    $manifestMain = @"
-feat: main change
-
-gip:
-{
-  schemaVersion: "1.0",
-  entries: [
-    {
-      file: "main.py",
-      behavior: "refactor",
-      rationale: "Main change rationale",
-      breaking: true
-    }
-  ]
-}
-"@
-    $manifestMain | Out-File "manifest_main.txt" -Encoding utf8
-    & $GipPath commit -F "manifest_main.txt"
-    Assert-Success $LASTEXITCODE "Commit on main branch"
-
-    # 6. Merge and Verify Enrichment
-    Write-Host "Attempting merge..."
+    $Content = Get-Content "file.txt" -Raw
     
-    $oldPreference = $ErrorActionPreference
-    $ErrorActionPreference = "Continue"
-    
-    $mergeOutput = & $GipPath merge feature 2>&1 | Out-String
-    $exitCode = $LASTEXITCODE
-    
-    $ErrorActionPreference = $oldPreference
-
-    # Merge SHOULD fail due to conflict
-    Assert-Failure $exitCode "Merge should fail with conflict"
-
-    $content = Get-Content main.py -Raw
-    
-    if ($content -match "\|\|\| Gip CONTEXT") {
-        Write-Host "PASS: Conflict markers enriched" -ForegroundColor Green
+    if ($Content -match "\|\|\| Gip CONTEXT \(HEAD - Your changes\)") {
+        Write-Host "✓ Found HEAD context" -ForegroundColor Green
     } else {
-        Write-Error "FAILED: Conflict markers NOT enriched"
-        Write-Host "File Content:"
-        Write-Host $content
-        exit 1
+        throw "Missing HEAD context in conflict markers"
     }
-
-    if ($content -match "Feature change rationale" -and $content -match "Main change rationale") {
-        Write-Host "PASS: Rationale found in markers" -ForegroundColor Green
+    
+    if ($Content -match "\|\|\| behaviorClass: refactor") {
+        Write-Host "✓ Found HEAD behavior" -ForegroundColor Green
     } else {
-        Write-Host "Merge Output:" -ForegroundColor Yellow
-        Write-Host $mergeOutput
-        Write-Host "File Content:" -ForegroundColor Yellow
-        Write-Host $content
-        Write-Error "FAILED: Rationale missing from markers"
-        exit 1
+        throw "Missing HEAD behavior in conflict markers"
     }
 
+    if ($Content -match "\|\|\| Gip CONTEXT \(feature - Their changes\)") {
+        Write-Host "✓ Found Feature context" -ForegroundColor Green
+    } else {
+        throw "Missing Feature context in conflict markers"
+    }
+
+    Write-Host "`n✓ All tests passed!" -ForegroundColor Green
+
+} catch {
+    Write-Error "Test failed: $_"
+    exit 1
 } finally {
-    Pop-Location
+    # Cleanup
+    Set-Location $ScriptDir
     Remove-Item -Recurse -Force $TestDir
 }
-
-Write-Host "ALL TESTS PASSED" -ForegroundColor Green
-exit 0

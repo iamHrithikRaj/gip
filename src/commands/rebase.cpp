@@ -8,6 +8,7 @@
 #include "../git_adapter.h"
 #include "../merge_driver.h"
 
+#include <algorithm>
 #include <iostream>
 
 namespace gip::commands {

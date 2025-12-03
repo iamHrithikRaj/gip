@@ -102,7 +102,10 @@ target_include_directories(gip_lib
         $<INSTALL_INTERFACE:include>
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
-        ${CMAKE_CURRENT_SOURCE_DIR}/ctoon/includes
+)
+
+target_include_directories(gip_lib SYSTEM PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/ctoon/includes
 )
 
 target_link_libraries(gip_lib

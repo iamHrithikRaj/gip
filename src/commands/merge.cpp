@@ -58,20 +58,6 @@ bool isMergeInProgress(const GitAdapter& git) {
     return result.success();
 }
 
-/// @brief Extract the branch name from merge arguments
-// cppcheck-suppress unusedFunction
-std::string extractMergeBranch(const std::vector<std::string>& args) {
-    for (const auto& arg : args) {
-        // Skip flags
-        if (arg.empty() || arg[0] == '-') {
-            continue;
-        }
-        // First non-flag argument is likely the branch
-        return arg;
-    }
-    return "";
-}
-
 /// @brief Print help for merge conflicts
 void printConflictHelp() {
     std::cerr << "\n" << kColorCyan << "Gip Conflict Resolution:" << kColorReset << "\n";

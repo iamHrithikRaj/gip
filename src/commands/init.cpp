@@ -5,6 +5,8 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <iterator>
+#include <vector>
 
 namespace fs = std::filesystem;
 
@@ -19,11 +21,11 @@ constexpr const char* kColorCyan = "\033[36m";
 constexpr const char* kColorReset = "\033[0m";
 
 void printSuccess(const std::string& msg) {
-    std::cout << kColorGreen << "[✓] " << msg << kColorReset << std::endl;
+    std::cout << kColorGreen << "[✓] " << msg << kColorReset << '\n';
 }
 
 void printInfo(const std::string& msg) {
-    std::cout << kColorCyan << "[i] " << msg << kColorReset << std::endl;
+    std::cout << kColorCyan << "[i] " << msg << kColorReset << '\n';
 }
 
 /// Template content for AI assistant instructions
@@ -154,17 +156,16 @@ auto createOrAppendCopilotInstructions(const std::string& repoRoot) -> bool {
 }  // anonymous namespace
 
 auto init(const std::vector<std::string>& args) -> int {
-    GitAdapter git;
+    const GitAdapter git;
 
     // Check if already a git repo
-    bool isRepo = git.isRepository();
+    const bool isRepo = git.isRepository();
 
     if (!isRepo) {
         // Initialize git repo first
         auto result = git.initialize();
         if (!result.success()) {
-            std::cerr << "Failed to initialize git repository: " << result.stderrOutput
-                      << std::endl;
+            std::cerr << "Failed to initialize git repository: " << result.stderrOutput << '\n';
             return 1;
         }
         printSuccess("Initialized git repository");

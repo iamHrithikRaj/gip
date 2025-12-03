@@ -9,18 +9,21 @@
 #include "../merge_driver.h"
 
 #include <iostream>
+#include <string>
+#include <vector>
 
-namespace gip {
-namespace commands {
+namespace gip::commands {
 
 namespace {
 
+// NOLINTBEGIN(readability-identifier-naming)
 constexpr const char* kColorRed = "\033[31m";
 constexpr const char* kColorGreen = "\033[32m";
 constexpr const char* kColorYellow = "\033[33m";
 constexpr const char* kColorCyan = "\033[36m";
 constexpr const char* kColorReset = "\033[0m";
 constexpr const char* kColorBold = "\033[1m";
+// NOLINTEND(readability-identifier-naming)
 
 /// @brief Get the SHA of MERGE_HEAD (the branch being merged)
 std::string getMergeHead(const GitAdapter& git) {
@@ -96,12 +99,13 @@ void printConflictHelp() {
 
 }  // anonymous namespace
 
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 auto merge(const std::vector<std::string>& args) -> int {
-    GitAdapter git;
+    const GitAdapter git;
 
     // Check if we're in a git repository
     if (!git.isRepository()) {
-        std::cerr << kColorRed << "Error: " << kColorReset << "Not a git repository" << std::endl;
+        std::cerr << kColorRed << "Error: " << kColorReset << "Not a git repository" << '\n';
         return 128;
     }
 
@@ -176,5 +180,4 @@ auto merge(const std::vector<std::string>& args) -> int {
     return result.exitCode;
 }
 
-}  // namespace commands
-}  // namespace gip
+}  // namespace gip::commands

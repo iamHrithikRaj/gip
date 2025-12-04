@@ -69,11 +69,7 @@ fn enrich_conflict_markers(file_path: &str, ours_sha: &str, theirs_sha: &str) ->
             output.push('\n');
 
             // Get context before this marker for symbol detection
-            let context_start = if current_line_idx > 50 {
-                current_line_idx - 50
-            } else {
-                0
-            };
+            let context_start = current_line_idx.saturating_sub(50);
             let context = &lines[context_start..current_line_idx];
 
             if let Some(ref m) = ours_manifest {
@@ -90,11 +86,7 @@ fn enrich_conflict_markers(file_path: &str, ours_sha: &str, theirs_sha: &str) ->
 
             // Get context before this marker (including the conflict body)
             // We search further back to find the symbol definition
-            let context_start = if current_line_idx > 100 {
-                current_line_idx - 100
-            } else {
-                0
-            };
+            let context_start = current_line_idx.saturating_sub(100);
             let context = &lines[context_start..current_line_idx];
 
             if let Some(ref m) = theirs_manifest {

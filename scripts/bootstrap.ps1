@@ -43,6 +43,7 @@ try {
     }
 
     # Handle 'gip' alias conflict (Windows/PowerShell specific)
+    $BinaryName = "gip"
     if (Test-Path alias:gip) {
         $CurrentAlias = Get-Alias gip
         Write-Host "`n[!] Detected conflicting alias 'gip' (maps to '$($CurrentAlias.Definition)')." -ForegroundColor Yellow
@@ -54,7 +55,6 @@ try {
             Remove-Item alias:gip -Force -ErrorAction SilentlyContinue
             
             # Force overwrite with new alias to ensure immediate availability in this session
-            # This handles cases where Remove-Item is scoped or the alias persists
             Write-Host "Forcing alias overwrite for current session..." -ForegroundColor Gray
             Set-Alias -Name gip -Value "$InstallDir\gip.exe" -Scope Global -Force
 
@@ -64,7 +64,8 @@ try {
                  
                  # Rename binary
                  Move-Item -Path "$InstallDir\gip.exe" -Destination "$InstallDir\git++.exe" -Force
-                 Write-Host "Installed as 'git++'. You can run it using: git++" -ForegroundColor Green
+                 $BinaryName = "git++"
+                 Write-Host "Installed as 'git++'." -ForegroundColor Green
             } else {
                  Write-Host "Alias updated for current session." -ForegroundColor Green
             
@@ -89,12 +90,13 @@ try {
         } else {
             Write-Host "Renaming installed binary to 'git++.exe'..." -ForegroundColor Cyan
             Move-Item -Path "$InstallDir\gip.exe" -Destination "$InstallDir\git++.exe" -Force
-            Write-Host "Installed as 'git++'. You can run it using: git++" -ForegroundColor Green
+            $BinaryName = "git++"
+            Write-Host "Installed as 'git++'." -ForegroundColor Green
         }
     }
 
     Write-Host "`nGip installed successfully!" -ForegroundColor Green
-    Write-Host "Run 'gip --version' to verify."
+    Write-Host "Run '$BinaryName --version' to verify."
 }
 catch {
     Write-Error $_

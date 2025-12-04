@@ -27,6 +27,7 @@ mkdir -p "$INSTALL_DIR"
 cp "$REPO_ROOT/target/release/gip" "$INSTALL_DIR/gip"
 
 # Check for conflict and offer rename
+BINARY_NAME="gip"
 if command -v gip >/dev/null 2>&1; then
     EXISTING_GIP=$(command -v gip)
     # Don't warn if it's the one we just installed
@@ -38,7 +39,8 @@ if command -v gip >/dev/null 2>&1; then
           n|N ) 
             echo -e "\033[0;36mRenaming installed binary to 'git++'...\033[0m"
             mv "$INSTALL_DIR/gip" "$INSTALL_DIR/git++"
-            echo -e "\033[0;32mInstalled as 'git++'. You can run it using: git++\033[0m"
+            BINARY_NAME="git++"
+            echo -e "\033[0;32mInstalled as 'git++'.\033[0m"
             ;;
           * ) 
             echo "Keeping 'gip'."
@@ -48,7 +50,8 @@ if command -v gip >/dev/null 2>&1; then
                 echo -e "\033[0;31mError: 'gip' command still points to $CURRENT_GIP (shadowing our installation).\033[0m"
                 echo -e "\033[0;33mFalling back to 'git++'...\033[0m"
                 mv "$INSTALL_DIR/gip" "$INSTALL_DIR/git++"
-                echo -e "\033[0;32mInstalled as 'git++'. You can run it using: git++\033[0m"
+                BINARY_NAME="git++"
+                echo -e "\033[0;32mInstalled as 'git++'.\033[0m"
             fi
             ;;
         esac
@@ -64,4 +67,4 @@ if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
     echo "  export PATH=\"\$PATH:$INSTALL_DIR\""
 fi
 
-echo "Run 'gip --version' to verify."
+echo "Run '$BINARY_NAME --version' to verify."

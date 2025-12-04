@@ -58,39 +58,51 @@ pub fn run(message: Option<String>, force: bool, args: &[String]) -> Result<()> 
             fs::write(&manifest_path, TEMPLATE)?;
 
             reject = true;
-            reason = format!("Manifest file was missing. Created new template at {}", manifest_path.display());
+            reason = format!(
+                "Manifest file was missing. Created new template at {}",
+                manifest_path.display()
+            );
         } else if let Some(ref content) = manifest_content {
             // Normalize line endings for comparison
             let normalized_content = content.replace("\r\n", "\n");
             let normalized_template = TEMPLATE.replace("\r\n", "\n");
-            
+
             if normalized_content.trim() == normalized_template.trim() {
                 reject = true;
                 reason = "Manifest file is unchanged from template".to_string();
             } else if content.contains("Describe your changes here") {
-                 reject = true;
-                 reason = "Manifest contains placeholder text 'Describe your changes here'".to_string();
+                reject = true;
+                reason =
+                    "Manifest contains placeholder text 'Describe your changes here'".to_string();
             }
         }
 
         if reject {
-             // Print LLM friendly error
-             eprintln!("{}", "ERROR: Commit rejected due to missing or incomplete manifest.".red().bold());
-             eprintln!("Reason: {}", reason);
-             eprintln!("\nTo commit, you must fill out the manifest file at: {}", manifest_path.display());
-             eprintln!("This file describes the intent of your changes in TOON format.");
-             eprintln!("\nHere is the template structure you need to follow:");
-             eprintln!("---------------------------------------------------");
-             eprintln!("{}", TEMPLATE);
-             eprintln!("---------------------------------------------------");
-             eprintln!("\nINSTRUCTIONS FOR AGENT/LLM:");
-             eprintln!("1. Read the file at: {}", manifest_path.display());
-             eprintln!("2. Understand the code changes you are committing.");
-             eprintln!("3. Fill out the 'rationale', 'changeType', and 'behaviorClass' fields in the manifest file.");
-             eprintln!("4. Save the file.");
-             eprintln!("5. Retry the commit command.");
-             eprintln!("\nIf you really want to commit without a manifest, use the --force flag.");
-             anyhow::bail!("Commit rejected. See output for details.");
+            // Print LLM friendly error
+            eprintln!(
+                "{}",
+                "ERROR: Commit rejected due to missing or incomplete manifest."
+                    .red()
+                    .bold()
+            );
+            eprintln!("Reason: {}", reason);
+            eprintln!(
+                "\nTo commit, you must fill out the manifest file at: {}",
+                manifest_path.display()
+            );
+            eprintln!("This file describes the intent of your changes in TOON format.");
+            eprintln!("\nHere is the template structure you need to follow:");
+            eprintln!("---------------------------------------------------");
+            eprintln!("{}", TEMPLATE);
+            eprintln!("---------------------------------------------------");
+            eprintln!("\nINSTRUCTIONS FOR AGENT/LLM:");
+            eprintln!("1. Read the file at: {}", manifest_path.display());
+            eprintln!("2. Understand the code changes you are committing.");
+            eprintln!("3. Fill out the 'rationale', 'changeType', and 'behaviorClass' fields in the manifest file.");
+            eprintln!("4. Save the file.");
+            eprintln!("5. Retry the commit command.");
+            eprintln!("\nIf you really want to commit without a manifest, use the --force flag.");
+            anyhow::bail!("Commit rejected. See output for details.");
         }
     }
 

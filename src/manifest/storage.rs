@@ -30,8 +30,7 @@ pub fn load(commit_sha: &str, repo_path: Option<&Path>) -> Result<Manifest> {
 
     // Parse TOON
     let opts = DecodeOptions::new().with_strict(false);
-    let mut manifest: Manifest =
-        decode(&data, &opts).context("Failed to parse manifest TOON")?;
+    let mut manifest: Manifest = decode(&data, &opts).context("Failed to parse manifest TOON")?;
 
     // Migrate v1.0 → v2.0 if needed
     if manifest.schema_version.is_empty() || manifest.schema_version == SCHEMA_VERSION_1_0 {
@@ -66,8 +65,7 @@ pub fn load_pending(gip_dir: &Path) -> Result<Manifest> {
         .with_context(|| format!("Failed to read pending manifest from {:?}", path))?;
 
     let opts = DecodeOptions::new().with_strict(false);
-    let manifest: Manifest =
-        decode(&data, &opts).context("Failed to parse pending manifest")?;
+    let manifest: Manifest = decode(&data, &opts).context("Failed to parse pending manifest")?;
 
     Ok(manifest)
 }

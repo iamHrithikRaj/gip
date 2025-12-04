@@ -57,7 +57,10 @@ fn test_gip_init() {
     let gitignore_path = repo_path.join(".gitignore");
     assert!(gitignore_path.exists(), ".gitignore should exist");
     let gitignore_content = fs::read_to_string(gitignore_path).unwrap();
-    assert!(gitignore_content.contains(".gip"), ".gitignore should contain .gip");
+    assert!(
+        gitignore_content.contains(".gip"),
+        ".gitignore should contain .gip"
+    );
 }
 
 #[test]

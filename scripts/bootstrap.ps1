@@ -45,8 +45,16 @@ try {
     # Handle 'gip' alias conflict (Windows/PowerShell specific)
     if (Test-Path alias:gip) {
         Write-Host "`n[!] Detected conflicting alias 'gip' (usually Get-NetIPConfiguration)." -ForegroundColor Yellow
-        Write-Host "Removing alias for current session..." -ForegroundColor Gray
-        Remove-Item alias:gip -ErrorAction SilentlyContinue
+        
+        Write-Host "Attempting to remove alias for current session..." -ForegroundColor Gray
+        Remove-Item alias:gip -Force -ErrorAction SilentlyContinue
+        
+        if (Test-Path alias:gip) {
+             Write-Host "WARNING: Failed to remove 'gip' alias in the current session." -ForegroundColor Red
+             Write-Host "You may need to run 'Remove-Item alias:gip -Force' manually." -ForegroundColor Red
+        } else {
+             Write-Host "Alias removed for current session." -ForegroundColor Green
+        }
         
         # Check if profile exists
         if (-not (Test-Path $PROFILE)) {
@@ -56,7 +64,7 @@ try {
 
         # Check if removal is already in profile
         $ProfileContent = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
-        $AliasRemovalCmd = "Remove-Item alias:gip -ErrorAction SilentlyContinue"
+        $AliasRemovalCmd = "Remove-Item alias:gip -Force -ErrorAction SilentlyContinue"
         
         if ($ProfileContent -notlike "*$AliasRemovalCmd*") {
             Write-Host "Adding alias removal to your PowerShell profile to make it permanent..." -ForegroundColor Cyan

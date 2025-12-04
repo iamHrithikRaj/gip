@@ -53,11 +53,15 @@ try {
             Write-Host "Attempting to remove alias for current session..." -ForegroundColor Gray
             Remove-Item alias:gip -Force -ErrorAction SilentlyContinue
             
-            if (Test-Path alias:gip) {
-                 Write-Host "WARNING: Failed to remove 'gip' alias in the current session." -ForegroundColor Red
-                 Write-Host "You may need to run 'Remove-Item alias:gip -Force' manually." -ForegroundColor Red
+            # Force overwrite with new alias to ensure immediate availability in this session
+            # This handles cases where Remove-Item is scoped or the alias persists
+            Write-Host "Forcing alias overwrite for current session..." -ForegroundColor Gray
+            Set-Alias -Name gip -Value "$InstallDir\gip.exe" -Scope Global -Force
+
+            if (Get-Command gip -ErrorAction SilentlyContinue | Where-Object { $_.Source -eq "NetTCPIP" }) {
+                 Write-Host "WARNING: System alias still persists. You may need to restart your terminal." -ForegroundColor Red
             } else {
-                 Write-Host "Alias removed for current session." -ForegroundColor Green
+                 Write-Host "Alias updated for current session." -ForegroundColor Green
             }
             
             # Check if profile exists

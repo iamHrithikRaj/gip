@@ -59,27 +59,32 @@ try {
             Set-Alias -Name gip -Value "$InstallDir\gip.exe" -Scope Global -Force
 
             if (Get-Command gip -ErrorAction SilentlyContinue | Where-Object { $_.Source -eq "NetTCPIP" }) {
-                 Write-Host "WARNING: System alias still persists. You may need to restart your terminal." -ForegroundColor Red
+                 Write-Host "WARNING: System alias still persists and could not be overridden." -ForegroundColor Red
+                 Write-Host "Falling back to 'git++'..." -ForegroundColor Yellow
+                 
+                 # Rename binary
+                 Move-Item -Path "$InstallDir\gip.exe" -Destination "$InstallDir\git++.exe" -Force
+                 Write-Host "Installed as 'git++'. You can run it using: git++" -ForegroundColor Green
             } else {
                  Write-Host "Alias updated for current session." -ForegroundColor Green
-            }
             
-            # Check if profile exists
-            if (-not (Test-Path $PROFILE)) {
-                Write-Host "Creating PowerShell profile at $PROFILE..." -ForegroundColor Gray
-                New-Item -Path $PROFILE -ItemType File -Force | Out-Null
-            }
+                # Check if profile exists
+                if (-not (Test-Path $PROFILE)) {
+                    Write-Host "Creating PowerShell profile at $PROFILE..." -ForegroundColor Gray
+                    New-Item -Path $PROFILE -ItemType File -Force | Out-Null
+                }
 
-            # Check if removal is already in profile
-            $ProfileContent = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
-            $AliasRemovalCmd = "Remove-Item alias:gip -Force -ErrorAction SilentlyContinue"
-            
-            if ($ProfileContent -notlike "*$AliasRemovalCmd*") {
-                Write-Host "Adding alias removal to your PowerShell profile to make it permanent..." -ForegroundColor Cyan
-                Add-Content -Path $PROFILE -Value "`n# Fix for Gip CLI tool conflict`n$AliasRemovalCmd"
-                Write-Host "Updated $PROFILE" -ForegroundColor Green
-            } else {
-                Write-Host "Alias removal already present in profile." -ForegroundColor Gray
+                # Check if removal is already in profile
+                $ProfileContent = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
+                $AliasRemovalCmd = "Remove-Item alias:gip -Force -ErrorAction SilentlyContinue"
+                
+                if ($ProfileContent -notlike "*$AliasRemovalCmd*") {
+                    Write-Host "Adding alias removal to your PowerShell profile to make it permanent..." -ForegroundColor Cyan
+                    Add-Content -Path $PROFILE -Value "`n# Fix for Gip CLI tool conflict`n$AliasRemovalCmd"
+                    Write-Host "Updated $PROFILE" -ForegroundColor Green
+                } else {
+                    Write-Host "Alias removal already present in profile." -ForegroundColor Gray
+                }
             }
         } else {
             Write-Host "Renaming installed binary to 'git++.exe'..." -ForegroundColor Cyan

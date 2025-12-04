@@ -81,6 +81,14 @@ if command -v gip >/dev/null 2>&1; then
             ;;
           * ) 
             echo "Keeping 'gip'."
+            # Verify if 'gip' resolves to our installation
+            CURRENT_GIP=$(command -v gip)
+            if [ "$CURRENT_GIP" != "$INSTALL_DIR/gip" ]; then
+                echo -e "\033[0;31mError: 'gip' command still points to $CURRENT_GIP (shadowing our installation).\033[0m"
+                echo -e "\033[0;33mFalling back to 'git++'...\033[0m"
+                mv "$INSTALL_DIR/gip" "$INSTALL_DIR/git++"
+                echo -e "\033[0;32mInstalled as 'git++'. You can run it using: git++\033[0m"
+            fi
             ;;
         esac
     fi

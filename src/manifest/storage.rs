@@ -1,21 +1,23 @@
 //! Manifest storage operations - saving and loading manifests using Git Notes
 //!
-//! Manifests are stored as JSON in the custom git ref `refs/notes/gip`.
+//! Manifests are stored as TOON in the custom git ref `refs/notes/gip`.
 //! This allows manifests to be shared across the team when pushing/pulling.
 
 use crate::git;
+use crate::manifest::toon::serialize_manifest_toon;
 use crate::manifest::types::*;
 use anyhow::{Context, Result};
 use std::fs;
 use std::path::Path;
+use toon_format::{decode, DecodeOptions};
 
 /// Save writes a manifest to Git Notes
 pub fn save(manifest: &Manifest, commit_sha: &str, repo_path: Option<&Path>) -> Result<()> {
-    // Serialize as JSON
-    let json = serde_json::to_string_pretty(manifest).context("Failed to serialize manifest")?;
+    // Serialize as TOON
+    let toon = serialize_manifest_toon(manifest).context("Failed to serialize manifest to TOON")?;
 
     // Write to Git Notes
-    git::add_note(commit_sha, &json, repo_path).context("Failed to save manifest to git notes")?;
+    git::add_note(commit_sha, &toon, repo_path).context("Failed to save manifest to git notes")?;
 
     Ok(())
 }
@@ -26,9 +28,10 @@ pub fn load(commit_sha: &str, repo_path: Option<&Path>) -> Result<Manifest> {
     let data =
         git::get_note(commit_sha, repo_path).context("Failed to read manifest from git notes")?;
 
-    // Parse JSON
+    // Parse TOON
+    let opts = DecodeOptions::new().with_strict(false);
     let mut manifest: Manifest =
-        serde_json::from_str(&data).context("Failed to parse manifest JSON")?;
+        decode(&data, &opts).context("Failed to parse manifest TOON")?;
 
     // Migrate v1.0 → v2.0 if needed
     if manifest.schema_version.is_empty() || manifest.schema_version == SCHEMA_VERSION_1_0 {
@@ -43,14 +46,13 @@ pub fn save_pending(manifest: &Manifest, gip_dir: &Path) -> Result<()> {
     // Ensure .gip directory exists
     fs::create_dir_all(gip_dir).context("Failed to create .gip directory")?;
 
-    let path = gip_dir.join("pending.json");
+    let path = gip_dir.join("pending.toon");
 
-    // Serialize as JSON
-    let json =
-        serde_json::to_string_pretty(manifest).context("Failed to serialize pending manifest")?;
+    // Serialize as TOON
+    let toon = serialize_manifest_toon(manifest).context("Failed to serialize pending manifest")?;
 
     // Write to file
-    fs::write(&path, json)
+    fs::write(&path, toon)
         .with_context(|| format!("Failed to write pending manifest to {:?}", path))?;
 
     Ok(())
@@ -58,13 +60,14 @@ pub fn save_pending(manifest: &Manifest, gip_dir: &Path) -> Result<()> {
 
 /// LoadPending loads the pending manifest
 pub fn load_pending(gip_dir: &Path) -> Result<Manifest> {
-    let path = gip_dir.join("pending.json");
+    let path = gip_dir.join("pending.toon");
 
     let data = fs::read_to_string(&path)
         .with_context(|| format!("Failed to read pending manifest from {:?}", path))?;
 
+    let opts = DecodeOptions::new().with_strict(false);
     let manifest: Manifest =
-        serde_json::from_str(&data).context("Failed to parse pending manifest")?;
+        decode(&data, &opts).context("Failed to parse pending manifest")?;
 
     Ok(manifest)
 }
@@ -149,7 +152,7 @@ mod tests {
         save_pending(&manifest, gip_dir).unwrap();
 
         // Verify file exists
-        assert!(gip_dir.join("pending.json").exists());
+        assert!(gip_dir.join("pending.toon").exists());
 
         // Load pending
         let loaded = load_pending(gip_dir).unwrap();

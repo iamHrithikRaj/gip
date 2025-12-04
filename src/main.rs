@@ -26,6 +26,10 @@ enum Commands {
         #[arg(short, long)]
         message: Option<String>,
 
+        /// Force commit without manifest
+        #[arg(short, long)]
+        force: bool,
+
         /// Additional git arguments
         #[arg(allow_hyphen_values = true, trailing_var_arg = true)]
         args: Vec<String>,
@@ -60,10 +64,6 @@ enum Commands {
         /// Export context to TOON format
         #[arg(long)]
         export: bool,
-
-        /// Output as JSON
-        #[arg(long)]
-        json: bool,
     },
 
     #[command(external_subcommand)]
@@ -75,15 +75,15 @@ fn main() -> Result<()> {
 
     match cli.command {
         Some(Commands::Init) => commands::init::run(),
-        Some(Commands::Commit { message, args }) => commands::commit::run(message, &args),
+        Some(Commands::Commit {
+            message,
+            force,
+            args,
+        }) => commands::commit::run(message, force, &args),
         Some(Commands::Push { args }) => commands::push::run(&args),
         Some(Commands::Merge { args }) => commands::merge::run(&args),
         Some(Commands::Rebase { args }) => commands::rebase::run(&args),
-        Some(Commands::Context {
-            target,
-            export,
-            json,
-        }) => commands::context::run(target, export, json),
+        Some(Commands::Context { target, export }) => commands::context::run(target, export),
         Some(Commands::External(args)) => commands::passthrough::run(&args),
         None => {
             // Show help if no args

@@ -3,7 +3,7 @@ use crate::manifest::{self, Manifest};
 use anyhow::Result;
 use colored::*;
 
-pub fn run(commit: Option<String>, export: bool, json: bool) -> Result<()> {
+pub fn run(commit: Option<String>, export: bool) -> Result<()> {
     let commit_sha = match commit {
         Some(c) => c,
         None => git::get_current_commit()?,
@@ -19,12 +19,6 @@ pub fn run(commit: Option<String>, export: bool, json: bool) -> Result<()> {
             return Ok(());
         }
     };
-
-    if json {
-        let output = serde_json::to_string_pretty(&manifest)?;
-        println!("{}", output);
-        return Ok(());
-    }
 
     if export {
         let output = manifest::serialize_manifest_toon(&manifest)?;

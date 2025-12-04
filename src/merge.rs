@@ -58,15 +58,22 @@ fn enrich_conflict_markers(file_path: &str, ours_sha: &str, theirs_sha: &str) ->
     }
 
     let mut output = String::new();
-    let lines = content.lines();
+    let lines: Vec<&str> = content.lines().collect();
+    let mut current_line_idx = 0;
 
-    for line in lines {
+    while current_line_idx < lines.len() {
+        let line = lines[current_line_idx];
+
         if line.starts_with(CONFLICT_START) {
             output.push_str(line);
             output.push('\n');
 
+            // Get context before this marker for symbol detection
+            let context_start = if current_line_idx > 50 { current_line_idx - 50 } else { 0 };
+            let context = &lines[context_start..current_line_idx];
+
             if let Some(ref m) = ours_manifest {
-                let context = format_enriched_marker("HEAD", "Your changes", m, file_path);
+                let context = format_enriched_marker("HEAD", "Your changes", m, file_path, Some(context));
                 output.push_str(&context);
             }
         } else if line.starts_with(CONFLICT_MIDDLE) {
@@ -76,8 +83,13 @@ fn enrich_conflict_markers(file_path: &str, ours_sha: &str, theirs_sha: &str) ->
             // Extract branch name from marker if possible
             let branch = line.trim_start_matches(CONFLICT_END).trim();
 
+            // Get context before this marker (including the conflict body)
+            // We search further back to find the symbol definition
+            let context_start = if current_line_idx > 100 { current_line_idx - 100 } else { 0 };
+            let context = &lines[context_start..current_line_idx];
+
             if let Some(ref m) = theirs_manifest {
-                let context = format_enriched_marker(branch, "Their changes", m, file_path);
+                let context = format_enriched_marker(branch, "Their changes", m, file_path, Some(context));
                 output.push_str(&context);
             }
 
@@ -87,6 +99,7 @@ fn enrich_conflict_markers(file_path: &str, ours_sha: &str, theirs_sha: &str) ->
             output.push_str(line);
             output.push('\n');
         }
+        current_line_idx += 1;
     }
 
     fs::write(path, output).context("Failed to write enriched file")?;
@@ -98,6 +111,7 @@ fn format_enriched_marker(
     description: &str,
     manifest: &Manifest,
     file_path: &str,
+    context: Option<&[&str]>,
 ) -> String {
     let mut output = String::new();
 
@@ -105,7 +119,7 @@ fn format_enriched_marker(
     output.push_str(&format!("||| Commit: {}\n", manifest.commit));
 
     // Find relevant entry
-    let entry = find_entry(manifest, file_path);
+    let entry = find_entry(manifest, file_path, context);
 
     if let Some(e) = entry {
         if !e.behavior_class.is_empty() {
@@ -178,21 +192,57 @@ fn format_enriched_marker(
     output
 }
 
-fn find_entry<'a>(manifest: &'a Manifest, file_path: &str) -> Option<&'a crate::manifest::Entry> {
-    // Try exact match
-    if let Some(entry) = manifest.entries.iter().find(|e| e.anchor.file == file_path) {
-        return Some(entry);
-    }
-
-    // Try filename match
+fn find_entry<'a>(
+    manifest: &'a Manifest,
+    file_path: &str,
+    context: Option<&[&str]>,
+) -> Option<&'a crate::manifest::Entry> {
+    // 1. Filter entries by file path
     let filename = Path::new(file_path).file_name()?.to_str()?;
-
-    manifest.entries.iter().find(|e| {
+    
+    let file_entries: Vec<&crate::manifest::Entry> = manifest.entries.iter().filter(|e| {
+        e.anchor.file == file_path || 
         Path::new(&e.anchor.file)
             .file_name()
             .map(|n| n.to_str().unwrap_or(""))
             == Some(filename)
-    })
+    }).collect();
+
+    if file_entries.is_empty() {
+        return None;
+    }
+
+    // 2. If context is available, try to match symbol
+    if let Some(lines) = context {
+        let mut best_entry: Option<&crate::manifest::Entry> = None;
+        let mut min_indent = usize::MAX;
+
+        // We search backwards from the conflict
+        for line in lines.iter().rev() {
+            // Calculate indentation (spaces/tabs)
+            let indent = line.chars().take_while(|c| c.is_whitespace()).count();
+            
+            for entry in &file_entries {
+                if line.contains(&entry.anchor.symbol) {
+                    // Found a match.
+                    // Heuristic: The enclosing function definition usually has 
+                    // lower indentation than the code inside it (including calls).
+                    // We prefer the match with the lowest indentation found so far.
+                    if indent < min_indent {
+                        best_entry = Some(entry);
+                        min_indent = indent;
+                    }
+                }
+            }
+        }
+
+        if let Some(entry) = best_entry {
+            return Some(entry);
+        }
+    }
+
+    // 3. Fallback: return the first entry for this file
+    Some(file_entries[0])
 }
 
 #[cfg(test)]
@@ -243,7 +293,7 @@ mod tests {
             }],
         };
 
-        let marker = format_enriched_marker("HEAD", "Your changes", &manifest, "src/payment.rs");
+        let marker = format_enriched_marker("HEAD", "Your changes", &manifest, "src/payment.rs", None);
 
         assert!(marker.contains("||| Gip CONTEXT (HEAD - Your changes)"));
         assert!(marker.contains("||| Commit: abc1234"));
@@ -255,5 +305,43 @@ mod tests {
         assert!(marker.contains("||| outputs: bool success"));
         assert!(marker.contains("||| symbol: processPayment"));
         assert!(marker.contains("||| errorModel[0]: throws PaymentException"));
+    }
+    
+    #[test]
+    fn test_find_entry_with_symbol_context() {
+        let manifest = Manifest {
+            schema_version: "2.0".to_string(),
+            commit: "abc".to_string(),
+            global_intent: None,
+            entries: vec![
+                Entry {
+                    anchor: Anchor { file: "src/main.rs".to_string(), symbol: "main".to_string(), hunk_id: "1".to_string() },
+                    change_type: "mod".to_string(), rationale: "main logic".to_string(),
+                    behavior_class: vec![], contract: Contract { inputs: None, outputs: None, preconditions: vec![], postconditions: vec![], error_model: vec![] },
+                    side_effects: vec![], compatibility: None, tests_touched: None, perf_budget: None, security_notes: None, feature_flags: None, inherits_global_intent: None, signature_delta: None
+                },
+                Entry {
+                    anchor: Anchor { file: "src/main.rs".to_string(), symbol: "helper".to_string(), hunk_id: "2".to_string() },
+                    change_type: "mod".to_string(), rationale: "helper logic".to_string(),
+                    behavior_class: vec![], contract: Contract { inputs: None, outputs: None, preconditions: vec![], postconditions: vec![], error_model: vec![] },
+                    side_effects: vec![], compatibility: None, tests_touched: None, perf_budget: None, security_notes: None, feature_flags: None, inherits_global_intent: None, signature_delta: None
+                }
+            ]
+        };
+        
+        let context = vec![
+            "fn helper() {",
+            "    // some code",
+        ];
+        
+        let entry = find_entry(&manifest, "src/main.rs", Some(&context));
+        assert_eq!(entry.unwrap().anchor.symbol, "helper");
+        
+        let context_main = vec![
+            "fn main() {",
+            "    helper();",
+        ];
+        let entry_main = find_entry(&manifest, "src/main.rs", Some(&context_main));
+        assert_eq!(entry_main.unwrap().anchor.symbol, "main");
     }
 }

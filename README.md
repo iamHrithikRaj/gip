@@ -183,10 +183,17 @@ gip --help
 
 **Conflict with `Get-NetIPConfiguration`**
 
-PowerShell has a default alias `gip` for `Get-NetIPConfiguration`. The installation script will attempt to remove this alias for you. If you still see network information when running `gip`, you can manually add this to your PowerShell profile:
+PowerShell has a default alias `gip` for `Get-NetIPConfiguration`. The installation script will attempt to remove this alias for you.
+
+If the conflict persists, the installer will offer to rename the binary to `git++`. You can then use the tool as:
 
 ```powershell
-Remove-Item alias:gip -ErrorAction SilentlyContinue
+git++ commit -m "msg"
+```
+
+To manually resolve the conflict:
+```powershell
+Remove-Item alias:gip -Force -ErrorAction SilentlyContinue
 ```
 
 ---

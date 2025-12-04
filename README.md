@@ -179,22 +179,33 @@ gip --help
 # Git with Intent Preservation - Context-aware git wrapper
 ```
 
-### Troubleshooting (Windows)
+### Troubleshooting & Alias Conflicts
 
-**Conflict with `Get-NetIPConfiguration`**
+Some systems may already have a tool named `gip` installed (e.g., the `Get-NetIPConfiguration` alias on Windows PowerShell, or other utilities on Linux).
 
-PowerShell has a default alias `gip` for `Get-NetIPConfiguration`. The installation script will attempt to remove this alias for you.
+**Interactive Resolution**
 
-If the conflict persists, the installer will offer to rename the binary to `git++`. You can then use the tool as:
+The installation script will automatically detect if `gip` is already present. It will offer to:
+1.  **Override** the existing command (if possible).
+2.  **Rename** the installed binary to `git++`.
 
-```powershell
+If you choose to rename, you can use the tool as:
+```bash
 git++ commit -m "msg"
 ```
 
-To manually resolve the conflict:
-```powershell
-Remove-Item alias:gip -Force -ErrorAction SilentlyContinue
-```
+**Manual Resolution**
+
+*   **Windows (PowerShell):**
+    ```powershell
+    Remove-Item alias:gip -Force -ErrorAction SilentlyContinue
+    ```
+
+*   **Linux / macOS:**
+    If you have a naming conflict, you can manually rename the binary:
+    ```bash
+    mv ~/.local/bin/gip ~/.local/bin/git++
+    ```
 
 ---
 

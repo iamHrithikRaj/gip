@@ -599,7 +599,6 @@ See [CODING_STANDARDS.md](docs/CODING_STANDARDS.md) for detailed guidelines.
 ## Related Projects
 
 - [toon-format](https://crates.io/crates/toon-format) - TOON format serialization library
-- [gip-legacy](https://github.com/AZBucky/gip-legacy) - Original Rust implementation
 
 ---
 
